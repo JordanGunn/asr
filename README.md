@@ -32,12 +32,15 @@ asr list
 
 # Register a skill
 asr add /path/to/skill-dir
+asr add aux/*                                 # glob paths
 asr add /path/to/skill-dir --strict  # Fail on warnings
 asr add -r /path/to/root             # Recursively add all valid skills
 
 # Remove a skill
 asr rm skill-name
 asr rm /path/to/skill-dir
+asr rm sniff-bloaters sniff-abusers            # multiple
+asr rm "sniff-*"                               # glob by name
 asr rm -r /path/to/root      # Recursively remove all skills under path
 
 # Copy skills to target directory (no registry modification)

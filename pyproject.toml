@@ -19,8 +19,8 @@ dependencies = [
 ]
 
 [project.scripts]
-asr = "skills.cli:main"
-skills = "skills.cli:main"
+asr = "cli:main"
+skills = "cli:main"
 
 [project.optional-dependencies]
 dev = [
@@ -29,7 +29,8 @@ dev = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/skills"]
+packages = ["src/asr_cmd", "src/adapters"]
+include = ["src/*.py"]
 
 [tool.hatch.envs.dev]
 dependencies = [

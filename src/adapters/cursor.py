@@ -1,28 +1,22 @@
-"""Codex adapter for generating codex skill files.
-
-Note: Codex format is TBD. Currently uses same format as Cursor.
-"""
+"""Cursor adapter for generating .cursor/commands/*.md files."""
 
 from pathlib import Path
 
-from skills.adapters.base import BaseAdapter, SkillInfo
+from adapters.base import BaseAdapter, SkillInfo
 
 
-class CodexAdapter(BaseAdapter):
-    """Adapter for generating Codex skill files.
+class CursorAdapter(BaseAdapter):
+    """Adapter for generating Cursor command files."""
     
-    Placeholder implementation - uses same format as Cursor commands.
-    """
-    
-    target_name = "codex"
-    target_subdir = ".codex/skills"
+    target_name = "cursor"
+    target_subdir = ".cursor/commands"
     
     def generate(self, skill: SkillInfo, output_dir: Path) -> Path:
-        """Generate a Codex skill file for a skill.
+        """Generate a Cursor command file for a skill.
         
         Args:
             skill: Skill information.
-            output_dir: Resolved output directory (.codex/skills/).
+            output_dir: Resolved output directory (.cursor/commands/).
         
         Returns:
             Path to the generated file.
@@ -33,7 +27,7 @@ class CodexAdapter(BaseAdapter):
 
 {skill.description}
 
-This skill delegates to the agent skill at `{skill.path}/`.
+This command delegates to the agent skill at `{skill.path}/`.
 
 ## Skill Location
 
@@ -45,9 +39,9 @@ This skill delegates to the agent skill at `{skill.path}/`.
         return output_file
     
     def cleanup_stale(self, output_dir: Path, valid_names: set[str]) -> list[Path]:
-        """Remove stale Codex skill files.
+        """Remove stale Cursor command files.
         
-        Only removes files that look like generated skill files.
+        Only removes files that look like generated skill commands.
         
         Args:
             output_dir: Output directory to clean.
@@ -69,7 +63,7 @@ This skill delegates to the agent skill at `{skill.path}/`.
             
             try:
                 content = file.read_text(encoding="utf-8")
-                if "This skill delegates to the agent skill at" in content:
+                if "This command delegates to the agent skill at" in content:
                     file.unlink()
                     removed.append(file)
             except (OSError, UnicodeDecodeError):

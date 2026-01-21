@@ -11,8 +11,8 @@ else:
 
 import tomli_w
 
-from skills.config import ensure_skills_dir, SKILLS_DIR
-from skills.manifest import create_manifest, save_manifest, delete_manifest
+from config import ensure_skills_dir, SKILLS_DIR
+from manifest import create_manifest, save_manifest, delete_manifest
 
 REGISTRY_FILE = SKILLS_DIR / "registry.toml"
 

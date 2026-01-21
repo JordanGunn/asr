@@ -3,7 +3,7 @@
 import json
 from pathlib import Path
 
-from skills.adapters.base import BaseAdapter, SkillInfo
+from adapters.base import BaseAdapter, SkillInfo
 
 
 class WindsurfAdapter(BaseAdapter):

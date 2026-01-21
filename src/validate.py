@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
 
-from skills.discovery import parse_frontmatter
+from discovery import parse_frontmatter
 
 KEBAB_CASE_PATTERN = re.compile(r"^[a-z]+(-[a-z]+)*$")
 
