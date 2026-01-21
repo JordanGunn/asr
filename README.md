@@ -1,6 +1,18 @@
 # ASR CLI
 
-CLI for managing agent skills across IDE integrations (Cursor, Windsurf, Codex).
+Manage agent “skills” across tools without drift: registry + validation + manifests + IDE adapters.
+
+## TL;DR
+
+- **One source of truth:** skills live in their original directories; ASR tracks them in a registry (no duplication).
+- **Catch drift early:** validate `SKILL.md` + structure, and track changes over time with manifests.
+- **Bridge tool differences:** generate thin adapters for Cursor / Windsurf / Codex-style setups even when their root dirs and invocation syntax differ.
+
+Agent skills are an open spec, but different agentic providers and IDEs tend to:
+- store skills in different **root directories**, and
+- use different **invocation surfaces/syntax** (commands vs workflows, reserved names, etc.).
+
+ASR’s job is to keep your skills “canonical” and make integrations *point at them* instead of copying them everywhere.
 
 ## Installation
 
@@ -20,6 +32,68 @@ If you want `asr` (and the compatibility alias `skills`) available globally on y
 
 These scripts install into an isolated virtual environment and place shims in a user-level bin directory
 (by default `~/.local/bin` on macOS/Linux, and `%LOCALAPPDATA%\asr\bin` on Windows).
+
+## Why this exists
+
+If you keep a growing library of skills, the painful parts aren’t the first few skills — it’s the long-term maintenance:
+
+- **Drift:** you edit a skill, but the “wrapper” copied into an IDE directory is stale.
+- **Mismatch:** one environment expects commands, another expects workflows, another expects a different root directory.
+- **Silent breakage:** renamed directories, missing `SKILL.md`, bad frontmatter, missing Windows equivalents for scripts, etc.
+
+ASR tackles this with a registry + validation + manifests, and (optionally) generated adapters.
+
+## Core concepts
+
+### Registry (source of truth)
+
+ASR keeps a registry at `~/.skills/registry.toml` that records *where the canonical skill directories live*.
+
+- No copying required to “register” a skill
+- Enables `validate --all`, `status`, `sync`, and adapter generation against a consistent list of skills
+
+### Validation (make problems explicit)
+
+Run validation against a single directory or everything registered:
+
+```bash
+asr validate /path/to/skill-dir
+asr validate --all
+asr validate --all --strict
+```
+
+Validation checks `SKILL.md` + frontmatter and a handful of structural rules (errors vs warnings with codes).
+
+### Manifests (track change over time)
+
+ASR stores per-skill manifests (JSON) under `~/.skills/manifests/` so you can tell whether a skill is:
+- `valid` (matches manifest),
+- `modified` (content changed),
+- `missing` (source path gone),
+- `untracked` (registered but no manifest yet).
+
+Useful commands:
+
+```bash
+asr sync          # create manifests where missing
+asr status        # show current state (valid/modified/missing/untracked)
+asr sync --update # update manifests for modified skills
+asr sync --prune  # remove registry entries whose source path is missing
+asr clean         # clean orphaned manifests, missing-source skills, etc.
+```
+
+### Adapters (bridge tool-specific formats without copying)
+
+Different tools often have different “skill roots” and invocation formats, so a single universal “/skill” command syntax rarely works everywhere.
+
+ASR can generate **thin adapters** (small files) for environments like Cursor / Windsurf / Codex-style setups that *delegate to your canonical skill directories* (from the registry). This prevents the common “copied wrapper drift” problem.
+
+```bash
+asr adapter --output-dir /path/to/project
+asr adapter cursor --output-dir /path/to/project
+asr adapter windsurf --output-dir /path/to/project
+asr adapter codex --output-dir /path/to/project
+```
 
 ## Usage
 
