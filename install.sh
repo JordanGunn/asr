@@ -156,6 +156,17 @@ install_project() {
   local vpy="${VENV_DIR}/bin/python"
   [[ -x "$vpy" ]] || die "venv python not found at ${vpy}"
 
+  # Some environments (including certain uv configurations) may create a venv
+  # without pip. Ensure pip is present before attempting installs.
+  if ! "$vpy" -c "import pip" >/dev/null 2>&1; then
+    if "$vpy" -m ensurepip --upgrade >/dev/null 2>&1; then
+      :
+    fi
+  fi
+  if ! "$vpy" -c "import pip" >/dev/null 2>&1; then
+    die "pip is missing in venv at ${VENV_DIR}. Try installing python with ensurepip enabled, or install pip/venv tooling."
+  fi
+
   run "$vpy" -m pip install --upgrade pip
   run "$vpy" -m pip install -e "${SCRIPT_DIR}"
 }

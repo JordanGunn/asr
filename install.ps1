@@ -72,6 +72,13 @@ function Ensure-Venv {
 
 function Install-Project {
   $vpy = Get-VenvPython
+  if (-not $DryRun) {
+    try {
+      & $vpy -c "import pip" | Out-Null
+    } catch {
+      & $vpy -m ensurepip --upgrade | Out-Host
+    }
+  }
   Invoke-Step "$vpy -m pip install --upgrade pip" { & $vpy -m pip install --upgrade pip | Out-Host }
   Invoke-Step "$vpy -m pip install -e $ScriptDir" { & $vpy -m pip install -e $ScriptDir | Out-Host }
 }
