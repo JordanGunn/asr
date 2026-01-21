@@ -1,0 +1,72 @@
+"""Cursor adapter for generating .cursor/commands/*.md files."""
+
+from pathlib import Path
+
+from skills.adapters.base import BaseAdapter, SkillInfo
+
+
+class CursorAdapter(BaseAdapter):
+    """Adapter for generating Cursor command files."""
+    
+    target_name = "cursor"
+    target_subdir = ".cursor/commands"
+    
+    def generate(self, skill: SkillInfo, output_dir: Path) -> Path:
+        """Generate a Cursor command file for a skill.
+        
+        Args:
+            skill: Skill information.
+            output_dir: Resolved output directory (.cursor/commands/).
+        
+        Returns:
+            Path to the generated file.
+        """
+        output_file = output_dir / f"{skill.name}.md"
+        
+        content = f"""# {skill.name}
+
+{skill.description}
+
+This command delegates to the agent skill at `{skill.path}/`.
+
+## Skill Location
+
+- **Path:** `{skill.path}/`
+- **Manifest:** `{skill.path}/SKILL.md`
+"""
+        
+        output_file.write_text(content, encoding="utf-8")
+        return output_file
+    
+    def cleanup_stale(self, output_dir: Path, valid_names: set[str]) -> list[Path]:
+        """Remove stale Cursor command files.
+        
+        Only removes files that look like generated skill commands.
+        
+        Args:
+            output_dir: Output directory to clean.
+            valid_names: Set of valid skill names (files to keep).
+        
+        Returns:
+            List of removed file paths.
+        """
+        removed = []
+        
+        if not output_dir.is_dir():
+            return removed
+        
+        for file in output_dir.glob("*.md"):
+            name = file.stem
+            
+            if name in valid_names:
+                continue
+            
+            try:
+                content = file.read_text(encoding="utf-8")
+                if "This command delegates to the agent skill at" in content:
+                    file.unlink()
+                    removed.append(file)
+            except (OSError, UnicodeDecodeError):
+                pass
+        
+        return removed
