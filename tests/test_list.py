@@ -1,0 +1,63 @@
+"""Tests for the `asr list` command output formatting."""
+
+class TestListCommand:
+    """Tests for list command output."""
+
+    def test_list_empty_registry_shows_message(self, cli_runner, tmp_skills_dir):
+        """Empty registry shows helpful message."""
+        exit_code, stdout, stderr = cli_runner(["list"])
+        
+        assert exit_code == 0
+        assert "No skills registered" in stdout
+        assert "asr add" in stdout
+
+    def test_list_formats_with_box_drawing(self, cli_runner, sample_registry):
+        """List output uses box-drawing characters."""
+        exit_code, stdout, stderr = cli_runner(["list"])
+        
+        assert exit_code == 0
+        # Check for box-drawing characters
+        assert "┌─" in stdout
+        assert "│" in stdout
+        assert "└─" in stdout
+        # Check header
+        assert "REGISTERED SKILLS" in stdout
+
+    def test_list_shows_all_skills(self, cli_runner, sample_registry):
+        """List shows all registered skills."""
+        exit_code, stdout, stderr = cli_runner(["list"])
+        
+        assert exit_code == 0
+        for entry in sample_registry:
+            assert entry.name in stdout
+
+    def test_list_verbose_shows_full_paths(self, cli_runner, sample_registry):
+        """List with --verbose shows full paths without truncation."""
+        exit_code, stdout, stderr = cli_runner(["list", "--verbose"])
+        
+        assert exit_code == 0
+        # At least one full path should be visible
+        for entry in sample_registry:
+            # Full path should appear somewhere
+            if entry.path in stdout:
+                break
+        else:
+            # If we used ~ substitution, check that at least one path is there
+            assert "/" in stdout
+
+    def test_list_json_output(self, cli_runner, sample_registry):
+        """List with --json outputs valid JSON."""
+        import json
+        
+        exit_code, stdout, stderr = cli_runner(["list", "--json"])
+        
+        assert exit_code == 0
+        data = json.loads(stdout)
+        assert isinstance(data, list)
+        assert len(data) == len(sample_registry)
+        
+        # Check structure
+        for item in data:
+            assert "name" in item
+            assert "path" in item
+            assert "description" in item

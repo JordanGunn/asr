@@ -1,6 +1,6 @@
 """CLI entry point (argparse wiring + dispatch).
 
-Command implementations live under `src/asr_cmd/`.
+Command implementations live under `src/commands/`.
 """
 
 from __future__ import annotations
@@ -10,7 +10,7 @@ import json
 import sys
 from pathlib import Path
 
-from asr_cmd import add, adapter, clean, find, list as list_cmd, rm, status, sync, use, validate
+from commands import add, adapter, clean, find, help as help_cmd, list as list_cmd, rm, status, sync, use, validate
 
 __version__ = "0.1.0"
 
@@ -76,6 +76,7 @@ def create_parser() -> argparse.ArgumentParser:
     status.register(subparsers)
     clean.register(subparsers)
     adapter.register(subparsers)
+    help_cmd.register(subparsers, parser)
 
     return parser
 

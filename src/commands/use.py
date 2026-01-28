@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import json
 import shutil
 import sys
@@ -13,7 +14,7 @@ from registry import load_registry
 
 def register(subparsers) -> None:
     p = subparsers.add_parser("use", help="Copy skill(s) to target directory")
-    p.add_argument("names", nargs="+", help="Skill name(s) to copy")
+    p.add_argument("names", nargs="+", help="Skill name(s) or glob pattern(s) to copy")
     p.add_argument(
         "-d",
         "--dir",
@@ -27,6 +28,32 @@ def register(subparsers) -> None:
     p.set_defaults(func=run)
 
 
+def _match_skills(patterns: list[str], entry_map: dict) -> tuple[list[str], list[str]]:
+    """Match skill names against patterns (exact or glob).
+    
+    Returns:
+        Tuple of (matched_names, unmatched_patterns).
+    """
+    matched = set()
+    unmatched = []
+    all_names = list(entry_map.keys())
+    
+    for pattern in patterns:
+        if pattern in entry_map:
+            matched.add(pattern)
+        elif any(c in pattern for c in "*?["):
+            # Glob pattern
+            matches = fnmatch.filter(all_names, pattern)
+            if matches:
+                matched.update(matches)
+            else:
+                unmatched.append(pattern)
+        else:
+            unmatched.append(pattern)
+    
+    return list(matched), unmatched
+
+
 def run(args: argparse.Namespace) -> int:
     entries = load_registry()
     entry_map = {e.name: e for e in entries}
@@ -37,11 +64,12 @@ def run(args: argparse.Namespace) -> int:
     copied = []
     warnings = []
 
-    for name in args.names:
-        if name not in entry_map:
-            warnings.append(f"Skill not found: {name} (run 'asr validate' or 'asr add')")
-            continue
+    matched_names, unmatched = _match_skills(args.names, entry_map)
+    
+    for pattern in unmatched:
+        warnings.append(f"No skills matched: {pattern}")
 
+    for name in sorted(matched_names):
         entry = entry_map[name]
         src = Path(entry.path)
 

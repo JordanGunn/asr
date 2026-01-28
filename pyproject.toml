@@ -29,8 +29,10 @@ dev = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/asr_cmd", "src/adapters"]
-include = ["src/*.py"]
+packages = ["src"]
+
+[tool.hatch.build.targets.wheel.sources]
+"src" = ""
 
 [tool.hatch.envs.dev]
 dependencies = [

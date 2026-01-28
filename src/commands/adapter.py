@@ -7,7 +7,7 @@ import json
 import sys
 from pathlib import Path
 
-from adapters import CursorAdapter, WindsurfAdapter, CodexAdapter
+from adapters import CursorAdapter, WindsurfAdapter, CodexAdapter, CopilotAdapter, ClaudeAdapter
 from config import load_config
 from registry import load_registry
 
@@ -16,6 +16,8 @@ ADAPTERS = {
     "cursor": CursorAdapter(),
     "windsurf": WindsurfAdapter(),
     "codex": CodexAdapter(),
+    "copilot": CopilotAdapter(),
+    "claude": ClaudeAdapter(),
 }
 
 
@@ -29,7 +31,7 @@ def register(subparsers) -> None:
 
     adapter_subs = p.add_subparsers(dest="target", help="Target IDE")
 
-    for name in ["cursor", "windsurf", "codex"]:
+    for name in ["cursor", "windsurf", "codex", "copilot", "claude"]:
         sp = adapter_subs.add_parser(name, help=f"Generate {name} files")
         sp.add_argument("--exclude", help="Comma-separated skill names to exclude")
         sp.add_argument("--output-dir", type=Path, default=Path("."), help="Output directory")

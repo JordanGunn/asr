@@ -30,7 +30,7 @@ hatch run dev:test
 
 - Keep changes focused and avoid drive-by refactors.
 - Prefer small, composable functions with clear names.
-- Keep `src/cli.py` focused on argparse wiring; command logic should live under `src/asr_cmd/`.
+- Keep `src/cli.py` focused on argparse wiring; command logic should live under `src/commands/`.
 
 ## License / attribution
 
