@@ -3,22 +3,22 @@
 ## Install with uv (recommended)
 
 ```bash
-git clone https://github.com/OWNER/asr.git
-cd asr
+git clone https://github.com/OWNER/oasr.git
+cd oasr
 uv pip install -e .
 ```
 
 ## Install with pip
 
 ```bash
-git clone https://github.com/OWNER/asr.git
-cd asr
+git clone https://github.com/OWNER/oasr.git
+cd oasr
 pip install -e .
 ```
 
 ## Global Installation
 
-To make `asr` available system-wide:
+To make `oasr` available system-wide:
 
 ```bash
 # macOS/Linux
@@ -28,25 +28,25 @@ To make `asr` available system-wide:
 .\install.ps1
 ```
 
-This installs into an isolated environment and adds shims to your PATH (`~/.local/bin` on Unix, `%LOCALAPPDATA%\asr\bin` on Windows).
+This installs into an isolated environment and adds shims to your PATH (`~/.local/bin` on Unix, `%LOCALAPPDATA%\oasr\bin` on Windows).
 
 ## Verify Installation
 
 ```bash
-asr --version
+oasr --version
 ```
 
 ## First Steps
 
 ```bash
 # Register a skill
-asr add /path/to/your/skill
+oasr add /path/to/your/skill
 
 # List registered skills
-asr list
+oasr list
 
 # Generate IDE adapters
-asr adapter cursor
+oasr adapter cursor
 ```
 
 See [COMMANDS.md](COMMANDS.md) for the full command reference.

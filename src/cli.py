@@ -40,7 +40,7 @@ def main(argv: list[str] | None = None) -> int:
 def create_parser() -> argparse.ArgumentParser:
     """Create the argument parser."""
     parser = argparse.ArgumentParser(
-        prog="asr",
+        prog="oasr",
         description="Manage agent skills across IDE integrations.",
     )
     parser.add_argument(

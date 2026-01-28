@@ -19,7 +19,7 @@ dependencies = [
 ]
 
 [project.scripts]
-asr = "cli:main"
+oasr = "cli:main"
 skills = "cli:main"
 
 [project.optional-dependencies]

@@ -8,7 +8,7 @@ install.sh — install ASR CLI for the current user.
 Default behavior:
 - Creates an isolated venv under ~/.local/share/asr/venv
 - Installs this project in editable mode
-- Symlinks `asr` and `skills` into ~/.local/bin
+- Symlinks `oasr` and `skills` into ~/.local/bin
 - Optionally adds ~/.local/bin to PATH (can be disabled)
 
 Usage:
@@ -114,7 +114,7 @@ EOF
 
   {
     echo
-    echo "# Added by asr/install.sh"
+    echo "# Added by oasr/install.sh"
     echo "export PATH=\"${path_entry}:\$PATH\""
   } >>"$profile"
 
@@ -178,12 +178,12 @@ install_shims() {
 
   run mkdir -p "${BIN_DIR}"
 
-  local src_asr="${VENV_DIR}/bin/asr"
+  local src_oasr="${VENV_DIR}/bin/oasr"
   local src_skills="${VENV_DIR}/bin/skills"
 
-  [[ -x "$src_asr" ]] || die "expected CLI at ${src_asr} (install may have failed)"
+  [[ -x "$src_oasr" ]] || die "expected CLI at ${src_oasr} (install may have failed)"
 
-  run ln -sf "$src_asr" "${BIN_DIR}/asr"
+  run ln -sf "$src_oasr" "${BIN_DIR}/oasr"
   if [[ -x "$src_skills" ]]; then
     run ln -sf "$src_skills" "${BIN_DIR}/skills"
   fi
@@ -202,6 +202,6 @@ cat <<EOF
 Done.
 
 Try:
-  asr --version
-  asr --help
+  oasr --version
+  oasr --help
 EOF

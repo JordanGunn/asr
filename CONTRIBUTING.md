@@ -7,7 +7,7 @@ Thanks for taking the time to contribute!
 This project uses `uv` + `hatch`:
 
 ```bash
-cd asr
+cd oasr
 uv venv
 source .venv/bin/activate
 uv pip install -e .
@@ -16,7 +16,7 @@ uv pip install -e .
 ## Running tests
 
 ```bash
-cd asr
+cd oasr
 hatch run dev:test
 ```
 

@@ -11,134 +11,134 @@
 
 ---
 
-## `asr list`
+## `oasr list`
 
 List all registered skills.
 
 ```bash
-asr list              # Human-readable output
-asr list --json       # JSON output
-asr list --verbose    # Show full paths
+oasr list              # Human-readable output
+oasr list --json       # JSON output
+oasr list --verbose    # Show full paths
 ```
 
 ---
 
-## `asr add`
+## `oasr add`
 
 Register skills in the registry.
 
 ```bash
-asr add /path/to/skill
-asr add /path/to/skills/*          # Glob paths
-asr add /path/to/skill --strict    # Fail on validation warnings
-asr add -r /path/to/root           # Recursive discovery
+oasr add /path/to/skill
+oasr add /path/to/skills/*          # Glob paths
+oasr add /path/to/skill --strict    # Fail on validation warnings
+oasr add -r /path/to/root           # Recursive discovery
 ```
 
 ---
 
-## `asr rm`
+## `oasr rm`
 
 Remove skills from the registry.
 
 ```bash
-asr rm skill-name
-asr rm /path/to/skill
-asr rm skill-one skill-two         # Multiple
-asr rm "prefix-*"                  # Glob by name
-asr rm -r /path/to/root            # Recursive removal
+oasr rm skill-name
+oasr rm /path/to/skill
+oasr rm skill-one skill-two         # Multiple
+oasr rm "prefix-*"                  # Glob by name
+oasr rm -r /path/to/root            # Recursive removal
 ```
 
 ---
 
-## `asr use`
+## `oasr use`
 
 Copy skills to a target directory. Supports glob patterns.
 
 ```bash
-asr use skill-name
-asr use skill-name -d /path/to/project
-asr use "git-*"                    # Glob pattern
-asr use skill-one skill-two        # Multiple skills
+oasr use skill-name
+oasr use skill-name -d /path/to/project
+oasr use "git-*"                    # Glob pattern
+oasr use skill-one skill-two        # Multiple skills
 ```
 
 ---
 
-## `asr find`
+## `oasr find`
 
 Discover skills by searching for `SKILL.md` manifests.
 
 ```bash
-asr find /path/to/search
-asr find /path/to/search --add     # Register found skills
-asr find /path/to/search --json
+oasr find /path/to/search
+oasr find /path/to/search --add     # Register found skills
+oasr find /path/to/search --json
 ```
 
 ---
 
-## `asr validate`
+## `oasr validate`
 
 Validate skill structure and `SKILL.md` frontmatter.
 
 ```bash
-asr validate /path/to/skill
-asr validate --all                 # All registered skills
-asr validate --all --strict        # Treat warnings as errors
+oasr validate /path/to/skill
+oasr validate --all                 # All registered skills
+oasr validate --all --strict        # Treat warnings as errors
 ```
 
 See [VALIDATION.md](VALIDATION.md) for validation error and warning codes.
 
 ---
 
-## `asr sync`
+## `oasr sync`
 
 Synchronize manifests with registered skills.
 
 ```bash
-asr sync              # Create manifests where missing
-asr sync --update     # Update manifests for modified skills
-asr sync --prune      # Remove entries for missing source paths
+oasr sync              # Create manifests where missing
+oasr sync --update     # Update manifests for modified skills
+oasr sync --prune      # Remove entries for missing source paths
 ```
 
 ---
 
-## `asr status`
+## `oasr status`
 
 Show the current state of registered skills.
 
 ```bash
-asr status
-asr status --json
+oasr status
+oasr status --json
 ```
 
 States: `valid`, `modified`, `missing`, `untracked`
 
 ---
 
-## `asr clean`
+## `oasr clean`
 
 Remove orphaned manifests and entries for missing skills.
 
 ```bash
-asr clean
-asr clean --dry-run
+oasr clean
+oasr clean --dry-run
 ```
 
 ---
 
-## `asr adapter`
+## `oasr adapter`
 
 Generate IDE-specific adapter files that delegate to your canonical skills.
 
 ```bash
-asr adapter                              # All default targets
-asr adapter cursor                       # Cursor only
-asr adapter windsurf                     # Windsurf only
-asr adapter codex                        # Codex only
-asr adapter copilot                      # GitHub Copilot
-asr adapter claude                       # Claude Code
-asr adapter --exclude skill1,skill2
-asr adapter --output-dir /path/to/project
-asr adapter --copy                       # Copy skills locally, use relative paths
+oasr adapter                              # All default targets
+oasr adapter cursor                       # Cursor only
+oasr adapter windsurf                     # Windsurf only
+oasr adapter codex                        # Codex only
+oasr adapter copilot                      # GitHub Copilot
+oasr adapter claude                       # Claude Code
+oasr adapter --exclude skill1,skill2
+oasr adapter --output-dir /path/to/project
+oasr adapter --copy                       # Copy skills locally, use relative paths
 ```
 
 ### `--copy` Flag
@@ -174,14 +174,14 @@ Use cases:
 
 ---
 
-## `asr help`
+## `oasr help`
 
 Show help for any command.
 
 ```bash
-asr help
-asr help list
-asr help adapter
+oasr help
+oasr help list
+oasr help adapter
 ```
 
 ---

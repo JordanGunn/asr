@@ -28,7 +28,7 @@ ASR keeps your skills in one place and generates thin adapters for each IDE.
 └───────────────────────┬─────────────────────────────────┘
                         │
                         ▼
-                   asr adapter
+                   oasr adapter
                         │
         ┌───────────────┼──────────────┐...───────────────┐
         ▼               ▼              ▼                  ▼
@@ -44,11 +44,11 @@ No copying. No drift. One source of truth.
 
 ```bash
 # Register your skills
-asr add ~/skills/git-commit
-asr add ~/skills/code-review
+oasr add ~/skills/git-commit
+oasr add ~/skills/code-review
 
 # Generate adapters for a project
-asr adapter --output-dir ~/projects/my-app
+oasr adapter --output-dir ~/projects/my-app
 
 # Result:
 # ~/projects/my-app/.cursor/commands/git-commit.md
