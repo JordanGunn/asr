@@ -33,13 +33,7 @@ def register(subparsers) -> None:
     adapter_subs = p.add_subparsers(dest="target", help="Target IDE")
 
     for name in ["cursor", "windsurf", "codex", "copilot", "claude"]:
-        sp = adapter_subs.add_parser(name, help=f"Generate {name} files")
-        sp.add_argument("--exclude", help="Comma-separated skill names to exclude")
-        sp.add_argument("--output-dir", type=Path, default=Path("."), help="Output directory")
-        sp.add_argument("--copy", action="store_true", help="Copy skills locally and use relative paths")
-        sp.add_argument("--json", action="store_true", help="Output in JSON format")
-        sp.add_argument("--quiet", action="store_true", help="Suppress info/warnings")
-        sp.add_argument("--config", type=Path, help="Override config file path")
+        adapter_subs.add_parser(name, help=f"Generate {name} files")
 
     p.set_defaults(func=run)
 
