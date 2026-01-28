@@ -25,6 +25,7 @@ def register(subparsers) -> None:
     p = subparsers.add_parser("adapter", help="Generate IDE-specific files")
     p.add_argument("--exclude", help="Comma-separated skill names to exclude")
     p.add_argument("--output-dir", type=Path, default=Path("."), help="Output directory")
+    p.add_argument("--copy", action="store_true", help="Copy skills locally and use relative paths")
     p.add_argument("--json", action="store_true", help="Output in JSON format")
     p.add_argument("--quiet", action="store_true", help="Suppress info/warnings")
     p.add_argument("--config", type=Path, help="Override config file path")
@@ -35,6 +36,7 @@ def register(subparsers) -> None:
         sp = adapter_subs.add_parser(name, help=f"Generate {name} files")
         sp.add_argument("--exclude", help="Comma-separated skill names to exclude")
         sp.add_argument("--output-dir", type=Path, default=Path("."), help="Output directory")
+        sp.add_argument("--copy", action="store_true", help="Copy skills locally and use relative paths")
         sp.add_argument("--json", action="store_true", help="Output in JSON format")
         sp.add_argument("--quiet", action="store_true", help="Suppress info/warnings")
         sp.add_argument("--config", type=Path, help="Override config file path")
@@ -75,7 +77,8 @@ def run(args: argparse.Namespace) -> int:
             continue
 
         adapter = ADAPTERS[target]
-        generated, removed = adapter.generate_all(entries, output_dir, exclude)
+        copy_skills = getattr(args, 'copy', False)
+        generated, removed = adapter.generate_all(entries, output_dir, exclude, copy=copy_skills)
 
         total_generated += len(generated)
         total_removed += len(removed)

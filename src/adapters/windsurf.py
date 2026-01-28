@@ -12,18 +12,21 @@ class WindsurfAdapter(BaseAdapter):
     target_name = "windsurf"
     target_subdir = ".windsurf/workflows"
     
-    def generate(self, skill: SkillInfo, output_dir: Path) -> Path:
+    def generate(self, skill: SkillInfo, output_dir: Path, copy: bool = False, base_output_dir: Path | None = None) -> Path:
         """Generate a Windsurf workflow file for a skill.
         
         Args:
             skill: Skill information.
             output_dir: Resolved output directory (.windsurf/workflows/).
+            copy: If True, use relative paths to local skill copies.
+            base_output_dir: Base output directory (for computing relative paths).
         
         Returns:
             Path to the generated file.
         """
         output_file = output_dir / f"{skill.name}.md"
         
+        skill_path = self.get_skill_path(skill, base_output_dir or output_dir.parent.parent, copy)
         desc_yaml = json.dumps(skill.description)
         
         content = f"""---
@@ -33,12 +36,12 @@ auto_execution_mode: 1
 
 # {skill.name}
 
-This workflow delegates to the agent skill at `{skill.path}/`.
+This workflow delegates to the agent skill at `{skill_path}/`.
 
 ## Skill Location
 
-- **Path:** `{skill.path}/`
-- **Manifest:** `{skill.path}/SKILL.md`
+- **Path:** `{skill_path}/`
+- **Manifest:** `{skill_path}/SKILL.md`
 """
         
         output_file.write_text(content, encoding="utf-8")

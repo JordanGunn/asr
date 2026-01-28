@@ -100,6 +100,38 @@ class TestClaudeAdapter:
         assert len(remaining_files) == 2
 
 
+class TestAdapterCopyFlag:
+    """Tests for the --copy flag functionality."""
+
+    def test_copy_flag_copies_skills_locally(self, sample_skills, tmp_output_dir):
+        """--copy flag copies skill directories to local skills folder."""
+        from adapters.cursor import CursorAdapter
+        
+        adapter = CursorAdapter()
+        adapter.generate_all(sample_skills, tmp_output_dir, copy=True)
+        
+        skills_dir = tmp_output_dir / ".cursor" / "skills"
+        assert skills_dir.exists()
+        
+        for skill in sample_skills:
+            assert (skills_dir / skill.name).exists()
+            assert (skills_dir / skill.name / "SKILL.md").exists()
+
+    def test_copy_flag_uses_relative_paths(self, sample_skills, tmp_output_dir):
+        """--copy flag generates adapter files with relative paths."""
+        from adapters.windsurf import WindsurfAdapter
+        
+        adapter = WindsurfAdapter()
+        adapter.generate_all(sample_skills, tmp_output_dir, copy=True)
+        
+        workflow_file = tmp_output_dir / ".windsurf" / "workflows" / f"{sample_skills[0].name}.md"
+        content = workflow_file.read_text()
+        
+        # Should contain relative path, not absolute
+        assert "../skills/" in content
+        assert sample_skills[0].path not in content
+
+
 class TestAdapterCommand:
     """Tests for the adapter CLI command."""
 

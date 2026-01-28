@@ -138,7 +138,29 @@ asr adapter copilot                      # GitHub Copilot
 asr adapter claude                       # Claude Code
 asr adapter --exclude skill1,skill2
 asr adapter --output-dir /path/to/project
+asr adapter --copy                       # Copy skills locally, use relative paths
 ```
+
+### `--copy` Flag
+
+When `--copy` is specified, skills are copied into a local `skills/` directory sibling to the adapter output, and generated files use relative paths instead of absolute paths.
+
+**Without `--copy` (default):**
+```
+.windsurf/workflows/my-skill.md  → points to ~/skills/my-skill/
+```
+
+**With `--copy`:**
+```
+.windsurf/
+├── skills/my-skill/             ← copied from source
+└── workflows/my-skill.md        → points to ../skills/my-skill/
+```
+
+Use cases:
+- Self-contained projects without external path dependencies
+- Distributable repositories
+- Snapshotting skills at a specific version
 
 ### Adapter Outputs
 

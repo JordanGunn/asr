@@ -15,28 +15,32 @@ class ClaudeAdapter(BaseAdapter):
     target_name = "claude"
     target_subdir = ".claude/commands"
     
-    def generate(self, skill: SkillInfo, output_dir: Path) -> Path:
+    def generate(self, skill: SkillInfo, output_dir: Path, copy: bool = False, base_output_dir: Path | None = None) -> Path:
         """Generate a Claude command file for a skill.
         
         Args:
             skill: Skill information.
             output_dir: Resolved output directory (.claude/commands/).
+            copy: If True, use relative paths to local skill copies.
+            base_output_dir: Base output directory (for computing relative paths).
         
         Returns:
             Path to the generated file.
         """
         output_file = output_dir / f"{skill.name}.md"
         
+        skill_path = self.get_skill_path(skill, base_output_dir or output_dir.parent.parent, copy)
+        
         content = f"""# {skill.name}
 
 {skill.description}
 
-This command delegates to the agent skill at `{skill.path}/`.
+This command delegates to the agent skill at `{skill_path}/`.
 
 ## Skill Location
 
-- **Path:** `{skill.path}/`
-- **Manifest:** `{skill.path}/SKILL.md`
+- **Path:** `{skill_path}/`
+- **Manifest:** `{skill_path}/SKILL.md`
 """
         
         output_file.write_text(content, encoding="utf-8")

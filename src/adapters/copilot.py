@@ -29,28 +29,32 @@ class CopilotAdapter(BaseAdapter):
     MARKER = "<!-- ASR-MANAGED-SKILLS -->"
     MARKER_END = "<!-- /ASR-MANAGED-SKILLS -->"
     
-    def generate(self, skill: SkillInfo, output_dir: Path) -> Path:
+    def generate(self, skill: SkillInfo, output_dir: Path, copy: bool = False, base_output_dir: Path | None = None) -> Path:
         """Generate a prompt file for a single skill.
         
         Args:
             skill: Skill information.
             output_dir: Resolved output directory (.github/prompts/).
+            copy: If True, use relative paths to local skill copies.
+            base_output_dir: Base output directory (for computing relative paths).
         
         Returns:
             Path to the generated prompt file.
         """
         output_file = output_dir / f"{skill.name}.prompt.md"
         
+        skill_path = self.get_skill_path(skill, base_output_dir or output_dir.parent.parent, copy)
+        
         content = f"""# {skill.name}
 
 {skill.description}
 
-This prompt delegates to the agent skill at `{skill.path}/`.
+This prompt delegates to the agent skill at `{skill_path}/`.
 
 ## Skill Location
 
-- **Path:** `{skill.path}/`
-- **Manifest:** `{skill.path}/SKILL.md`
+- **Path:** `{skill_path}/`
+- **Manifest:** `{skill_path}/SKILL.md`
 
 ## Usage
 
@@ -96,6 +100,7 @@ Invoke this skill by typing `/{skill.name}` in the Copilot chat.
         skills: list[SkillInfo],
         output_dir: Path,
         exclude: set[str] | None = None,
+        copy: bool = False,
     ) -> tuple[list[Path], list[Path]]:
         """Generate prompt files and update instructions file.
         
@@ -103,6 +108,7 @@ Invoke this skill by typing `/{skill.name}` in the Copilot chat.
             skills: List of skills to include.
             output_dir: Base output directory.
             exclude: Set of skill names to exclude.
+            copy: If True, copy skills locally and use relative paths.
         
         Returns:
             Tuple of (generated files, removed stale files).
@@ -113,14 +119,21 @@ Invoke this skill by typing `/{skill.name}` in the Copilot chat.
         prompts_dir = self.resolve_output_dir(output_dir)
         prompts_dir.mkdir(parents=True, exist_ok=True)
         
+        active_skills = [s for s in skills if s.name not in exclude]
+        
+        # Copy skills if requested
+        if copy:
+            skills_dir = self.get_skills_dir(output_dir)
+            skills_dir.mkdir(parents=True, exist_ok=True)
+            for skill in active_skills:
+                self.copy_skill(skill, skills_dir)
+        
         generated = []
         valid_names = set()
         
-        active_skills = [s for s in skills if s.name not in exclude]
-        
         for skill in active_skills:
             valid_names.add(skill.name)
-            path = self.generate(skill, prompts_dir)
+            path = self.generate(skill, prompts_dir, copy=copy, base_output_dir=output_dir)
             generated.append(path)
         
         removed = self.cleanup_stale(prompts_dir, valid_names)

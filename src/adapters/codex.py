@@ -17,28 +17,32 @@ class CodexAdapter(BaseAdapter):
     target_name = "codex"
     target_subdir = ".codex/skills"
     
-    def generate(self, skill: SkillInfo, output_dir: Path) -> Path:
+    def generate(self, skill: SkillInfo, output_dir: Path, copy: bool = False, base_output_dir: Path | None = None) -> Path:
         """Generate a Codex skill file for a skill.
         
         Args:
             skill: Skill information.
             output_dir: Resolved output directory (.codex/skills/).
+            copy: If True, use relative paths to local skill copies.
+            base_output_dir: Base output directory (for computing relative paths).
         
         Returns:
             Path to the generated file.
         """
         output_file = output_dir / f"{skill.name}.md"
         
+        skill_path = self.get_skill_path(skill, base_output_dir or output_dir.parent.parent, copy)
+        
         content = f"""# {skill.name}
 
 {skill.description}
 
-This skill delegates to the agent skill at `{skill.path}/`.
+This skill delegates to the agent skill at `{skill_path}/`.
 
 ## Skill Location
 
-- **Path:** `{skill.path}/`
-- **Manifest:** `{skill.path}/SKILL.md`
+- **Path:** `{skill_path}/`
+- **Manifest:** `{skill_path}/SKILL.md`
 """
         
         output_file.write_text(content, encoding="utf-8")
