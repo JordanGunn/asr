@@ -18,13 +18,15 @@ from manifest import (
 )
 from registry import load_registry, remove_skill
 from validate import validate_skill
+# Clone management helpers (track/update per-project cloned copies)
+from clones import add_or_update_clone_entry, update_clone_skill, remove_clone_manifest
 
 
 def register(subparsers) -> None:
     p = subparsers.add_parser("sync", help="Sync skills from source (using manifests)")
     p.add_argument("names", nargs="*", help="Skill name(s) to sync (default: all)")
     p.add_argument("-d", "--dir", type=Path, dest="output_dir", help="Target directory to copy skills to")
-    p.add_argument("--update", action="store_true", help="Update manifests for modified skills")
+    p.add_argument("--registry-only", action="store_true", help="Only update registry manifests; do not propagate changes to cloned destinations or copy to output dir")
     p.add_argument("--prune", action="store_true", help="Remove skills with missing sources from registry")
     p.add_argument("--json", action="store_true", help="Output in JSON format")
     p.add_argument("--quiet", action="store_true", help="Suppress info/warnings")
@@ -78,21 +80,37 @@ def run(args: argparse.Namespace) -> int:
 
                 if args.prune:
                     remove_skill(entry.name)
+                    # Remove any per-project clone manifest for this skill as well.
+                    try:
+                        remove_clone_manifest(entry.name)
+                    except Exception:
+                        # best-effort: don't fail the whole sync if unable to remove clone manifest
+                        pass
                     pruned.append(entry.name)
                     status_info["pruned"] = True
             elif status.status == "modified":
                 modified_count += 1
                 status_info = status.to_dict()
 
-                if args.update:
+                if not args.registry_only:
                     result = validate_skill(Path(entry.path), reference_max_lines=max_lines)
                     if result.valid:
                         manifest = sync_manifest(manifest)
+                        # Propagate changes to any recorded cloned destinations for this skill.
+                        try:
+                            update_clone_skill(entry.name, Path(entry.path))
+                        except Exception:
+                            # best-effort: skip clone updates on error
+                            pass
                         status_info["updated"] = True
                         synced += 1
                     else:
                         status_info["updated"] = False
                         status_info["validation_errors"] = result.errors
+                else:
+                    # Registry-only: do not sync clones or copy files to output directory.
+                    status_info["updated"] = False
+                    status_info["registry_only"] = True
             else:
                 status_info = status.to_dict()
                 synced += 1
@@ -106,6 +124,12 @@ def run(args: argparse.Namespace) -> int:
                     shutil.rmtree(dest)
                 shutil.copytree(src, dest)
                 status_info["copied_to"] = str(dest)
+                # Record/update the project's clone manifest for this copied destination
+                try:
+                    add_or_update_clone_entry(entry.name, dest)
+                except Exception:
+                    # don't fail sync if clone manifest update fails
+                    pass
 
         results.append(status_info)
 
@@ -151,3 +175,8 @@ def run(args: argparse.Namespace) -> int:
                 print(f"Pruned {len(pruned)} skill(s) with missing sources")
 
     return 0
+
+# Clone Management Functions
+# --------------------------
+from clones import add_or_update_clone_entry
+# End of sync.py
