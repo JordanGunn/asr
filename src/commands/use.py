@@ -10,9 +10,11 @@ import sys
 from pathlib import Path
 
 from registry import load_registry
+from clones import add_or_update_clone_entry
 
 
 def register(subparsers) -> None:
+    """Register `use` command."""
     p = subparsers.add_parser("use", help="Copy skill(s) to target directory")
     p.add_argument("names", nargs="+", help="Skill name(s) or glob pattern(s) to copy")
     p.add_argument(
@@ -30,14 +32,14 @@ def register(subparsers) -> None:
 
 def _match_skills(patterns: list[str], entry_map: dict) -> tuple[list[str], list[str]]:
     """Match skill names against patterns (exact or glob).
-    
+
     Returns:
         Tuple of (matched_names, unmatched_patterns).
     """
     matched = set()
     unmatched = []
     all_names = list(entry_map.keys())
-    
+
     for pattern in patterns:
         if pattern in entry_map:
             matched.add(pattern)
@@ -50,9 +52,8 @@ def _match_skills(patterns: list[str], entry_map: dict) -> tuple[list[str], list
                 unmatched.append(pattern)
         else:
             unmatched.append(pattern)
-    
-    return list(matched), unmatched
 
+    return list(matched), unmatched
 
 def run(args: argparse.Namespace) -> int:
     entries = load_registry()
@@ -65,7 +66,7 @@ def run(args: argparse.Namespace) -> int:
     warnings = []
 
     matched_names, unmatched = _match_skills(args.names, entry_map)
-    
+
     for pattern in unmatched:
         warnings.append(f"No skills matched: {pattern}")
 
@@ -84,6 +85,7 @@ def run(args: argparse.Namespace) -> int:
 
         shutil.copytree(src, dest)
         copied.append({"name": name, "src": str(src), "dest": str(dest)})
+        add_or_update_clone_entry(name, dest)
 
     if not args.quiet:
         for w in warnings:
@@ -105,5 +107,6 @@ def run(args: argparse.Namespace) -> int:
             print(f"Copied: {c['name']} → {c['dest']}")
         if copied:
             print(f"\n{len(copied)} skill(s) copied to {output_dir}")
+
 
     return 1 if warnings and not copied else 0

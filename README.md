@@ -64,6 +64,10 @@ oasr adapter --output-dir ~/projects/my-app
 - **[Commands](docs/COMMANDS.md)** — Full command reference
 - **[Validation](docs/VALIDATION.md)** — Validation rules and error codes
 
+Sync behavior note:
+- `oasr sync` now applies updates by default. When a registered skill is detected as modified, `oasr sync` will validate and update the registry manifest and will attempt to propagate those changes to any recorded per-project cloned copies and to any `--dir` destination you request.
+- To only check registry manifests without applying updates to manifests or cloned copies, run `oasr sync --registry-only`.
+
 ---
 
 ## Supported `asr adapter` IDEs

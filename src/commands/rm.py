@@ -10,6 +10,7 @@ from fnmatch import fnmatchcase
 from pathlib import Path
 
 from registry import load_registry, remove_skill
+from clones import remove_clone_manifest
 
 _GLOB_CHARS = set("*?[")
 
@@ -71,6 +72,12 @@ def run(args: argparse.Namespace) -> int:
 
         for entry in matches:
             if remove_skill(entry.name):
+                # Attempt to remove any per-project clone manifest for this skill (best-effort)
+                try:
+                    remove_clone_manifest(entry.name)
+                except Exception:
+                    # don't fail the rm command if clone manifest removal fails
+                    pass
                 removed_names.append(entry.name)
 
     # Deduplicate while preserving order.
@@ -108,6 +115,12 @@ def _run_recursive(args: argparse.Namespace) -> int:
         to_remove = [e for e in entries if e.path.startswith(root_str)]
         for entry in to_remove:
             if remove_skill(entry.name):
+                # Attempt to remove any per-project clone manifest for this skill (best-effort)
+                try:
+                    remove_clone_manifest(entry.name)
+                except Exception:
+                    # ignore failures removing clone manifest when recursively removing skills
+                    pass
                 removed_names.append(entry.name)
 
     # Deduplicate while preserving order.
