@@ -135,14 +135,14 @@ def run(args: argparse.Namespace) -> int:
                     platform = "GitLab"
                 else:
                     platform = "remote source"
-                print(f"Fetching from {platform}...", file=sys.stderr)
+                print(f"Registering from {platform}...", file=sys.stderr)
             
             temp_dir = fetch_remote_to_temp(url)
             
             if not args.quiet and not args.json:
-                # Count files downloaded
+                # Count files validated
                 file_count = sum(1 for _ in temp_dir.rglob('*') if _.is_file())
-                print(f"✓ Downloaded {file_count} file(s)", file=sys.stderr)
+                print(f"✓ Validated {file_count} file(s)", file=sys.stderr)
         except Exception as e:
             skipped_count += 1
             results.append({"url": url, "added": False, "reason": f"Fetch failed: {e}"})
