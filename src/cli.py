@@ -77,6 +77,11 @@ def create_parser() -> argparse.ArgumentParser:
     clean.register(subparsers)
     adapter.register(subparsers)
     update.register(subparsers)
+    
+    # Import and register info command
+    from commands import info as info_cmd
+    info_cmd.register(subparsers)
+    
     help_cmd.register(subparsers, parser)
 
     return parser

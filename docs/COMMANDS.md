@@ -1,22 +1,15 @@
 # Command Reference
 
-![oasr help](../images/oasr-help.png)
+![oasr help](images/oasr-help.png)
 *Full command help and available commands*
 
-## Global Flags
 
-| Flag | Description |
-|------|-------------|
-| `--config <path>` | Override config file location |
-| `--json` | Output in JSON format |
-| `--quiet` | Suppress info/warnings |
-| `--version` | Show version |
 
 ---
 
 ## `oasr list`
 
-![oasr list](../images/oasr-list.png)
+![oasr list](images/oasr-list.png)
 
 List all registered skills.
 
@@ -30,11 +23,11 @@ oasr list --verbose    # Show full paths
 
 ## `oasr add`
 
-![oasr add](../images/oasr-add.png)
 *Adding local skills*
+![oasr add](images/oasr-add.png)
 
-![oasr add remote](../images/oasr-add-remote.png)
 *Adding remote skills from GitHub*
+![oasr add remote](images/oasr-add-remote.png)
 
 Register skills in the registry.
 
@@ -56,6 +49,12 @@ oasr add -r /path/to/root           # Recursive discovery
 
 ## `oasr rm`
 
+*Removing skills*
+![oasr rm](images/oasr-rm.png)
+
+*Removing multiple skills*
+![oasr rm multiple](images/oasr-rm-glob.png)
+
 Remove skills from the registry.
 
 ```bash
@@ -69,6 +68,9 @@ oasr rm -r /path/to/root            # Recursive removal
 ---
 
 ## `oasr use`
+
+*Using skills*
+![oasr use](images/oasr-use.png)
 
 Copy skills to a target directory. Supports glob patterns. Works with both local and remote skills.
 
@@ -84,6 +86,12 @@ oasr use skill-one skill-two        # Multiple skills
 ---
 
 ## `oasr find`
+
+*Finding skills*
+![oasr find](images/oasr-find.png)
+
+*Finding and adding skills*
+![oasr find add](images/oasr-find-add.png)
 
 Discover skills by searching for `SKILL.md` manifests.
 
@@ -111,6 +119,12 @@ See [VALIDATION.md](VALIDATION.md) for validation error and warning codes.
 
 ## `oasr sync`
 
+*Syncing manifests (dry-run)*
+![oasr sync](images/oasr-sync.png)
+
+*Syncing manifests (update)*
+![oasr sync update](images/oasr-sync-update.png)
+
 Synchronize manifests with registered skills.
 
 ```bash
@@ -122,6 +136,9 @@ oasr sync --prune      # Remove entries for missing source paths
 ---
 
 ## `oasr status`
+
+*Showing status*
+![oasr status](images/oasr-status.png)
 
 Show the current state of registered skills.
 
@@ -147,6 +164,9 @@ oasr clean --dry-run
 
 ## `oasr adapter`
 
+*Generating adapters*
+![oasr adapter](images/oasr-adapter.png)
+
 Generate IDE-specific adapter files that delegate to your canonical skills.
 
 ```bash
@@ -160,15 +180,18 @@ oasr adapter --exclude skill1,skill2
 oasr adapter --output-dir /path/to/project
 ```
 
-**Note:** Skills are **always copied** locally now. The `--copy` flag is deprecated but kept for backward compatibility.
+> **NOTE**
+> *Skills are **always copied** locally (as of `v2`). The `--copy` flag is deprecated but kept for backward compatibility.*
 
 **Behavior:**
+
 - Skills are automatically copied to `.{ide}/skills/` directories
 - Adapter files use relative paths to copied skills
 - Remote skills are fetched during generation
 
 **Output Structure:**
-```
+
+```text
 .windsurf/
 ├── skills/my-skill/             ← copied from source (local or remote)
 └── workflows/my-skill.md        → points to ../skills/my-skill/
@@ -176,17 +199,20 @@ oasr adapter --output-dir /path/to/project
 
 ### Adapter Outputs
 
-| Target | Output Path |
-|--------|-------------|
-| cursor | `.cursor/commands/{skill}.md` |
+| Target   | Output Path                      |
+|----------|----------------------------------|
+| cursor   | `.cursor/commands/{skill}.md`    |
 | windsurf | `.windsurf/workflows/{skill}.md` |
-| codex | `.codex/skills/{skill}.md` |
-| copilot | `.github/prompts/*.prompt.md` |
-| claude | `.claude/commands/{skill}.md` |
+| codex    | `.codex/skills/{skill}.md`       |
+| copilot  | `.github/prompts/*.prompt.md`    |
+| claude   | `.claude/commands/{skill}.md`    |
 
 ---
 
 ## `oasr help`
+
+*Showing help*
+![oasr help](images/oasr-help.png)
 
 Show help for any command.
 
@@ -215,7 +241,7 @@ default_targets = ["cursor", "windsurf"]
 
 ## `oasr update`
 
-Update ASR tool itself from GitHub.
+Update `oasr` tool itself from GitHub.
 
 ```bash
 oasr update                      # Pull updates and reinstall
@@ -225,19 +251,26 @@ oasr update --json               # Output in JSON format
 oasr update --quiet              # Suppress info messages
 ```
 
-**Requirements:**
-- ASR must be installed from a git repository (not PyPI)
+**Requirements:**\
+
+- `oasr` must be retain it's cloned repository structure and git history
 - Working tree must be clean (no uncommitted changes)
 - Remote must be configured (typically GitHub)
 
+> **NOTE**
+> PyPI installations are not available yet, but will be coming soon.
+> Current `oasr update` command only works with git installations.
+
 **Behavior:**
-- Finds ASR installation directory
+
+- Finds `oasr` installation directory
 - Runs `git pull --ff-only` from remote
 - Displays truncated changelog with commit count
 - Reinstalls package with `uv pip install -e .` or falls back to `pip`
 - Suppresses verbose git output
 
 **JSON Output:**
+
 ```json
 {
   "success": true,
@@ -261,8 +294,8 @@ oasr update --quiet              # Suppress info messages
 
 ## Data Locations
 
-| Path | Purpose |
-|------|---------|
-| `~/.skills/registry.toml` | Registered skills |
-| `~/.skills/manifests/` | Per-skill manifest snapshots |
-| `~/.skills/config.toml` | Configuration |
+| Path                      | Purpose                        |
+|---------------------------|--------------------------------|
+| `~/.skills/registry.toml` | Registered skills              |
+| `~/.skills/manifests/`    | Per-skill manifest snapshots   |
+| `~/.skills/config.toml`   | Configuration                  |

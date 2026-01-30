@@ -40,3 +40,8 @@ coverage.xml
 .idea/
 .vscode/
 
+# Agents
+.codex/
+.windsurf/
+.claude/
+.github/
