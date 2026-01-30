@@ -1,5 +1,6 @@
 """Base adapter interface for generating IDE-specific skill files."""
 
+import sys
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Protocol
@@ -141,15 +142,26 @@ class BaseAdapter(ABC):
         # Always copy skills (handles both local and remote)
         skills_dir = self.get_skills_dir(output_dir)
         skills_dir.mkdir(parents=True, exist_ok=True)
+        
+        failed_skills = []
         for skill in skills:
             if skill.name not in exclude:
-                self.copy_skill(skill, skills_dir)
+                try:
+                    self.copy_skill(skill, skills_dir)
+                except Exception as e:
+                    # Warn but don't fail entire operation
+                    print(f"⚠ Warning: Failed to copy {skill.name}: {e}", file=sys.stderr)
+                    failed_skills.append(skill.name)
         
         generated = []
         valid_names = set()
         
         for skill in skills:
             if skill.name in exclude:
+                continue
+            
+            # Skip skills that failed to copy
+            if skill.name in failed_skills:
                 continue
             
             valid_names.add(skill.name)
