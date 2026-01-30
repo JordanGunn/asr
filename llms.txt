@@ -1,0 +1,14 @@
+# OASR (Open Agent Skill Registry)
+
+> OASR is a CLI tool that provides a local registry for centralized management of agent skills across multiple workspaces, agentic providers, and remote hosting environments.
+
+---
+
+## Agent Instructions
+
+Use the links below as the recommended progressive disclosure entrypoints.
+
+## Documentation Index
+
+- [README](https://raw.githubusercontent.com/JordanGunn/asr/refs/heads/master/README.md): Overview, execution model, and quick start.
+- [Documentation Index](https://raw.githubusercontent.com/JordanGunn/asr/refs/heads/master/docs/.INDEX.md): Comprehensive documentation index.

@@ -45,3 +45,6 @@ coverage.xml
 .windsurf/
 .claude/
 .github/
+
+# misc
+tmp/

@@ -43,6 +43,12 @@ def run(args: argparse.Namespace) -> int:
             print(f"No manifest found for: {skill_name}", file=sys.stderr)
         return 1
     
+    # Check if remote and show progress indicator
+    is_remote = is_remote_source(manifest.source_path)
+    if is_remote and not args.quiet and not args.json:
+        platform = "GitHub" if "github.com" in manifest.source_path else "GitLab" if "gitlab.com" in manifest.source_path else "remote"
+        print(f"Checking remote skill status from {platform}...", file=sys.stderr, flush=True)
+    
     # Check status
     status_result = check_manifest(manifest)
     
