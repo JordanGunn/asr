@@ -43,7 +43,7 @@ No copying. No drift. One source of truth.
 
 ## Quick Example
 
-![oasr list screenshot](docs/.images/oasr-list.png)
+![oasr list screenshot](docs/.images/list.png)
 *List all registered skills with metadata*
 
 ```bash
@@ -68,7 +68,7 @@ oasr adapter --output-dir ~/projects/my-app
 
 ## Remote Skills
 
-![oasr add remote screenshot](docs/.images/oasr-add-remote.png)
+![oasr add remote screenshot](docs/.images/add-remote.png)
 *Register skills directly from GitHub or GitLab*
 
 ASR supports registering skills directly from GitHub and GitLab repositories:
