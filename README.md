@@ -43,7 +43,7 @@ No copying. No drift. One source of truth.
 
 ## Quick Example
 
-![oasr list screenshot](docs/.images/oasr-list.png)
+![oasr list screenshot](docs/.images/list.png)
 *List all registered skills with metadata*
 
 ```bash
@@ -68,7 +68,7 @@ oasr adapter --output-dir ~/projects/my-app
 
 ## Remote Skills
 
-![oasr add remote screenshot](docs/.images/oasr-add-remote.png)
+![oasr add remote screenshot](docs/.images/add-remote.png)
 *Register skills directly from GitHub or GitLab*
 
 ASR supports registering skills directly from GitHub and GitLab repositories:
@@ -101,8 +101,8 @@ Remote skills are fetched on-demand during `adapter` and `use` operations. The r
 ## Documentation
 
 - **[Quickstart](docs/QUICKSTART.md)** — Installation and first steps
-- **[Commands](docs/COMMANDS.md)** — Full command reference
-- **[Validation](docs/VALIDATION.md)** — Validation rules and error codes
+- **[Commands](docs/commands/.INDEX.md)** — Full command reference
+- **[Validation](docs/validation/.INDEX.md)** — Validation rules and error codes
 
 ---
 

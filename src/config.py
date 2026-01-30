@@ -39,41 +39,41 @@ def ensure_skills_dir() -> Path:
 
 def load_config(config_path: Path | None = None) -> dict[str, Any]:
     """Load configuration from TOML file.
-    
+
     Args:
         config_path: Override config file path. Defaults to ~/.oasr/config.toml.
-    
+
     Returns:
         Configuration dictionary with defaults applied.
     """
     path = config_path or CONFIG_FILE
-    
+
     config = DEFAULT_CONFIG.copy()
     config["validation"] = DEFAULT_CONFIG["validation"].copy()
     config["adapter"] = DEFAULT_CONFIG["adapter"].copy()
-    
+
     if path.exists():
         with open(path, "rb") as f:
             loaded = tomllib.load(f)
-        
+
         if "validation" in loaded:
             config["validation"].update(loaded["validation"])
         if "adapter" in loaded:
             config["adapter"].update(loaded["adapter"])
-    
+
     return config
 
 
 def save_config(config: dict[str, Any], config_path: Path | None = None) -> None:
     """Save configuration to TOML file.
-    
+
     Args:
         config: Configuration dictionary to save.
         config_path: Override config file path. Defaults to ~/.oasr/config.toml.
     """
     path = config_path or CONFIG_FILE
     ensure_oasr_dir()
-    
+
     with open(path, "wb") as f:
         tomli_w.dump(config, f)
 

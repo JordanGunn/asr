@@ -7,7 +7,6 @@ Open Agent Skill specification.
 
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional
 
 import yaml
 
@@ -26,35 +25,35 @@ def inject_metadata(skill_path: Path, content_hash: str, source: str) -> bool:
     skill_md = skill_path / "SKILL.md"
     if not skill_md.exists():
         return False
-    
+
     content = skill_md.read_text(encoding="utf-8")
-    
+
     # Parse existing frontmatter
     frontmatter, body = _split_frontmatter(content)
-    
+
     if frontmatter is None:
         # No frontmatter exists - shouldn't happen for valid skills, but handle it
         return False
-    
+
     # Ensure metadata field exists
     if "metadata" not in frontmatter:
         frontmatter["metadata"] = {}
-    
+
     # Inject oasr tracking metadata
     frontmatter["metadata"]["oasr"] = {
         "hash": content_hash,
         "source": str(source),
         "synced": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     }
-    
+
     # Write back
     new_content = _serialize_frontmatter(frontmatter) + body
     skill_md.write_text(new_content, encoding="utf-8")
-    
+
     return True
 
 
-def extract_metadata(skill_path: Path) -> Optional[dict]:
+def extract_metadata(skill_path: Path) -> dict | None:
     """Extract tracking metadata from SKILL.md.
     
     Args:
@@ -66,13 +65,13 @@ def extract_metadata(skill_path: Path) -> Optional[dict]:
     skill_md = skill_path / "SKILL.md"
     if not skill_md.exists():
         return None
-    
+
     content = skill_md.read_text(encoding="utf-8")
     frontmatter, _ = _split_frontmatter(content)
-    
+
     if frontmatter is None:
         return None
-    
+
     return frontmatter.get("metadata", {}).get("oasr")
 
 
@@ -90,17 +89,17 @@ def strip_tracking_metadata(frontmatter: dict) -> dict:
     """
     import copy
     cleaned = copy.deepcopy(frontmatter)
-    
+
     if "metadata" in cleaned and isinstance(cleaned["metadata"], dict):
         cleaned["metadata"].pop("oasr", None)
         # Remove metadata field entirely if it's now empty
         if not cleaned["metadata"]:
             cleaned.pop("metadata")
-    
+
     return cleaned
 
 
-def _split_frontmatter(content: str) -> tuple[Optional[dict], str]:
+def _split_frontmatter(content: str) -> tuple[dict | None, str]:
     """Split markdown content into frontmatter and body.
     
     Args:
@@ -111,21 +110,21 @@ def _split_frontmatter(content: str) -> tuple[Optional[dict], str]:
     """
     if not content.startswith("---"):
         return None, content
-    
+
     lines = content.split("\n")
     end_idx = None
-    
+
     for i, line in enumerate(lines[1:], start=1):
         if line.strip() == "---":
             end_idx = i
             break
-    
+
     if end_idx is None:
         return None, content
-    
+
     frontmatter_text = "\n".join(lines[1:end_idx])
     body_text = "\n".join(lines[end_idx + 1:])
-    
+
     try:
         frontmatter = yaml.safe_load(frontmatter_text)
         return frontmatter, body_text

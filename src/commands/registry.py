@@ -9,38 +9,38 @@ from pathlib import Path
 
 from config import load_config
 from manifest import (
-    load_manifest,
     check_manifest,
-    sync_manifest,
-    save_manifest,
     create_manifest,
+    load_manifest,
+    save_manifest,
+    sync_manifest,
 )
-from registry import load_registry, add_skill, remove_skill
+from registry import load_registry, remove_skill
 from skillcopy.remote import is_remote_source
 
 
 def register(subparsers) -> None:
     """Register the registry command and subcommands."""
     p = subparsers.add_parser(
-        "registry", 
+        "registry",
         help="Manage skill registry (validate, add, remove, sync)"
     )
-    
+
     # Subcommands
     registry_subparsers = p.add_subparsers(dest="registry_command", help="Registry operation")
-    
+
     # registry (default - validate)
     p.add_argument("-v", "--verbose", action="store_true", help="Show detailed per-skill status")
     p.add_argument("--json", action="store_true", help="Output in JSON format")
     p.add_argument("--quiet", action="store_true", help="Suppress info/warnings")
     p.add_argument("--config", type=Path, help="Override config file path")
     p.set_defaults(func=run_validate)
-    
+
     # registry list
     list_p = registry_subparsers.add_parser("list", help="List all registered skills")
     list_p.add_argument("--json", action="store_true", help="Output in JSON format")
     list_p.set_defaults(func=run_list)
-    
+
     # registry add
     add_p = registry_subparsers.add_parser("add", help="Add skill(s) to registry")
     add_p.add_argument("paths", nargs="+", help="Path(s) or URL(s) to skill directories")
@@ -48,14 +48,14 @@ def register(subparsers) -> None:
     add_p.add_argument("--quiet", action="store_true", help="Suppress info/warnings")
     add_p.add_argument("--config", type=Path, help="Override config file path")
     add_p.set_defaults(func=run_add)
-    
+
     # registry rm
     rm_p = registry_subparsers.add_parser("rm", help="Remove skill(s) from registry")
     rm_p.add_argument("names", nargs="+", help="Skill name(s) to remove")
     rm_p.add_argument("--json", action="store_true", help="Output in JSON format")
     rm_p.add_argument("--quiet", action="store_true", help="Suppress info/warnings")
     rm_p.set_defaults(func=run_rm)
-    
+
     # registry sync
     sync_p = registry_subparsers.add_parser("sync", help="Sync registry with remote sources")
     sync_p.add_argument("names", nargs="*", help="Skill name(s) to sync (default: all)")

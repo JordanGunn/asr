@@ -10,7 +10,8 @@ import json
 import sys
 from pathlib import Path
 
-from commands import adapter, clean, find, help as help_cmd, update, use, validate, registry, diff, sync
+from commands import adapter, clean, diff, find, registry, sync, update, use, validate
+from commands import help as help_cmd
 
 __version__ = "0.3.0"
 
@@ -70,7 +71,7 @@ def create_parser() -> argparse.ArgumentParser:
     registry.register(subparsers)   # Registry operations (add, rm, sync, list)
     diff.register(subparsers)       # Show tracked skill status
     sync.register(subparsers)       # Refresh tracked skills
-    
+
     # Unchanged commands
     use.register(subparsers)
     find.register(subparsers)
@@ -78,11 +79,12 @@ def create_parser() -> argparse.ArgumentParser:
     clean.register(subparsers)
     adapter.register(subparsers)
     update.register(subparsers)
-    
+
     # Import and register info command
     from commands import info as info_cmd
+
     info_cmd.register(subparsers)
-    
+
     help_cmd.register(subparsers, parser)
 
     return parser

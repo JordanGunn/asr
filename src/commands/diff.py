@@ -7,8 +7,8 @@ import json
 import sys
 from pathlib import Path
 
+from manifest import load_manifest
 from tracking import extract_metadata
-from manifest import load_manifest, hash_directory
 
 
 def register(subparsers) -> None:
@@ -32,48 +32,48 @@ def register(subparsers) -> None:
 def run(args: argparse.Namespace) -> int:
     """Show status of tracked skills in the given path."""
     scan_path = args.path.resolve()
-    
+
     if not scan_path.exists():
         print(f"Error: Path does not exist: {scan_path}", file=sys.stderr)
         return 1
-    
+
     # Find all SKILL.md files recursively
     if not args.quiet and not args.json:
         print(f"Scanning {scan_path} for tracked skills...", file=sys.stderr)
-    
+
     tracked_skills = []
     skill_md_files = list(scan_path.rglob("SKILL.md"))
-    
+
     for skill_md in skill_md_files:
         skill_dir = skill_md.parent
         metadata = extract_metadata(skill_dir)
-        
+
         if metadata:
             tracked_skills.append((skill_dir, metadata))
-    
+
     if not tracked_skills:
         if args.json:
             print(json.dumps({"tracked": 0, "skills": []}))
         else:
             print("No tracked skills found.")
         return 0
-    
+
     # Determine status for each tracked skill
     results = []
     up_to_date = 0
     outdated = 0
     modified = 0
     untracked = 0
-    
+
     for skill_dir, metadata in tracked_skills:
         skill_name = skill_dir.name
         tracked_hash = metadata.get("hash")
         tracked_source = metadata.get("source")
-        
+
         # Compute current file hash (excluding metadata.oasr for comparison)
-        from tracking import strip_tracking_metadata
         from discovery import parse_frontmatter
-        
+        from tracking import strip_tracking_metadata
+
         skill_md = skill_dir / "SKILL.md"
         if skill_md.exists():
             content = skill_md.read_text(encoding="utf-8")
@@ -83,13 +83,13 @@ def run(args: argparse.Namespace) -> int:
                 cleaned_fm = strip_tracking_metadata(frontmatter_dict)
                 # We'll compare hashes by temporarily computing without metadata
                 # For now, just use the manifest hash comparison
-        
+
         # For simplicity: check if tracked_hash matches registry hash
         # The tracked_hash should be the registry hash at time of copy
         from registry import load_registry
         entries = load_registry()
         entry = next((e for e in entries if e.name == skill_name), None)
-        
+
         if entry:
             manifest = load_manifest(skill_name)
             if manifest:
@@ -112,7 +112,7 @@ def run(args: argparse.Namespace) -> int:
             status = "untracked"
             untracked += 1
             message = "Not in registry"
-        
+
         results.append({
             "name": skill_name,
             "path": str(skill_dir),
@@ -121,7 +121,7 @@ def run(args: argparse.Namespace) -> int:
             "tracked_hash": tracked_hash[:16] + "..." if tracked_hash else None,
             "source": tracked_source,
         })
-    
+
     if args.json:
         print(
             json.dumps(
@@ -147,16 +147,16 @@ def run(args: argparse.Namespace) -> int:
                 symbol = "✗"
             else:
                 symbol = "?"
-            
+
             print(f"{symbol} {result['name']}: {result['status']}")
             if not args.quiet:
                 print(f"  Path: {result['path']}")
                 if result["message"]:
                     print(f"  {result['message']}")
-        
+
         print(f"\n{len(tracked_skills)} tracked: {up_to_date} up-to-date, {outdated} outdated, {modified} modified, {untracked} untracked")
-        
+
         if outdated > 0:
-            print(f"\nRun 'oasr sync' to update outdated skills.")
-    
+            print("\nRun 'oasr sync' to update outdated skills.")
+
     return 1 if outdated > 0 or modified > 0 else 0

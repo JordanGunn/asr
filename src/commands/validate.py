@@ -9,7 +9,7 @@ from pathlib import Path
 
 from config import load_config
 from registry import load_registry
-from validate import validate_skill, validate_all
+from validate import validate_all, validate_skill
 
 
 def _print_validation_result(result) -> None:

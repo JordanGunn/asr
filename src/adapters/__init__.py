@@ -1,11 +1,11 @@
 """Adapter modules for generating IDE-specific skill files."""
 
 from adapters.base import BaseAdapter
-from adapters.cursor import CursorAdapter
-from adapters.windsurf import WindsurfAdapter
+from adapters.claude import ClaudeAdapter
 from adapters.codex import CodexAdapter
 from adapters.copilot import CopilotAdapter
-from adapters.claude import ClaudeAdapter
+from adapters.cursor import CursorAdapter
+from adapters.windsurf import WindsurfAdapter
 
 __all__ = [
     "BaseAdapter",

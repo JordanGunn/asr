@@ -8,8 +8,8 @@ import json
 import sys
 from pathlib import Path
 
-from skillcopy import copy_skill
 from registry import load_registry
+from skillcopy import copy_skill
 
 
 def register(subparsers) -> None:
@@ -30,14 +30,14 @@ def register(subparsers) -> None:
 
 def _match_skills(patterns: list[str], entry_map: dict) -> tuple[list[str], list[str]]:
     """Match skill names against patterns (exact or glob).
-    
+
     Returns:
         Tuple of (matched_names, unmatched_patterns).
     """
     matched = set()
     unmatched = []
     all_names = list(entry_map.keys())
-    
+
     for pattern in patterns:
         if pattern in entry_map:
             matched.add(pattern)
@@ -50,7 +50,7 @@ def _match_skills(patterns: list[str], entry_map: dict) -> tuple[list[str], list
                 unmatched.append(pattern)
         else:
             unmatched.append(pattern)
-    
+
     return list(matched), unmatched
 
 
@@ -65,71 +65,73 @@ def run(args: argparse.Namespace) -> int:
     warnings = []
 
     matched_names, unmatched = _match_skills(args.names, entry_map)
-    
+
     for pattern in unmatched:
         warnings.append(f"No skills matched: {pattern}")
 
     # Get manifests for tracking metadata
     from manifest import load_manifest
-    
+
     # Separate remote and local skills for parallel processing
     from skillcopy.remote import is_remote_source
+
     remote_names = [name for name in matched_names if is_remote_source(entry_map[name].path)]
     local_names = [name for name in matched_names if not is_remote_source(entry_map[name].path)]
-    
+
     # Handle remote skills with parallel fetching
     if remote_names:
         print(f"Fetching {len(remote_names)} remote skill(s)...", file=sys.stderr)
-        from concurrent.futures import ThreadPoolExecutor, as_completed
         import threading
-        
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+
         print_lock = threading.Lock()
-        
+
         def copy_remote_entry(name):
             """Copy a remote skill with thread-safe progress."""
             entry = entry_map[name]
             dest = output_dir / name
-            
+
             try:
                 with print_lock:
-                    platform = "GitHub" if "github.com" in entry.path else "GitLab" if "gitlab.com" in entry.path else "remote"
+                    platform = (
+                        "GitHub" if "github.com" in entry.path else "GitLab" if "gitlab.com" in entry.path else "remote"
+                    )
                     print(f"  ↓ {name} (fetching from {platform}...)", file=sys.stderr, flush=True)
-                
+
                 # Get manifest hash for tracking
                 manifest = load_manifest(name)
                 source_hash = manifest.content_hash if manifest else None
-                
+
                 copy_skill(
-                    entry.path, 
-                    dest, 
-                    validate=False, 
-                    show_progress=False, 
+                    entry.path,
+                    dest,
+                    validate=False,
+                    show_progress=False,
                     skill_name=name,
                     inject_tracking=True,
                     source_hash=source_hash
                 )
-                
+
                 with print_lock:
                     print(f"  ✓ {name} (downloaded)", file=sys.stderr)
-                
+
                 return {"name": name, "src": entry.path, "dest": str(dest)}, None
             except Exception as e:
                 with print_lock:
                     print(f"  ✗ {name} ({str(e)[:50]}...)", file=sys.stderr)
                 return None, f"Failed to copy {name}: {e}"
-        
+
         # Copy remote skills in parallel
         with ThreadPoolExecutor(max_workers=4) as executor:
-            futures = {executor.submit(copy_remote_entry, name): name 
-                      for name in remote_names}
-            
+            futures = {executor.submit(copy_remote_entry, name): name for name in remote_names}
+
             for future in as_completed(futures):
                 result, error = future.result()
                 if result:
                     copied.append(result)
                 if error:
                     warnings.append(error)
-    
+
     # Handle local skills sequentially (fast anyway)
     for name in sorted(local_names):
         entry = entry_map[name]
@@ -139,11 +141,11 @@ def run(args: argparse.Namespace) -> int:
             # Get manifest hash for tracking
             manifest = load_manifest(name)
             source_hash = manifest.content_hash if manifest else None
-            
+
             # Unified copy with tracking
             copy_skill(
-                entry.path, 
-                dest, 
+                entry.path,
+                dest,
                 validate=False,
                 inject_tracking=True,
                 source_hash=source_hash
