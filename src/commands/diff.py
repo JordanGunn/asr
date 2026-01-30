@@ -72,7 +72,6 @@ def run(args: argparse.Namespace) -> int:
 
         # Compute current file hash (excluding metadata.oasr for comparison)
         from discovery import parse_frontmatter
-        from tracking import strip_tracking_metadata
 
         skill_md = skill_dir / "SKILL.md"
         if skill_md.exists():
@@ -80,9 +79,9 @@ def run(args: argparse.Namespace) -> int:
             frontmatter_dict = parse_frontmatter(content)
             if frontmatter_dict:
                 # Strip tracking metadata for hash comparison
-                cleaned_fm = strip_tracking_metadata(frontmatter_dict)
                 # We'll compare hashes by temporarily computing without metadata
                 # For now, just use the manifest hash comparison
+                pass
 
         # For simplicity: check if tracked_hash matches registry hash
         # The tracked_hash should be the registry hash at time of copy

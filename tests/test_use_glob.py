@@ -8,7 +8,7 @@ class TestUseGlobPatterns:
         exit_code, stdout, stderr = cli_runner([
             "use", "git-commit", "-d", str(tmp_output_dir)
         ])
-        
+
         assert exit_code == 0
         assert "git-commit" in stdout
         assert (tmp_output_dir / "git-commit").exists()
@@ -18,7 +18,7 @@ class TestUseGlobPatterns:
         exit_code, stdout, stderr = cli_runner([
             "use", "git-*", "-d", str(tmp_output_dir)
         ])
-        
+
         assert exit_code == 0
         assert (tmp_output_dir / "git-commit").exists()
         assert (tmp_output_dir / "git-review").exists()
@@ -30,7 +30,7 @@ class TestUseGlobPatterns:
         exit_code, stdout, stderr = cli_runner([
             "use", "nonexistent-*", "-d", str(tmp_output_dir)
         ])
-        
+
         # Should warn but not crash
         assert "No skills matched" in stderr or "not found" in stderr.lower()
 
@@ -39,7 +39,7 @@ class TestUseGlobPatterns:
         exit_code, stdout, stderr = cli_runner([
             "use", "code-format", "git-*", "-d", str(tmp_output_dir)
         ])
-        
+
         assert exit_code == 0
         assert (tmp_output_dir / "code-format").exists()
         assert (tmp_output_dir / "git-commit").exists()

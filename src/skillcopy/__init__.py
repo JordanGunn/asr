@@ -5,7 +5,6 @@ This module provides a single entry point for copying skills from any source
 """
 
 from pathlib import Path
-from typing import Optional
 
 from .local import copy_local_skill
 from .remote import copy_remote_skill, is_remote_source
@@ -31,7 +30,7 @@ def copy_skill(
         skill_name: Optional skill name for progress messages
         inject_tracking: If True, inject metadata.oasr tracking info
         source_hash: Optional content hash for tracking (required if inject_tracking=True)
-    
+
     Returns:
         Path to copied skill directory
 

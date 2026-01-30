@@ -80,7 +80,6 @@ def run(args: argparse.Namespace) -> int:
     for skill_dir, metadata in tracked_skills:
         skill_name = skill_dir.name
         tracked_hash = metadata.get("hash")
-        tracked_source = metadata.get("source")
 
         # Check if in registry
         if skill_name not in entry_map:

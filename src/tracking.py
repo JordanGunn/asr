@@ -13,12 +13,12 @@ import yaml
 
 def inject_metadata(skill_path: Path, content_hash: str, source: str) -> bool:
     """Inject tracking metadata into SKILL.md frontmatter.
-    
+
     Args:
         skill_path: Path to skill directory
         content_hash: SHA256 hash of the skill content
         source: Source path or URL of the skill
-    
+
     Returns:
         True if metadata was injected, False if SKILL.md not found
     """
@@ -55,10 +55,10 @@ def inject_metadata(skill_path: Path, content_hash: str, source: str) -> bool:
 
 def extract_metadata(skill_path: Path) -> dict | None:
     """Extract tracking metadata from SKILL.md.
-    
+
     Args:
         skill_path: Path to skill directory
-    
+
     Returns:
         Dictionary with 'hash', 'source', 'synced' keys, or None if not tracked
     """
@@ -77,13 +77,13 @@ def extract_metadata(skill_path: Path) -> dict | None:
 
 def strip_tracking_metadata(frontmatter: dict) -> dict:
     """Remove metadata.oasr from frontmatter dictionary.
-    
+
     This is used when comparing registry skills to avoid flagging
     tracking metadata as drift.
-    
+
     Args:
         frontmatter: Frontmatter dictionary
-    
+
     Returns:
         Copy of frontmatter with metadata.oasr removed
     """
@@ -101,10 +101,10 @@ def strip_tracking_metadata(frontmatter: dict) -> dict:
 
 def _split_frontmatter(content: str) -> tuple[dict | None, str]:
     """Split markdown content into frontmatter and body.
-    
+
     Args:
         content: Full markdown content
-    
+
     Returns:
         Tuple of (frontmatter_dict, body_text)
     """
@@ -134,10 +134,10 @@ def _split_frontmatter(content: str) -> tuple[dict | None, str]:
 
 def _serialize_frontmatter(frontmatter: dict) -> str:
     """Serialize frontmatter dictionary back to YAML with delimiters.
-    
+
     Args:
         frontmatter: Frontmatter dictionary
-    
+
     Returns:
         YAML string with --- delimiters
     """

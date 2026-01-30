@@ -7,7 +7,6 @@ import json
 import sys
 from pathlib import Path
 
-from config import load_config
 from manifest import (
     check_manifest,
     create_manifest,
@@ -69,7 +68,6 @@ def register(subparsers) -> None:
 def run_validate(args: argparse.Namespace) -> int:
     """Validate registry manifests (default oasr registry behavior)."""
     entries = load_registry()
-    config = load_config(args.config if hasattr(args, 'config') else None)
 
     if not entries:
         if args.json:
@@ -183,7 +181,6 @@ def run_rm(args: argparse.Namespace) -> int:
 def run_sync(args: argparse.Namespace) -> int:
     """Sync registry with remotes (oasr registry sync)."""
     entries = load_registry()
-    config = load_config(args.config if hasattr(args, 'config') else None)
 
     if not entries:
         if args.json:
