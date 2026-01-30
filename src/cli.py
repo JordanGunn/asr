@@ -10,11 +10,10 @@ import json
 import sys
 from pathlib import Path
 
-from commands import adapter, add, clean, find, rm, status, sync, update, use, validate
+from commands import adapter, clean, diff, find, registry, sync, update, use, validate
 from commands import help as help_cmd
-from commands import list as list_cmd
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -43,7 +42,7 @@ def create_parser() -> argparse.ArgumentParser:
     """Create the argument parser."""
     parser = argparse.ArgumentParser(
         prog="oasr",
-        description="Manage agent skills across IDE integrations.",
+        description="Open Agent Skills Registry - Manage agent skills across IDE integrations.",
     )
     parser.add_argument(
         "--version",
@@ -68,14 +67,15 @@ def create_parser() -> argparse.ArgumentParser:
 
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
-    list_cmd.register(subparsers)
-    add.register(subparsers)
-    rm.register(subparsers)
+    # New taxonomy (v0.3.0)
+    registry.register(subparsers)  # Registry operations (add, rm, sync, list)
+    diff.register(subparsers)  # Show tracked skill status
+    sync.register(subparsers)  # Refresh tracked skills
+
+    # Unchanged commands
     use.register(subparsers)
     find.register(subparsers)
     validate.register(subparsers)
-    sync.register(subparsers)
-    status.register(subparsers)
     clean.register(subparsers)
     adapter.register(subparsers)
     update.register(subparsers)

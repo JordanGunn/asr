@@ -1,17 +1,17 @@
-# `oasr rm`
+# `oasr rm` (Deprecated in v0.3.0)
 
-Remove skills from the registry.
+> **⚠️ DEPRECATED**  
+> As of v0.3.0, this command has moved to `oasr registry rm`.  
+> See [oasr registry](REGISTRY.md) for current documentation.
+
+## Migration
 
 ```bash
+# Old (v0.2.0)
 oasr rm skill-name
-oasr rm /path/to/skill
-oasr rm skill-one skill-two         # Multiple
-oasr rm "prefix-*"                  # Glob by name
-oasr rm -r /path/to/root            # Recursive removal
+
+# New (v0.3.0)
+oasr registry rm skill-name
 ```
 
-*Removing skills*
-![oasr rm](../.images/rm.png)
-
-*Removing multiple skills*
-![oasr rm multiple](../.images/rm-glob.png)
+See the full documentation at [oasr registry rm](REGISTRY.md#oasr-registry-rm).

@@ -1,11 +1,19 @@
-# `oasr list`
+# `oasr list` (Deprecated in v0.3.0)
 
-List all registered skills.
+> **⚠️ DEPRECATED**  
+> As of v0.3.0, this command has moved to `oasr registry list`.  
+> See [oasr registry](REGISTRY.md) for current documentation.
+
+## Migration
 
 ```bash
-oasr list              # Human-readable output
-oasr list --json       # JSON output
-oasr list --verbose    # Show full paths
+# Old (v0.2.0)
+oasr list
+oasr list --verbose
+
+# New (v0.3.0)
+oasr registry list
+oasr registry list --json
 ```
 
-![oasr list](../.images/list.png)
+See the full documentation at [oasr registry list](REGISTRY.md#oasr-registry-list).

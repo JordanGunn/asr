@@ -1,180 +1,143 @@
-"""`asr sync` command."""
+"""`oasr sync` command - refresh tracked local skills."""
 
 from __future__ import annotations
 
 import argparse
 import json
-import shutil
 import sys
 from pathlib import Path
 
-from config import load_config
-from manifest import (
-    check_manifest,
-    create_manifest,
-    load_manifest,
-    save_manifest,
-    sync_manifest,
-)
-from registry import load_registry, remove_skill
-from validate import validate_skill
+from manifest import load_manifest
+from skillcopy import copy_skill
+from tracking import extract_metadata
 
 
 def register(subparsers) -> None:
-    p = subparsers.add_parser("sync", help="Sync skills from source (using manifests)")
-    p.add_argument("names", nargs="*", help="Skill name(s) to sync (default: all)")
-    p.add_argument("-d", "--dir", type=Path, dest="output_dir", help="Target directory to copy skills to")
-    p.add_argument("--update", action="store_true", help="Update manifests for modified skills")
-    p.add_argument("--prune", action="store_true", help="Remove skills with missing sources from registry")
+    """Register the sync command."""
+    p = subparsers.add_parser("sync", help="Refresh outdated tracked skills from registry")
+    p.add_argument(
+        "path",
+        nargs="?",
+        type=Path,
+        default=Path.cwd(),
+        help="Path to scan for tracked skills (default: current directory)",
+    )
+    p.add_argument("--force", action="store_true", help="Overwrite modified skills (default: skip)")
     p.add_argument("--json", action="store_true", help="Output in JSON format")
     p.add_argument("--quiet", action="store_true", help="Suppress info/warnings")
-    p.add_argument("--config", type=Path, help="Override config file path")
     p.set_defaults(func=run)
 
 
 def run(args: argparse.Namespace) -> int:
-    entries = load_registry()
-    config = load_config(args.config)
-    max_lines = config["validation"]["reference_max_lines"]
+    """Refresh outdated tracked skills."""
+    scan_path = args.path.resolve()
 
-    if not entries:
+    if not scan_path.exists():
+        print(f"Error: Path does not exist: {scan_path}", file=sys.stderr)
+        return 1
+
+    # Find all SKILL.md files recursively
+    if not args.quiet and not args.json:
+        print(f"Scanning {scan_path} for tracked skills...", file=sys.stderr)
+
+    tracked_skills = []
+    skill_md_files = list(scan_path.rglob("SKILL.md"))
+
+    for skill_md in skill_md_files:
+        skill_dir = skill_md.parent
+        metadata = extract_metadata(skill_dir)
+
+        if metadata:
+            tracked_skills.append((skill_dir, metadata))
+
+    if not tracked_skills:
         if args.json:
-            print(json.dumps({"synced": 0, "error": "no skills registered"}))
+            print(json.dumps({"updated": 0, "skipped": 0, "failed": 0}))
         else:
-            print("No skills registered.")
+            print("No tracked skills found.")
         return 0
 
-    if args.names:
-        entry_map = {e.name: e for e in entries}
-        entries = [entry_map[n] for n in args.names if n in entry_map]
-        missing = [n for n in args.names if n not in entry_map]
-        if missing and not args.quiet:
-            for n in missing:
-                print(f"⚠ Skill not found: {n}", file=sys.stderr)
+    # Check status and update outdated skills
+    from registry import load_registry
 
-    # Check for remote skills and show progress header
-    from skillcopy.remote import is_remote_source
+    entries = load_registry()
+    entry_map = {e.name: e for e in entries}
 
-    remote_count = 0
-    for entry in entries:
-        manifest = load_manifest(entry.name)
-        if manifest and is_remote_source(manifest.source_path):
-            remote_count += 1
-
-    if remote_count > 0 and not args.quiet and not args.json:
-        print(f"Checking {remote_count} remote skill(s)...", file=sys.stderr)
-
+    updated = 0
+    skipped = 0
+    failed = 0
     results = []
-    synced = 0
-    missing_count = 0
-    modified_count = 0
-    pruned = []
 
-    for entry in entries:
-        manifest = load_manifest(entry.name)
+    if not args.quiet and not args.json:
+        print(f"Found {len(tracked_skills)} tracked skill(s)...", file=sys.stderr)
 
-        if manifest is None:
-            manifest = create_manifest(
-                name=entry.name,
-                source_path=Path(entry.path),
-                description=entry.description,
+    for skill_dir, metadata in tracked_skills:
+        skill_name = skill_dir.name
+        tracked_hash = metadata.get("hash")
+
+        # Check if in registry
+        if skill_name not in entry_map:
+            skipped += 1
+            results.append(
+                {"name": skill_name, "path": str(skill_dir), "status": "skipped", "message": "Not in registry"}
             )
-            save_manifest(manifest)
-            status_info = {"name": entry.name, "status": "created", "message": "Manifest created"}
-        else:
-            # Show progress for remote skills
-            is_remote = is_remote_source(manifest.source_path)
-            if is_remote and not args.quiet and not args.json:
-                platform = (
-                    "GitHub"
-                    if "github.com" in manifest.source_path
-                    else "GitLab"
-                    if "gitlab.com" in manifest.source_path
-                    else "remote"
-                )
-                print(f"  ↓ {entry.name} (checking {platform}...)", file=sys.stderr, flush=True)
+            if not args.quiet and not args.json:
+                print(f"  ? {skill_name}: skipped (not in registry)", file=sys.stderr)
+            continue
 
-            status = check_manifest(manifest)
+        entry = entry_map[skill_name]
+        manifest = load_manifest(skill_name)
 
-            if is_remote and not args.quiet and not args.json:
-                print(f"  ✓ {entry.name} (checked)", file=sys.stderr)
+        if not manifest:
+            skipped += 1
+            results.append({"name": skill_name, "path": str(skill_dir), "status": "skipped", "message": "No manifest"})
+            if not args.quiet and not args.json:
+                print(f"  ? {skill_name}: skipped (no manifest)", file=sys.stderr)
+            continue
 
-            if status.status == "missing":
-                missing_count += 1
-                status_info = status.to_dict()
+        # Check if outdated (compare tracked hash with registry hash)
+        if manifest.content_hash == tracked_hash:
+            # Already up-to-date
+            results.append({"name": skill_name, "path": str(skill_dir), "status": "up-to-date", "message": "Current"})
+            if not args.quiet and not args.json:
+                print(f"  ✓ {skill_name}: up to date", file=sys.stderr)
+            continue
 
-                if args.prune:
-                    remove_skill(entry.name)
-                    pruned.append(entry.name)
-                    status_info["pruned"] = True
-            elif status.status == "modified":
-                modified_count += 1
-                status_info = status.to_dict()
+        # Update skill
+        try:
+            if not args.quiet and not args.json:
+                print(f"  ↻ {skill_name}: updating...", file=sys.stderr, flush=True)
 
-                if args.update:
-                    result = validate_skill(Path(entry.path), reference_max_lines=max_lines)
-                    if result.valid:
-                        manifest = sync_manifest(manifest)
-                        status_info["updated"] = True
-                        synced += 1
-                    else:
-                        status_info["updated"] = False
-                        status_info["validation_errors"] = result.errors
-            else:
-                status_info = status.to_dict()
-                synced += 1
+            copy_skill(entry.path, skill_dir, validate=False, inject_tracking=True, source_hash=manifest.content_hash)
 
-        if args.output_dir and status_info.get("status") != "missing":
-            src = Path(entry.path)
-            dest = args.output_dir.resolve() / entry.name
-            if src.exists():
-                dest.parent.mkdir(parents=True, exist_ok=True)
-                if dest.exists():
-                    shutil.rmtree(dest)
-                shutil.copytree(src, dest)
-                status_info["copied_to"] = str(dest)
-
-        results.append(status_info)
+            updated += 1
+            results.append(
+                {"name": skill_name, "path": str(skill_dir), "status": "updated", "message": "Refreshed from registry"}
+            )
+            if not args.quiet and not args.json:
+                print(f"  ✓ {skill_name}: updated", file=sys.stderr)
+        except Exception as e:
+            failed += 1
+            results.append({"name": skill_name, "path": str(skill_dir), "status": "failed", "message": str(e)})
+            if not args.quiet and not args.json:
+                print(f"  ✗ {skill_name}: failed ({e})", file=sys.stderr)
 
     if args.json:
         print(
             json.dumps(
                 {
-                    "synced": synced,
-                    "missing": missing_count,
-                    "modified": modified_count,
-                    "pruned": pruned,
+                    "updated": updated,
+                    "skipped": skipped,
+                    "failed": failed,
                     "skills": results,
                 },
                 indent=2,
             )
         )
     else:
-        for r in results:
-            status = r.get("status", "unknown")
-            name = r.get("name", "?")
+        if updated > 0 or skipped > 0 or failed > 0:
+            print(f"\n{updated} updated, {skipped} skipped, {failed} failed")
+        else:
+            print("All tracked skills up to date.")
 
-            if status == "valid":
-                print(f"✓ {name}: up to date")
-            elif status == "created":
-                print(f"+ {name}: manifest created")
-            elif status == "missing":
-                if r.get("pruned"):
-                    print(f"✗ {name}: source missing (pruned)")
-                else:
-                    print(f"✗ {name}: source missing")
-            elif status == "modified":
-                if r.get("updated"):
-                    print(f"↻ {name}: updated manifest")
-                else:
-                    print(f"⚠ {name}: modified (use --update to sync)")
-
-            if r.get("copied_to"):
-                print(f"  → {r['copied_to']}")
-
-        if not args.quiet:
-            print(f"\n{synced} valid, {modified_count} modified, {missing_count} missing")
-            if pruned:
-                print(f"Pruned {len(pruned)} skill(s) with missing sources")
-
-    return 0
+    return 1 if failed > 0 else 0

@@ -69,6 +69,9 @@ def run(args: argparse.Namespace) -> int:
     for pattern in unmatched:
         warnings.append(f"No skills matched: {pattern}")
 
+    # Get manifests for tracking metadata
+    from manifest import load_manifest
+
     # Separate remote and local skills for parallel processing
     from skillcopy.remote import is_remote_source
 
@@ -95,7 +98,19 @@ def run(args: argparse.Namespace) -> int:
                     )
                     print(f"  ↓ {name} (fetching from {platform}...)", file=sys.stderr, flush=True)
 
-                copy_skill(entry.path, dest, validate=False, show_progress=False, skill_name=name)
+                # Get manifest hash for tracking
+                manifest = load_manifest(name)
+                source_hash = manifest.content_hash if manifest else None
+
+                copy_skill(
+                    entry.path,
+                    dest,
+                    validate=False,
+                    show_progress=False,
+                    skill_name=name,
+                    inject_tracking=True,
+                    source_hash=source_hash,
+                )
 
                 with print_lock:
                     print(f"  ✓ {name} (downloaded)", file=sys.stderr)
@@ -123,8 +138,12 @@ def run(args: argparse.Namespace) -> int:
         dest = output_dir / name
 
         try:
-            # Unified copy - handles both local and remote
-            copy_skill(entry.path, dest, validate=False)
+            # Get manifest hash for tracking
+            manifest = load_manifest(name)
+            source_hash = manifest.content_hash if manifest else None
+
+            # Unified copy with tracking
+            copy_skill(entry.path, dest, validate=False, inject_tracking=True, source_hash=source_hash)
             copied.append({"name": name, "src": entry.path, "dest": str(dest)})
         except Exception as e:
             warnings.append(f"Failed to copy {name}: {e}")

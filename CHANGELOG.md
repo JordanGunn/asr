@@ -6,6 +6,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-01-30
+
+### Added
+- **Metadata tracking via frontmatter** — Skills now track their source via `metadata.oasr` field in SKILL.md
+  - Eliminates need for external tracking files (.oasr directories)
+  - Spec-compliant (Open Agent Skill metadata field)
+  - Tracks: content hash, source path/URL, sync timestamp
+- **`oasr diff` command** — Show status of tracked skills (up-to-date, outdated, modified, untracked)
+- **`oasr sync` command** — Refresh outdated tracked skills from registry
+- **`oasr registry` command** — New unified registry management
+  - `oasr registry` (default) - Validate registry manifests
+  - `oasr registry list` - List registered skills
+  - `oasr registry add` - Add skills to registry
+  - `oasr registry rm` - Remove skills from registry
+  - `oasr registry sync` - Sync with remote repositories
+
+### Changed
+- **BREAKING**: Complete CLI taxonomy redesign for clarity and flexibility
+  - `oasr add` → `oasr registry add`
+  - `oasr rm` → `oasr registry rm`
+  - `oasr list` → `oasr registry list`
+  - `oasr sync` → `oasr registry` (validation)
+  - `oasr sync --update` → `oasr registry sync`
+  - `oasr status` → `oasr registry -v`
+- **BREAKING**: `oasr use` now injects tracking metadata automatically
+- Skills copied locally now contain self-describing metadata for drift detection
+
+### Removed
+- **BREAKING**: Removed standalone `add`, `rm`, `list`, `status` commands (moved to `registry` subcommand)
+
 ## [0.2.0] - 2026-01-30
 
 ### Added
@@ -85,6 +115,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial CLI with registry, discovery, validation, adapters, and manifests.
 
-[Unreleased]: https://github.com/JordanGunn/asr/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/JordanGunn/asr/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/JordanGunn/asr/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/JordanGunn/asr/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/JordanGunn/asr/releases/tag/v0.1.0
