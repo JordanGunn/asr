@@ -101,8 +101,8 @@ Remote skills are fetched on-demand during `adapter` and `use` operations. The r
 ## Documentation
 
 - **[Quickstart](docs/QUICKSTART.md)** — Installation and first steps
-- **[Commands](docs/COMMANDS.md)** — Full command reference
-- **[Validation](docs/VALIDATION.md)** — Validation rules and error codes
+- **[Commands](docs/commands/.INDEX.md)** — Full command reference
+- **[Validation](docs/validation/.INDEX.md)** — Validation rules and error codes
 
 ---
 
