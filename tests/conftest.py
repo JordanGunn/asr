@@ -89,10 +89,13 @@ def sample_registry(tmp_skills_dir, sample_skills, monkeypatch):
     # Create a mock manifest for each skill
     def mock_load_manifest(name):
         """Return a mock manifest with content hash for tracking."""
-        from manifest import Manifest
-        return Manifest(
+        from manifest import SkillManifest
+        from datetime import datetime
+        return SkillManifest(
             name=name,
+            source_path="/fake/path",
             description=f"Description for {name}",
+            registered_at=datetime.now().isoformat(),
             content_hash=f"hash_{name}",  # Mock hash for tracking
         )
     
@@ -124,8 +127,8 @@ def cli_runner(monkeypatch, capsys):
     
     def mock_load_manifest(name):
         """Return a mock manifest with content hash for tracking."""
-        from manifest import Manifest
-        return Manifest(
+        from manifest import SkillManifest
+        return SkillManifest(
             name=name,
             description=f"Description for {name}",
             content_hash=f"hash_{name}",  # Mock hash for tracking
