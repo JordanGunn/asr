@@ -10,7 +10,9 @@ import json
 import sys
 from pathlib import Path
 
-from commands import add, adapter, clean, find, help as help_cmd, list as list_cmd, rm, status, sync, update, use, validate
+from commands import adapter, add, clean, find, rm, status, sync, update, use, validate
+from commands import help as help_cmd
+from commands import list as list_cmd
 
 __version__ = "0.1.0"
 
@@ -77,11 +79,12 @@ def create_parser() -> argparse.ArgumentParser:
     clean.register(subparsers)
     adapter.register(subparsers)
     update.register(subparsers)
-    
+
     # Import and register info command
     from commands import info as info_cmd
+
     info_cmd.register(subparsers)
-    
+
     help_cmd.register(subparsers, parser)
 
     return parser

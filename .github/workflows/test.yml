@@ -32,7 +32,7 @@ jobs:
       
       - name: Run tests
         run: |
-          pytest -v --cov=src --cov-report=term-missing
+          ./scripts/test.sh
       
       - name: Upload coverage
         if: matrix.python-version == '3.12'

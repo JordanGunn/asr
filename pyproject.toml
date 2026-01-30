@@ -42,6 +42,10 @@ dependencies = [
 
 [tool.hatch.envs.dev.scripts]
 test = "pytest -q"
+lint = "bash scripts/lint.sh"
+fix = "bash scripts/fix.sh"
+format = "ruff format src/"
+check = "ruff check src/"
 
 [tool.ruff]
 line-length = 120

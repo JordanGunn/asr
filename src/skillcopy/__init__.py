@@ -10,19 +10,21 @@ from .local import copy_local_skill
 from .remote import copy_remote_skill, is_remote_source
 
 
-def copy_skill(source: str, dest: Path, *, validate: bool = True, show_progress: bool = False, skill_name: str = None) -> Path:
+def copy_skill(
+    source: str, dest: Path, *, validate: bool = True, show_progress: bool = False, skill_name: str = None
+) -> Path:
     """Copy a skill from source (path or URL) to destination.
-    
+
     Args:
         source: Local path or remote URL
         dest: Destination directory
         validate: Whether to validate skill structure after copy
         show_progress: If True, show progress messages for remote skills
         skill_name: Optional skill name for progress messages
-    
+
     Returns:
         Path to copied skill directory
-    
+
     Raises:
         ValueError: If source is invalid
         OSError: If copy operation fails

@@ -10,10 +10,10 @@ import sys
 from pathlib import Path
 
 from config import load_config
-from skillcopy.remote import is_remote_source
-from discovery import find_skills, discover_single
+from discovery import discover_single, find_skills
 from registry import SkillEntry, add_skill
-from remote import validate_remote_url, derive_skill_name, fetch_remote_to_temp, InvalidRemoteUrlError
+from remote import InvalidRemoteUrlError, derive_skill_name, fetch_remote_to_temp, validate_remote_url
+from skillcopy.remote import is_remote_source
 from validate import validate_skill
 
 _GLOB_CHARS = set("*?[")
@@ -66,18 +66,18 @@ def run(args: argparse.Namespace) -> int:
     # Separate remote URLs from local paths
     remote_urls = []
     local_patterns = []
-    
+
     for pattern in args.paths:
         if is_remote_source(pattern):
             remote_urls.append(pattern)
         else:
             local_patterns.append(pattern)
-    
+
     # Expand local paths
     expanded = []
     if local_patterns:
         expanded = [p.resolve() for p in _expand_path_patterns(local_patterns)]
-    
+
     # Check if we have anything to process
     if not expanded and not remote_urls:
         if args.json:
@@ -113,10 +113,10 @@ def run(args: argparse.Namespace) -> int:
             if not args.quiet and not args.json:
                 print(f"Invalid URL: {url} - {error_msg}", file=sys.stderr)
             continue
-        
+
         # Derive skill name
         try:
-            skill_name = derive_skill_name(url)
+            derive_skill_name(url)
         except InvalidRemoteUrlError as e:
             skipped_count += 1
             results.append({"url": url, "added": False, "reason": str(e)})
@@ -124,7 +124,7 @@ def run(args: argparse.Namespace) -> int:
             if not args.quiet and not args.json:
                 print(f"Cannot derive name from URL: {url}", file=sys.stderr)
             continue
-        
+
         # Fetch to temp dir for validation
         try:
             if not args.quiet and not args.json:
@@ -136,12 +136,12 @@ def run(args: argparse.Namespace) -> int:
                 else:
                     platform = "remote source"
                 print(f"Registering from {platform}...", file=sys.stderr)
-            
+
             temp_dir = fetch_remote_to_temp(url)
-            
+
             if not args.quiet and not args.json:
                 # Count files validated
-                file_count = sum(1 for _ in temp_dir.rglob('*') if _.is_file())
+                file_count = sum(1 for _ in temp_dir.rglob("*") if _.is_file())
                 print(f"✓ Validated {file_count} file(s)", file=sys.stderr)
         except Exception as e:
             skipped_count += 1
@@ -150,26 +150,26 @@ def run(args: argparse.Namespace) -> int:
             if not args.quiet and not args.json:
                 print(f"Failed to fetch {url}: {e}", file=sys.stderr)
             continue
-        
+
         try:
             # Validate fetched content (skip name match for temp directory)
             result = validate_skill(temp_dir, reference_max_lines=max_lines, skip_name_match=True)
             if not args.quiet and not args.json:
                 _print_validation_result(result)
                 print()
-            
+
             if not result.valid:
                 skipped_count += 1
                 results.append({"url": url, "added": False, "reason": "validation errors"})
                 exit_code = 1
                 continue
-            
+
             if args.strict and result.warnings:
                 skipped_count += 1
                 results.append({"url": url, "added": False, "reason": "validation warnings (strict mode)"})
                 exit_code = 1
                 continue
-            
+
             # Discover skill info from fetched content
             discovered = discover_single(temp_dir)
             if not discovered:
@@ -177,25 +177,25 @@ def run(args: argparse.Namespace) -> int:
                 results.append({"url": url, "added": False, "reason": "could not discover skill info"})
                 exit_code = 3
                 continue
-            
+
             # Create entry with URL as source_path
             entry = SkillEntry(
                 path=url,  # Store URL, not temp path
                 name=discovered.name,
                 description=discovered.description,
             )
-            
+
             is_new = add_skill(entry)
             added_count += 1
             results.append({"name": entry.name, "url": url, "added": True, "new": is_new})
-            
+
             if not args.quiet and not args.json:
                 action = "Added" if is_new else "Updated"
                 print(f"{action} remote skill: {entry.name} from {url}")
-        
+
         finally:
             shutil.rmtree(temp_dir, ignore_errors=True)
-    
+
     # Process local paths
     for path in expanded:
         if not path.exists():

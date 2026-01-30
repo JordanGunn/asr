@@ -22,16 +22,16 @@ def _shorten_path(path: str, max_len: int = 40) -> str:
     """Shorten a path for display, using ~ for home directory."""
     home = os.path.expanduser("~")
     if path.startswith(home):
-        path = "~" + path[len(home):]
-    
+        path = "~" + path[len(home) :]
+
     if len(path) <= max_len:
         return path
-    
+
     # Truncate middle of path
     parts = path.split(os.sep)
     if len(parts) <= 2:
-        return path[:max_len - 3] + "..."
-    
+        return path[: max_len - 3] + "..."
+
     # Keep first and last parts, truncate middle
     result = parts[0] + os.sep + "..." + os.sep + parts[-1]
     if len(result) <= max_len:
@@ -76,32 +76,32 @@ def run(args: argparse.Namespace) -> int:
 
     width = min(100, max(60, get_terminal_size((80, 20)).columns))
     verbose = getattr(args, "verbose", False)
-    
+
     # Header
     print(f"\n  REGISTERED SKILLS ({len(entries)})\n")
-    
+
     # Calculate max name length for alignment
     max_name = max(len(e.name) for e in entries)
     path_width = width - max_name - 10  # Account for formatting
-    
+
     for e in sorted(entries, key=lambda x: x.name):
         name = e.name
-        
+
         if verbose:
             path_display = e.path
         else:
             path_display = _shorten_path(e.path, max(20, path_width))
-        
+
         # Skill header with box drawing
         print(f"  ┌─ {name}")
         print(f"  │  {path_display}")
-        
+
         desc = (e.description or "").strip()
         if desc:
             # Truncate description to one line if too long
             max_desc = width - 6
             if len(desc) > max_desc:
-                desc = desc[:max_desc - 3] + "..."
+                desc = desc[: max_desc - 3] + "..."
             print(f"  └─ {desc}")
         else:
             print("  └─ (no description)")

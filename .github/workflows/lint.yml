@@ -26,12 +26,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install ruff
       
-      - name: Run ruff linter
+      - name: Run linting
         run: |
-          ruff check src/ --output-format=github
-        continue-on-error: true
-      
-      - name: Run ruff formatter
-        run: |
-          ruff format --check src/
-        continue-on-error: true
+          ./scripts/lint.sh
