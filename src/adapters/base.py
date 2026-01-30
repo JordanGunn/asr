@@ -92,7 +92,7 @@ class BaseAdapter(ABC):
         return output_dir / base / "skills"
 
     def copy_skill(self, skill: SkillInfo, skills_dir: Path, show_progress: bool = False) -> Path:
-        """Copy a skill to the local skills directory.
+        """Copy a skill to the local skills directory with tracking metadata.
 
         Uses unified copy interface (handles both local and remote).
 
@@ -105,7 +105,32 @@ class BaseAdapter(ABC):
             Path to the copied skill directory.
         """
         dest = skills_dir / skill.name
-        return copy_skill_unified(skill.path, dest, validate=False, show_progress=show_progress, skill_name=skill.name)
+        
+        # Get the skill's content hash from manifest for tracking
+        # If manifest doesn't exist, skip tracking (graceful degradation)
+        inject_tracking = False
+        source_hash = None
+        
+        try:
+            from manifest import load_manifest
+            
+            manifest = load_manifest(skill.name)
+            if manifest:
+                source_hash = manifest.content_hash
+                inject_tracking = True
+        except Exception:
+            # Gracefully skip tracking if manifest cannot be loaded
+            pass
+        
+        return copy_skill_unified(
+            skill.path,
+            dest,
+            validate=False,
+            show_progress=show_progress,
+            skill_name=skill.name,
+            inject_tracking=inject_tracking,
+            source_hash=source_hash,
+        )
 
     def get_skill_path(self, skill: SkillInfo, output_dir: Path, copy: bool = True) -> str:
         """Get the skill path to use in generated files.

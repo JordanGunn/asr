@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-01-30
+
+### Fixed
+- **Critical**: Adapters now inject tracking metadata when copying skills
+  - Skills copied by `oasr adapter cursor`, `claude`, etc. now include `metadata.oasr`
+  - Enables `oasr diff` and `oasr sync` to work with adapter-copied skills
+  - Graceful degradation if manifest cannot be loaded
+
 ## [0.3.1] - 2026-01-30
 
 ### Fixed
@@ -126,7 +134,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial CLI with registry, discovery, validation, adapters, and manifests.
 
-[Unreleased]: https://github.com/JordanGunn/asr/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/JordanGunn/asr/compare/v0.3.2...HEAD
+[0.3.2]: https://github.com/JordanGunn/asr/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/JordanGunn/asr/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/JordanGunn/asr/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/JordanGunn/asr/compare/v0.1.0...v0.2.0
