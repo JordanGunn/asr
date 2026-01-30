@@ -1,5 +1,8 @@
 # Command Reference
 
+![oasr help](../images/oasr-help.png)
+*Full command help and available commands*
+
 ## Global Flags
 
 | Flag | Description |
@@ -13,6 +16,8 @@
 
 ## `oasr list`
 
+![oasr list](../images/oasr-list.png)
+
 List all registered skills.
 
 ```bash
@@ -24,6 +29,12 @@ oasr list --verbose    # Show full paths
 ---
 
 ## `oasr add`
+
+![oasr add](../images/oasr-add.png)
+*Adding local skills*
+
+![oasr add remote](../images/oasr-add-remote.png)
+*Adding remote skills from GitHub*
 
 Register skills in the registry.
 
@@ -39,6 +50,7 @@ oasr add -r /path/to/root           # Recursive discovery
 - Supports GitHub and GitLab URLs
 - Formats: `https://github.com/{user}/{repo}/tree/{branch}/{path}`
 - Set `GITHUB_TOKEN` or `GITLAB_TOKEN` for authentication
+- Files validated during registration, fetched on-demand during use
 
 ---
 

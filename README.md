@@ -42,6 +42,9 @@ No copying. No drift. One source of truth.
 
 ## Quick Example
 
+![oasr list screenshot](docs/images/oasr-list.png)
+*List all registered skills with metadata*
+
 ```bash
 # Register local skills
 oasr add ~/skills/git-commit
@@ -63,6 +66,9 @@ oasr adapter --output-dir ~/projects/my-app
 ---
 
 ## Remote Skills
+
+![oasr add remote screenshot](docs/images/oasr-add-remote.png)
+*Register skills directly from GitHub or GitLab*
 
 ASR supports registering skills directly from GitHub and GitLab repositories:
 
@@ -113,3 +119,19 @@ Remote skills are fetched on-demand during `adapter` and `use` operations. The r
 ## License
 
 See [LICENSE](LICENSE).
+
+## Screenshots
+
+### Command Examples
+
+| Command | Screenshot |
+|---------|-----------|
+| **oasr list** | ![list](docs/images/oasr-list.png) |
+| **oasr add** (local) | ![add](docs/images/oasr-add.png) |
+| **oasr add** (remote) | ![add-remote](docs/images/oasr-add-remote.png) |
+| **oasr sync** | ![sync](docs/images/oasr-sync.png) |
+| **oasr status** | ![status](docs/images/oasr-status.png) |
+| **oasr find** | ![find](docs/images/oasr-find.png) |
+| **oasr adapter** | ![adapter](docs/images/oasr-adapter-windsurf.png) |
+
+See [docs/images/](docs/images/) for all screenshots.
