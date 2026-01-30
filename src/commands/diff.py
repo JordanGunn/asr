@@ -13,16 +13,13 @@ from tracking import extract_metadata
 
 def register(subparsers) -> None:
     """Register the diff command."""
-    p = subparsers.add_parser(
-        "diff",
-        help="Show status of tracked skills (copied with metadata)"
-    )
+    p = subparsers.add_parser("diff", help="Show status of tracked skills (copied with metadata)")
     p.add_argument(
         "path",
         nargs="?",
         type=Path,
         default=Path.cwd(),
-        help="Path to scan for tracked skills (default: current directory)"
+        help="Path to scan for tracked skills (default: current directory)",
     )
     p.add_argument("--json", action="store_true", help="Output in JSON format")
     p.add_argument("--quiet", action="store_true", help="Suppress info/warnings")
@@ -86,6 +83,7 @@ def run(args: argparse.Namespace) -> int:
         # For simplicity: check if tracked_hash matches registry hash
         # The tracked_hash should be the registry hash at time of copy
         from registry import load_registry
+
         entries = load_registry()
         entry = next((e for e in entries if e.name == skill_name), None)
 
@@ -112,14 +110,16 @@ def run(args: argparse.Namespace) -> int:
             untracked += 1
             message = "Not in registry"
 
-        results.append({
-            "name": skill_name,
-            "path": str(skill_dir),
-            "status": status,
-            "message": message,
-            "tracked_hash": tracked_hash[:16] + "..." if tracked_hash else None,
-            "source": tracked_source,
-        })
+        results.append(
+            {
+                "name": skill_name,
+                "path": str(skill_dir),
+                "status": status,
+                "message": message,
+                "tracked_hash": tracked_hash[:16] + "..." if tracked_hash else None,
+                "source": tracked_source,
+            }
+        )
 
     if args.json:
         print(
@@ -153,7 +153,9 @@ def run(args: argparse.Namespace) -> int:
                 if result["message"]:
                     print(f"  {result['message']}")
 
-        print(f"\n{len(tracked_skills)} tracked: {up_to_date} up-to-date, {outdated} outdated, {modified} modified, {untracked} untracked")
+        print(
+            f"\n{len(tracked_skills)} tracked: {up_to_date} up-to-date, {outdated} outdated, {modified} modified, {untracked} untracked"
+        )
 
         if outdated > 0:
             print("\nRun 'oasr sync' to update outdated skills.")

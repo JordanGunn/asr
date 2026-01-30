@@ -20,10 +20,7 @@ from skillcopy.remote import is_remote_source
 
 def register(subparsers) -> None:
     """Register the registry command and subcommands."""
-    p = subparsers.add_parser(
-        "registry",
-        help="Manage skill registry (validate, add, remove, sync)"
-    )
+    p = subparsers.add_parser("registry", help="Manage skill registry (validate, add, remove, sync)")
 
     # Subcommands
     registry_subparsers = p.add_subparsers(dest="registry_command", help="Registry operation")
@@ -78,8 +75,7 @@ def run_validate(args: argparse.Namespace) -> int:
 
     # Check for remote skills
     remote_count = sum(
-        1 for entry in entries
-        if (manifest := load_manifest(entry.name)) and is_remote_source(manifest.source_path)
+        1 for entry in entries if (manifest := load_manifest(entry.name)) and is_remote_source(manifest.source_path)
     )
 
     if remote_count > 0 and not args.quiet and not args.json:
@@ -107,7 +103,13 @@ def run_validate(args: argparse.Namespace) -> int:
             # Show progress for remote skills
             is_remote = is_remote_source(manifest.source_path)
             if is_remote and not args.quiet and not args.json:
-                platform = "GitHub" if "github.com" in manifest.source_path else "GitLab" if "gitlab.com" in manifest.source_path else "remote"
+                platform = (
+                    "GitHub"
+                    if "github.com" in manifest.source_path
+                    else "GitLab"
+                    if "gitlab.com" in manifest.source_path
+                    else "remote"
+                )
                 print(f"  ↓ {entry.name} (checking {platform}...)", file=sys.stderr, flush=True)
 
             status = check_manifest(manifest)
@@ -163,18 +165,21 @@ def run_validate(args: argparse.Namespace) -> int:
 def run_list(args: argparse.Namespace) -> int:
     """List all registered skills (oasr registry list)."""
     from commands.list import run as list_run
+
     return list_run(args)
 
 
 def run_add(args: argparse.Namespace) -> int:
     """Add skills to registry (oasr registry add)."""
     from commands.add import run as add_run
+
     return add_run(args)
 
 
 def run_rm(args: argparse.Namespace) -> int:
     """Remove skills from registry (oasr registry rm)."""
     from commands.rm import run as rm_run
+
     return rm_run(args)
 
 
@@ -200,8 +205,7 @@ def run_sync(args: argparse.Namespace) -> int:
 
     # Check for remote skills
     remote_count = sum(
-        1 for entry in entries
-        if (manifest := load_manifest(entry.name)) and is_remote_source(manifest.source_path)
+        1 for entry in entries if (manifest := load_manifest(entry.name)) and is_remote_source(manifest.source_path)
     )
 
     if remote_count > 0 and not args.quiet and not args.json:
@@ -228,7 +232,13 @@ def run_sync(args: argparse.Namespace) -> int:
             # Show progress for remote skills
             is_remote = is_remote_source(manifest.source_path)
             if is_remote and not args.quiet and not args.json:
-                platform = "GitHub" if "github.com" in manifest.source_path else "GitLab" if "gitlab.com" in manifest.source_path else "remote"
+                platform = (
+                    "GitHub"
+                    if "github.com" in manifest.source_path
+                    else "GitLab"
+                    if "gitlab.com" in manifest.source_path
+                    else "remote"
+                )
                 print(f"  ↓ {entry.name} (checking {platform}...)", file=sys.stderr, flush=True)
 
             status = check_manifest(manifest)

@@ -18,7 +18,7 @@ def copy_skill(
     show_progress: bool = False,
     skill_name: str = None,
     inject_tracking: bool = False,
-    source_hash: str | None = None
+    source_hash: str | None = None,
 ) -> Path:
     """Copy a skill from source (path or URL) to destination.
 
@@ -42,13 +42,16 @@ def copy_skill(
         raise ValueError("source_hash required when inject_tracking=True")
 
     if is_remote_source(source):
-        dest_path = copy_remote_skill(source, dest, validate=validate, show_progress=show_progress, skill_name=skill_name)
+        dest_path = copy_remote_skill(
+            source, dest, validate=validate, show_progress=show_progress, skill_name=skill_name
+        )
     else:
         dest_path = copy_local_skill(source, dest, validate=validate)
 
     # Inject tracking metadata if requested
     if inject_tracking:
         from tracking import inject_metadata
+
         inject_metadata(dest_path, source_hash, source)
 
     return dest_path

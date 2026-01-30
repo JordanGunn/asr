@@ -13,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 @dataclass
 class MockSkillEntry:
     """Mock skill entry for testing."""
+
     path: str
     name: str
     description: str
@@ -26,10 +27,12 @@ def tmp_skills_dir(tmp_path, monkeypatch):
 
     # Patch the config module
     import config
+
     monkeypatch.setattr(config, "OASR_DIR", skills_dir)
 
     # Patch registry module
     import registry
+
     monkeypatch.setattr(registry, "REGISTRY_FILE", skills_dir / "registry.toml")
 
     return skills_dir
@@ -71,11 +74,13 @@ description: {description}
 {description}
 """)
 
-        skills.append(MockSkillEntry(
-            path=str(skill_dir),
-            name=name,
-            description=description,
-        ))
+        skills.append(
+            MockSkillEntry(
+                path=str(skill_dir),
+                name=name,
+                description=description,
+            )
+        )
 
     return skills
 
@@ -92,6 +97,7 @@ def sample_registry(tmp_skills_dir, sample_skills, monkeypatch):
         from datetime import datetime
 
         from manifest import SkillManifest
+
         return SkillManifest(
             name=name,
             source_path="/fake/path",
@@ -129,6 +135,7 @@ def cli_runner(monkeypatch, capsys):
     def mock_load_manifest(name):
         """Return a mock manifest with content hash for tracking."""
         from manifest import SkillManifest
+
         return SkillManifest(
             name=name,
             description=f"Description for {name}",
@@ -139,6 +146,7 @@ def cli_runner(monkeypatch, capsys):
 
     def run(argv):
         import cli
+
         try:
             exit_code = cli.main(argv)
         except SystemExit as e:

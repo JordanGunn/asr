@@ -1,5 +1,6 @@
 """Tests for the `asr help` subcommand."""
 
+
 class TestHelpCommand:
     """Tests for help subcommand functionality."""
 

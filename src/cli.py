@@ -68,9 +68,9 @@ def create_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     # New taxonomy (v0.3.0)
-    registry.register(subparsers)   # Registry operations (add, rm, sync, list)
-    diff.register(subparsers)       # Show tracked skill status
-    sync.register(subparsers)       # Refresh tracked skills
+    registry.register(subparsers)  # Registry operations (add, rm, sync, list)
+    diff.register(subparsers)  # Show tracked skill status
+    sync.register(subparsers)  # Refresh tracked skills
 
     # Unchanged commands
     use.register(subparsers)

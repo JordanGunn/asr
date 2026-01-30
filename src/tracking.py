@@ -43,7 +43,7 @@ def inject_metadata(skill_path: Path, content_hash: str, source: str) -> bool:
     frontmatter["metadata"]["oasr"] = {
         "hash": content_hash,
         "source": str(source),
-        "synced": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+        "synced": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
     }
 
     # Write back
@@ -88,6 +88,7 @@ def strip_tracking_metadata(frontmatter: dict) -> dict:
         Copy of frontmatter with metadata.oasr removed
     """
     import copy
+
     cleaned = copy.deepcopy(frontmatter)
 
     if "metadata" in cleaned and isinstance(cleaned["metadata"], dict):
@@ -123,7 +124,7 @@ def _split_frontmatter(content: str) -> tuple[dict | None, str]:
         return None, content
 
     frontmatter_text = "\n".join(lines[1:end_idx])
-    body_text = "\n".join(lines[end_idx + 1:])
+    body_text = "\n".join(lines[end_idx + 1 :])
 
     try:
         frontmatter = yaml.safe_load(frontmatter_text)
@@ -141,10 +142,5 @@ def _serialize_frontmatter(frontmatter: dict) -> str:
     Returns:
         YAML string with --- delimiters
     """
-    yaml_str = yaml.safe_dump(
-        frontmatter,
-        default_flow_style=False,
-        allow_unicode=True,
-        sort_keys=False
-    )
+    yaml_str = yaml.safe_dump(frontmatter, default_flow_style=False, allow_unicode=True, sort_keys=False)
     return f"---\n{yaml_str}---\n"

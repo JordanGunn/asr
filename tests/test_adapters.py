@@ -1,5 +1,6 @@
 """Tests for Copilot and Claude adapters."""
 
+
 class TestCopilotAdapter:
     """Tests for the Copilot adapter."""
 

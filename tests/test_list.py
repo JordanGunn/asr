@@ -1,5 +1,6 @@
 """Tests for the `asr registry list` command output formatting."""
 
+
 class TestListCommand:
     """Tests for registry list command output."""
 

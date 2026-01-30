@@ -14,22 +14,15 @@ from tracking import extract_metadata
 
 def register(subparsers) -> None:
     """Register the sync command."""
-    p = subparsers.add_parser(
-        "sync",
-        help="Refresh outdated tracked skills from registry"
-    )
+    p = subparsers.add_parser("sync", help="Refresh outdated tracked skills from registry")
     p.add_argument(
         "path",
         nargs="?",
         type=Path,
         default=Path.cwd(),
-        help="Path to scan for tracked skills (default: current directory)"
+        help="Path to scan for tracked skills (default: current directory)",
     )
-    p.add_argument(
-        "--force",
-        action="store_true",
-        help="Overwrite modified skills (default: skip)"
-    )
+    p.add_argument("--force", action="store_true", help="Overwrite modified skills (default: skip)")
     p.add_argument("--json", action="store_true", help="Output in JSON format")
     p.add_argument("--quiet", action="store_true", help="Suppress info/warnings")
     p.set_defaults(func=run)
@@ -66,6 +59,7 @@ def run(args: argparse.Namespace) -> int:
 
     # Check status and update outdated skills
     from registry import load_registry
+
     entries = load_registry()
     entry_map = {e.name: e for e in entries}
 
@@ -84,12 +78,9 @@ def run(args: argparse.Namespace) -> int:
         # Check if in registry
         if skill_name not in entry_map:
             skipped += 1
-            results.append({
-                "name": skill_name,
-                "path": str(skill_dir),
-                "status": "skipped",
-                "message": "Not in registry"
-            })
+            results.append(
+                {"name": skill_name, "path": str(skill_dir), "status": "skipped", "message": "Not in registry"}
+            )
             if not args.quiet and not args.json:
                 print(f"  ? {skill_name}: skipped (not in registry)", file=sys.stderr)
             continue
@@ -99,12 +90,7 @@ def run(args: argparse.Namespace) -> int:
 
         if not manifest:
             skipped += 1
-            results.append({
-                "name": skill_name,
-                "path": str(skill_dir),
-                "status": "skipped",
-                "message": "No manifest"
-            })
+            results.append({"name": skill_name, "path": str(skill_dir), "status": "skipped", "message": "No manifest"})
             if not args.quiet and not args.json:
                 print(f"  ? {skill_name}: skipped (no manifest)", file=sys.stderr)
             continue
@@ -112,12 +98,7 @@ def run(args: argparse.Namespace) -> int:
         # Check if outdated (compare tracked hash with registry hash)
         if manifest.content_hash == tracked_hash:
             # Already up-to-date
-            results.append({
-                "name": skill_name,
-                "path": str(skill_dir),
-                "status": "up-to-date",
-                "message": "Current"
-            })
+            results.append({"name": skill_name, "path": str(skill_dir), "status": "up-to-date", "message": "Current"})
             if not args.quiet and not args.json:
                 print(f"  ✓ {skill_name}: up to date", file=sys.stderr)
             continue
@@ -127,31 +108,17 @@ def run(args: argparse.Namespace) -> int:
             if not args.quiet and not args.json:
                 print(f"  ↻ {skill_name}: updating...", file=sys.stderr, flush=True)
 
-            copy_skill(
-                entry.path,
-                skill_dir,
-                validate=False,
-                inject_tracking=True,
-                source_hash=manifest.content_hash
-            )
+            copy_skill(entry.path, skill_dir, validate=False, inject_tracking=True, source_hash=manifest.content_hash)
 
             updated += 1
-            results.append({
-                "name": skill_name,
-                "path": str(skill_dir),
-                "status": "updated",
-                "message": "Refreshed from registry"
-            })
+            results.append(
+                {"name": skill_name, "path": str(skill_dir), "status": "updated", "message": "Refreshed from registry"}
+            )
             if not args.quiet and not args.json:
                 print(f"  ✓ {skill_name}: updated", file=sys.stderr)
         except Exception as e:
             failed += 1
-            results.append({
-                "name": skill_name,
-                "path": str(skill_dir),
-                "status": "failed",
-                "message": str(e)
-            })
+            results.append({"name": skill_name, "path": str(skill_dir), "status": "failed", "message": str(e)})
             if not args.quiet and not args.json:
                 print(f"  ✗ {skill_name}: failed ({e})", file=sys.stderr)
 
