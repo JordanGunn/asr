@@ -21,12 +21,12 @@ class MockSkillEntry:
 @pytest.fixture
 def tmp_skills_dir(tmp_path, monkeypatch):
     """Create a temporary skills directory and patch config to use it."""
-    skills_dir = tmp_path / ".skills"
+    skills_dir = tmp_path / ".oasr"
     skills_dir.mkdir()
     
     # Patch the config module
     import config
-    monkeypatch.setattr(config, "SKILLS_DIR", skills_dir)
+    monkeypatch.setattr(config, "OASR_DIR", skills_dir)
     
     # Patch registry module
     import registry
