@@ -20,7 +20,7 @@ def run(args: argparse.Namespace) -> int:
     Returns:
         Exit code (0 for success, non-zero for errors)
     """
-    skill_name = args.skill
+    skill_name = args.skill_name
     
     # Load registry to verify skill exists
     entries = load_registry()
@@ -32,7 +32,8 @@ def run(args: argparse.Namespace) -> int:
     
     if not entry:
         if not args.quiet:
-            print(f"Skill not found: {skill_name}", file=sys.stderr)
+            print(f"Error: Skill '{skill_name}' not found", file=sys.stderr)
+            print(f"Try: oasr list", file=sys.stderr)
         return 1
     
     # Load manifest
@@ -127,8 +128,7 @@ def register(subparsers):
     )
     
     parser.add_argument(
-        "-s", "--skill",
-        required=True,
+        "skill_name",
         help="Skill name to show information for",
     )
     
