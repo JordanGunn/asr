@@ -7,10 +7,9 @@ import json
 import sys
 from pathlib import Path
 
-from adapters import CursorAdapter, WindsurfAdapter, CodexAdapter, CopilotAdapter, ClaudeAdapter
+from adapters import ClaudeAdapter, CodexAdapter, CopilotAdapter, CursorAdapter, WindsurfAdapter
 from config import load_config
 from registry import load_registry
-
 
 ADAPTERS = {
     "cursor": CursorAdapter(),

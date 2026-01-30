@@ -7,7 +7,7 @@ import argparse
 
 def register(subparsers, parser_ref: argparse.ArgumentParser) -> None:
     """Register the help subcommand.
-    
+
     Args:
         subparsers: The subparsers object to add to.
         parser_ref: Reference to the main parser for displaying help.
@@ -30,18 +30,18 @@ def run(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
     if not args.command:
         parser.print_help()
         return 0
-    
+
     # Find the subparser for the given command
     subparsers_action = None
     for action in parser._actions:
         if isinstance(action, argparse._SubParsersAction):
             subparsers_action = action
             break
-    
+
     if subparsers_action is None:
         print("Error: No commands available")
         return 1
-    
+
     if args.command in subparsers_action.choices:
         subparsers_action.choices[args.command].print_help()
         return 0

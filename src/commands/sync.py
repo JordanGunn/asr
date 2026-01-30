@@ -10,11 +10,11 @@ from pathlib import Path
 
 from config import load_config
 from manifest import (
-    load_manifest,
     check_manifest,
-    sync_manifest,
-    save_manifest,
     create_manifest,
+    load_manifest,
+    save_manifest,
+    sync_manifest,
 )
 from registry import load_registry, remove_skill
 from validate import validate_skill
@@ -54,12 +54,13 @@ def run(args: argparse.Namespace) -> int:
 
     # Check for remote skills and show progress header
     from skillcopy.remote import is_remote_source
+
     remote_count = 0
     for entry in entries:
         manifest = load_manifest(entry.name)
         if manifest and is_remote_source(manifest.source_path):
             remote_count += 1
-    
+
     if remote_count > 0 and not args.quiet and not args.json:
         print(f"Checking {remote_count} remote skill(s)...", file=sys.stderr)
 
@@ -84,11 +85,17 @@ def run(args: argparse.Namespace) -> int:
             # Show progress for remote skills
             is_remote = is_remote_source(manifest.source_path)
             if is_remote and not args.quiet and not args.json:
-                platform = "GitHub" if "github.com" in manifest.source_path else "GitLab" if "gitlab.com" in manifest.source_path else "remote"
+                platform = (
+                    "GitHub"
+                    if "github.com" in manifest.source_path
+                    else "GitLab"
+                    if "gitlab.com" in manifest.source_path
+                    else "remote"
+                )
                 print(f"  ↓ {entry.name} (checking {platform}...)", file=sys.stderr, flush=True)
-            
+
             status = check_manifest(manifest)
-            
+
             if is_remote and not args.quiet and not args.json:
                 print(f"  ✓ {entry.name} (checked)", file=sys.stderr)
 
