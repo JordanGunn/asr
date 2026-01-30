@@ -14,7 +14,7 @@ from commands import adapter, add, clean, find, rm, status, sync, update, use, v
 from commands import help as help_cmd
 from commands import list as list_cmd
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 
 def main(argv: list[str] | None = None) -> int:
