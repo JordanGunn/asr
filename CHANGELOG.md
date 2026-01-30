@@ -9,10 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.3.1] - 2026-01-30
 
 ### Fixed
-- **Critical**: Fix `oasr registry add` and `oasr registry rm` missing `--recursive` and `--strict` arguments
+- **Critical**: Fix `oasr registry add` and `oasr registry rm` missing arguments
   - Error: "'Namespace' object has no attribute 'recursive'"
+  - Error: "'Namespace' object has no attribute 'targets'"
   - Added missing `-r/--recursive` flag to `registry add` and `registry rm`
   - Added missing `--strict` flag to `registry add`
+  - Fixed `registry rm` argument name from `names` to `targets` (for glob pattern support)
+  - Added missing `--quiet` flag to `registry rm`
 
 ## [0.3.0] - 2026-01-30
 

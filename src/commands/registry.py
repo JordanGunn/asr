@@ -49,7 +49,7 @@ def register(subparsers) -> None:
 
     # registry rm
     rm_p = registry_subparsers.add_parser("rm", help="Remove skill(s) from registry")
-    rm_p.add_argument("names", nargs="+", help="Skill name(s) to remove")
+    rm_p.add_argument("targets", nargs="+", help="Skill name(s), path(s), or glob pattern(s) to remove")
     rm_p.add_argument("-r", "--recursive", action="store_true", help="Recursively remove skills")
     rm_p.add_argument("--json", action="store_true", help="Output in JSON format")
     rm_p.add_argument("--quiet", action="store_true", help="Suppress info/warnings")
