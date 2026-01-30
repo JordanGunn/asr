@@ -43,9 +43,13 @@ No copying. No drift. One source of truth.
 ## Quick Example
 
 ```bash
-# Register your skills
+# Register local skills
 oasr add ~/skills/git-commit
 oasr add ~/skills/code-review
+
+# Register remote skills from GitHub/GitLab
+oasr add https://github.com/user/skills-repo/tree/main/my-skill
+oasr add https://gitlab.com/org/project/tree/main/cool-skill
 
 # Generate adapters for a project
 oasr adapter --output-dir ~/projects/my-app
@@ -55,6 +59,34 @@ oasr adapter --output-dir ~/projects/my-app
 # ~/projects/my-app/.windsurf/workflows/git-commit.md
 # ~/projects/my-app/.claude/commands/git-commit.md
 ```
+
+---
+
+## Remote Skills
+
+ASR supports registering skills directly from GitHub and GitLab repositories:
+
+```bash
+# Add a skill from GitHub
+oasr add https://github.com/user/repo/tree/main/skills/my-skill
+
+# Add a skill from GitLab
+oasr add https://gitlab.com/org/project/tree/dev/cool-skill
+
+# Sync remote skills (check for updates)
+oasr sync
+
+# Use remote skills
+oasr use my-skill -d ./output
+```
+
+**Authentication** (optional, for private repos and higher rate limits):
+```bash
+export GITHUB_TOKEN=ghp_your_token_here
+export GITLAB_TOKEN=glpat_your_token_here
+```
+
+Remote skills are fetched on-demand during `adapter` and `use` operations. The registry stores the URL, and `sync` checks if the remote source has changed.
 
 ---
 

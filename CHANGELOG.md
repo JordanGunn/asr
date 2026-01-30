@@ -7,15 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Remote skills support** — register skills from GitHub and GitLab URLs
+  - `oasr add` now accepts GitHub/GitLab repository URLs
+  - `GITHUB_TOKEN` and `GITLAB_TOKEN` environment variable support for authentication
+  - Remote reachability checks in `oasr sync`
+  - Automatic fetching and copying of remote skills during `adapter` and `use` operations
+- `skillcopy` module for unified skill copying (local and remote)
+- `remote` module for GitHub/GitLab API integration
+- URL parsing and validation for GitHub and GitLab
+- Skill name derivation from remote URLs
 - `oasr help` subcommand for viewing command help (e.g., `oasr help list`).
 - Glob pattern support for `oasr use` (e.g., `oasr use "git-*"`).
 - **Copilot adapter** — generates `.github/copilot-instructions.md` with managed skill sections.
 - **Claude adapter** — generates `.claude/commands/*.md` files.
 - Cross-platform installation scripts: `install.sh` and `install.ps1`.
-- Test suite with pytest (18 tests covering new functionality).
+- Test suite with pytest (41 tests covering new functionality).
 - Documentation split into `docs/QUICKSTART.md` and `docs/COMMANDS.md`.
 
 ### Changed
+- **BREAKING**: `oasr adapter` now always copies skills locally (old `--copy` flag is deprecated)
+- `--copy` flag kept for backward compatibility but has no effect
+- Skills are always copied to `.{ide}/skills/` directories
+- Adapter files now use relative paths to local skill copies
 - `oasr list` output redesigned with box-drawing characters, shortened paths, and `--verbose` flag.
 - Renamed `src/oasr_cmd/` to `src/commands/` for clarity.
 - Packaging migrated to a `src/` layout.

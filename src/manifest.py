@@ -11,10 +11,14 @@ from __future__ import annotations
 
 import hashlib
 import json
+import shutil
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Literal
+
+from skillcopy.remote import is_remote_source
+from remote import check_remote_reachability, fetch_remote_to_temp
 
 
 MANIFESTS_DIR = "manifests"
@@ -170,24 +174,35 @@ def get_manifests_dir(config_dir: Path | None = None) -> Path:
 
 def create_manifest(
     name: str,
-    source_path: Path,
+    source_path: Path | str,
     description: str,
 ) -> SkillManifest:
     """Create a new manifest for a skill.
     
     Args:
         name: Skill name.
-        source_path: Absolute path to skill directory.
+        source_path: Absolute path to skill directory or remote URL.
         description: Skill description.
     
     Returns:
         New SkillManifest instance.
     """
-    content_hash, files = hash_directory(source_path)
+    source_path_str = str(source_path)
+    
+    # Handle remote sources
+    if is_remote_source(source_path_str):
+        temp_dir = fetch_remote_to_temp(source_path_str)
+        try:
+            content_hash, files = hash_directory(temp_dir)
+        finally:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+    else:
+        # Handle local sources
+        content_hash, files = hash_directory(Path(source_path_str))
     
     return SkillManifest(
         name=name,
-        source_path=str(source_path),
+        source_path=source_path_str,
         description=description,
         registered_at=datetime.now(timezone.utc).isoformat(),
         content_hash=content_hash,
@@ -290,26 +305,69 @@ def check_manifest(manifest: SkillManifest) -> ManifestStatus:
     Returns:
         ManifestStatus with validation results.
     """
-    source_path = Path(manifest.source_path)
+    source_path_str = manifest.source_path
     
-    if not source_path.exists():
-        return ManifestStatus(
-            name=manifest.name,
-            status="missing",
-            source_path=manifest.source_path,
-            message=f"Source path no longer exists: {manifest.source_path}",
-        )
+    # Handle remote sources
+    if is_remote_source(source_path_str):
+        # Check remote reachability
+        reachable, status_code, message = check_remote_reachability(source_path_str)
+        
+        if not reachable:
+            if status_code in (404, 410):
+                return ManifestStatus(
+                    name=manifest.name,
+                    status="missing",
+                    source_path=source_path_str,
+                    message=f"Remote source not found: {message}",
+                )
+            else:
+                # Network error - assume valid (transient)
+                return ManifestStatus(
+                    name=manifest.name,
+                    status="valid",
+                    source_path=source_path_str,
+                    message=f"Cannot verify remote (network issue): {message}",
+                )
+        
+        # Fetch current content to temp dir
+        try:
+            temp_dir = fetch_remote_to_temp(source_path_str)
+        except Exception as e:
+            return ManifestStatus(
+                name=manifest.name,
+                status="valid",
+                source_path=source_path_str,
+                message=f"Cannot fetch remote (assuming unchanged): {e}",
+            )
+        
+        try:
+            current_hash, current_files = hash_directory(temp_dir)
+        finally:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+    else:
+        # Handle local sources
+        source_path = Path(source_path_str)
+        
+        if not source_path.exists():
+            return ManifestStatus(
+                name=manifest.name,
+                status="missing",
+                source_path=source_path_str,
+                message=f"Source path no longer exists: {source_path_str}",
+            )
+        
+        current_hash, current_files = hash_directory(source_path)
     
-    current_hash, current_files = hash_directory(source_path)
-    
+    # Compare hashes
     if current_hash == manifest.content_hash:
         return ManifestStatus(
             name=manifest.name,
             status="valid",
-            source_path=manifest.source_path,
+            source_path=source_path_str,
             message="Source matches manifest",
         )
     
+    # Compute differences
     current_file_map = {f.path: f for f in current_files}
     manifest_file_map = {f.path: f for f in manifest.files}
     
@@ -330,7 +388,7 @@ def check_manifest(manifest: SkillManifest) -> ManifestStatus:
     return ManifestStatus(
         name=manifest.name,
         status="modified",
-        source_path=manifest.source_path,
+        source_path=source_path_str,
         message=f"Source modified: {len(changed)} changed, {len(added)} added, {len(removed)} removed",
         changed_files=changed,
         added_files=added,
@@ -348,8 +406,19 @@ def sync_manifest(manifest: SkillManifest, config_dir: Path | None = None) -> Sk
     Returns:
         Updated manifest (also saved to disk).
     """
-    source_path = Path(manifest.source_path)
-    content_hash, files = hash_directory(source_path)
+    source_path_str = manifest.source_path
+    
+    # Handle remote sources
+    if is_remote_source(source_path_str):
+        temp_dir = fetch_remote_to_temp(source_path_str)
+        try:
+            content_hash, files = hash_directory(temp_dir)
+        finally:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+    else:
+        # Handle local sources
+        source_path = Path(source_path_str)
+        content_hash, files = hash_directory(source_path)
     
     updated = SkillManifest(
         name=manifest.name,

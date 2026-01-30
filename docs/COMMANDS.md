@@ -29,10 +29,16 @@ Register skills in the registry.
 
 ```bash
 oasr add /path/to/skill
+oasr add https://github.com/user/repo/tree/main/skills/my-skill  # Remote URL
 oasr add /path/to/skills/*          # Glob paths
 oasr add /path/to/skill --strict    # Fail on validation warnings
 oasr add -r /path/to/root           # Recursive discovery
 ```
+
+**Remote Skills:**
+- Supports GitHub and GitLab URLs
+- Formats: `https://github.com/{user}/{repo}/tree/{branch}/{path}`
+- Set `GITHUB_TOKEN` or `GITLAB_TOKEN` for authentication
 
 ---
 
@@ -52,7 +58,7 @@ oasr rm -r /path/to/root            # Recursive removal
 
 ## `oasr use`
 
-Copy skills to a target directory. Supports glob patterns.
+Copy skills to a target directory. Supports glob patterns. Works with both local and remote skills.
 
 ```bash
 oasr use skill-name
@@ -60,6 +66,8 @@ oasr use skill-name -d /path/to/project
 oasr use "git-*"                    # Glob pattern
 oasr use skill-one skill-two        # Multiple skills
 ```
+
+**Note:** Remote skills are automatically fetched during copy.
 
 ---
 
@@ -138,29 +146,21 @@ oasr adapter copilot                      # GitHub Copilot
 oasr adapter claude                       # Claude Code
 oasr adapter --exclude skill1,skill2
 oasr adapter --output-dir /path/to/project
-oasr adapter --copy                       # Copy skills locally, use relative paths
 ```
 
-### `--copy` Flag
+**Note:** Skills are **always copied** locally now. The `--copy` flag is deprecated but kept for backward compatibility.
 
-When `--copy` is specified, skills are copied into a local `skills/` directory sibling to the adapter output, and generated files use relative paths instead of absolute paths.
+**Behavior:**
+- Skills are automatically copied to `.{ide}/skills/` directories
+- Adapter files use relative paths to copied skills
+- Remote skills are fetched during generation
 
-**Without `--copy` (default):**
-```
-.windsurf/workflows/my-skill.md  → points to ~/skills/my-skill/
-```
-
-**With `--copy`:**
+**Output Structure:**
 ```
 .windsurf/
-├── skills/my-skill/             ← copied from source
+├── skills/my-skill/             ← copied from source (local or remote)
 └── workflows/my-skill.md        → points to ../skills/my-skill/
 ```
-
-Use cases:
-- Self-contained projects without external path dependencies
-- Distributable repositories
-- Snapshotting skills at a specific version
 
 ### Adapter Outputs
 

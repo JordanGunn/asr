@@ -2,8 +2,9 @@
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-import shutil
 from typing import Protocol
+
+from skillcopy import copy_skill as copy_skill_unified
 
 
 class SkillInfo(Protocol):
@@ -44,13 +45,13 @@ class BaseAdapter(ABC):
         return output_dir / self.target_subdir
     
     @abstractmethod
-    def generate(self, skill: SkillInfo, output_dir: Path, copy: bool = False, base_output_dir: Path | None = None) -> Path:
+    def generate(self, skill: SkillInfo, output_dir: Path, copy: bool = True, base_output_dir: Path | None = None) -> Path:
         """Generate IDE-specific file for a skill.
         
         Args:
             skill: Skill information.
             output_dir: Resolved output directory for adapter files.
-            copy: If True, use relative paths to local skill copies.
+            copy: Always True (kept for backward compatibility).
             base_output_dir: Base output directory (for computing relative paths).
         
         Returns:
@@ -89,6 +90,8 @@ class BaseAdapter(ABC):
     def copy_skill(self, skill: SkillInfo, skills_dir: Path) -> Path:
         """Copy a skill to the local skills directory.
         
+        Uses unified copy interface (handles both local and remote).
+        
         Args:
             skill: Skill to copy.
             skills_dir: Target skills directory.
@@ -96,38 +99,29 @@ class BaseAdapter(ABC):
         Returns:
             Path to the copied skill directory.
         """
-        src = Path(skill.path)
         dest = skills_dir / skill.name
-        
-        if dest.exists():
-            shutil.rmtree(dest)
-        
-        shutil.copytree(src, dest)
-        return dest
+        return copy_skill_unified(skill.path, dest, validate=False)
     
-    def get_skill_path(self, skill: SkillInfo, output_dir: Path, copy: bool = False) -> str:
+    def get_skill_path(self, skill: SkillInfo, output_dir: Path, copy: bool = True) -> str:
         """Get the skill path to use in generated files.
         
         Args:
             skill: Skill information.
             output_dir: Base output directory.
-            copy: If True, return relative path to local copy.
+            copy: Always True (skills are always copied now).
         
         Returns:
-            Path string to use in adapter output.
+            Relative path string to use in adapter output.
         """
-        if copy:
-            # Return relative path from adapter output to skills dir
-            # e.g., "../skills/my-skill" from .windsurf/workflows/
-            return f"../skills/{skill.name}"
-        return skill.path
+        # Always return relative path to local copy
+        return f"../skills/{skill.name}"
     
     def generate_all(
         self,
         skills: list[SkillInfo],
         output_dir: Path,
         exclude: set[str] | None = None,
-        copy: bool = False,
+        copy: bool = True,  # Always True, kept for backward compatibility
     ) -> tuple[list[Path], list[Path]]:
         """Generate files for all skills and cleanup stale ones.
         
@@ -135,7 +129,7 @@ class BaseAdapter(ABC):
             skills: List of skills to generate.
             output_dir: Base output directory.
             exclude: Set of skill names to exclude.
-            copy: If True, copy skills locally and use relative paths.
+            copy: Always True (kept for backward compatibility).
         
         Returns:
             Tuple of (generated files, removed stale files).
@@ -144,13 +138,12 @@ class BaseAdapter(ABC):
         resolved_dir = self.resolve_output_dir(output_dir)
         resolved_dir.mkdir(parents=True, exist_ok=True)
         
-        # Copy skills if requested
-        if copy:
-            skills_dir = self.get_skills_dir(output_dir)
-            skills_dir.mkdir(parents=True, exist_ok=True)
-            for skill in skills:
-                if skill.name not in exclude:
-                    self.copy_skill(skill, skills_dir)
+        # Always copy skills (handles both local and remote)
+        skills_dir = self.get_skills_dir(output_dir)
+        skills_dir.mkdir(parents=True, exist_ok=True)
+        for skill in skills:
+            if skill.name not in exclude:
+                self.copy_skill(skill, skills_dir)
         
         generated = []
         valid_names = set()
@@ -160,7 +153,7 @@ class BaseAdapter(ABC):
                 continue
             
             valid_names.add(skill.name)
-            path = self.generate(skill, resolved_dir, copy=copy, base_output_dir=output_dir)
+            path = self.generate(skill, resolved_dir, copy=True, base_output_dir=output_dir)
             generated.append(path)
         
         removed = self.cleanup_stale(resolved_dir, valid_names)

@@ -5,10 +5,10 @@ from __future__ import annotations
 import argparse
 import fnmatch
 import json
-import shutil
 import sys
 from pathlib import Path
 
+from skillcopy import copy_skill
 from registry import load_registry
 
 
@@ -71,19 +71,14 @@ def run(args: argparse.Namespace) -> int:
 
     for name in sorted(matched_names):
         entry = entry_map[name]
-        src = Path(entry.path)
-
-        if not src.exists():
-            warnings.append(f"Skill path missing: {name} at {entry.path}")
-            continue
-
         dest = output_dir / name
 
-        if dest.exists():
-            shutil.rmtree(dest)
-
-        shutil.copytree(src, dest)
-        copied.append({"name": name, "src": str(src), "dest": str(dest)})
+        try:
+            # Unified copy - handles both local and remote
+            copy_skill(entry.path, dest, validate=False)
+            copied.append({"name": name, "src": entry.path, "dest": str(dest)})
+        except Exception as e:
+            warnings.append(f"Failed to copy {name}: {e}")
 
     if not args.quiet:
         for w in warnings:

@@ -25,7 +25,7 @@ def register(subparsers) -> None:
     p = subparsers.add_parser("adapter", help="Generate IDE-specific files")
     p.add_argument("--exclude", help="Comma-separated skill names to exclude")
     p.add_argument("--output-dir", type=Path, default=Path("."), help="Output directory")
-    p.add_argument("--copy", action="store_true", help="Copy skills locally and use relative paths")
+    p.add_argument("--copy", action="store_true", help="(Deprecated) Skills are always copied now")
     p.add_argument("--json", action="store_true", help="Output in JSON format")
     p.add_argument("--quiet", action="store_true", help="Suppress info/warnings")
     p.add_argument("--config", type=Path, help="Override config file path")
@@ -71,8 +71,8 @@ def run(args: argparse.Namespace) -> int:
             continue
 
         adapter = ADAPTERS[target]
-        copy_skills = getattr(args, 'copy', False)
-        generated, removed = adapter.generate_all(entries, output_dir, exclude, copy=copy_skills)
+        # Always copy skills now (--copy flag is deprecated but kept for backward compat)
+        generated, removed = adapter.generate_all(entries, output_dir, exclude, copy=True)
 
         total_generated += len(generated)
         total_removed += len(removed)
