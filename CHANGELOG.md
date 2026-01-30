@@ -12,6 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `GITHUB_TOKEN` and `GITLAB_TOKEN` environment variable support for authentication
   - Remote reachability checks in `oasr sync`
   - Automatic fetching and copying of remote skills during `adapter` and `use` operations
+- **`oasr update` command** — self-update ASR tool from GitHub
+  - Pulls latest changes with `git pull --ff-only`
+  - Displays truncated changelog with commit count and file statistics
+  - Reinstalls package automatically (unless `--no-reinstall` specified)
+  - Suppresses verbose git output with custom messages
+  - JSON output support for automation
 - `skillcopy` module for unified skill copying (local and remote)
 - `remote` module for GitHub/GitLab API integration
 - URL parsing and validation for GitHub and GitLab
