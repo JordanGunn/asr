@@ -90,21 +90,23 @@ def run(args: argparse.Namespace) -> int:
             "missing": "✗",
         }.get(status_result.status, "?")
         
-        print(f"\n{manifest.name}")
-        print(f"  Description: {manifest.description}")
-        print(f"  Source: {manifest.source_path}")
-        print(f"  Type: {skill_type}")
-        print(f"  Status: {status_icon} {status_result.status.capitalize()}")
+        print(f"\n[{manifest.name}]")
+        print("---")
+        print(manifest.description)
+        print("---")
+        print(f"Source: {manifest.source_path}")
+        print(f"Type: {skill_type}")
+        print(f"Status: {status_icon} {status_result.status.capitalize()}")
         if status_result.message:
-            print(f"    {status_result.message}")
-        print(f"  Files: {len(manifest.files)}")
-        print(f"  Hash: {manifest.content_hash[:20]}...")
-        print(f"  Registered: {reg_date_str}")
+            print(f"  {status_result.message}")
+        print(f"Files: {len(manifest.files)}")
+        print(f"Hash: {manifest.content_hash[:20]}...")
+        print(f"Registered: {reg_date_str}")
         
         if args.files and manifest.files:
-            print(f"\n  Files ({len(manifest.files)}):")
+            print(f"\nFiles ({len(manifest.files)}):")
             for file_info in manifest.files:
-                print(f"    - {file_info.path}")
+                print(f"  - {file_info.path}")
         
         print()
     
