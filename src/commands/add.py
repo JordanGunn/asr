@@ -127,7 +127,22 @@ def run(args: argparse.Namespace) -> int:
         
         # Fetch to temp dir for validation
         try:
+            if not args.quiet and not args.json:
+                # Determine platform for user feedback
+                if "github.com" in url:
+                    platform = "GitHub"
+                elif "gitlab.com" in url:
+                    platform = "GitLab"
+                else:
+                    platform = "remote source"
+                print(f"Fetching from {platform}...", file=sys.stderr)
+            
             temp_dir = fetch_remote_to_temp(url)
+            
+            if not args.quiet and not args.json:
+                # Count files downloaded
+                file_count = sum(1 for _ in temp_dir.rglob('*') if _.is_file())
+                print(f"✓ Downloaded {file_count} file(s)", file=sys.stderr)
         except Exception as e:
             skipped_count += 1
             results.append({"url": url, "added": False, "reason": f"Fetch failed: {e}"})
