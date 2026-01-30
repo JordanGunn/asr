@@ -20,13 +20,19 @@ def inject_metadata(skill_path: Path, content_hash: str, source: str) -> bool:
         source: Source path or URL of the skill
 
     Returns:
-        True if metadata was injected, False if SKILL.md not found
+        True if metadata was injected, False if SKILL.md not found or injection failed
+
+    Raises:
+        OSError: If file cannot be read or written (permission, encoding issues)
     """
     skill_md = skill_path / "SKILL.md"
     if not skill_md.exists():
         return False
 
-    content = skill_md.read_text(encoding="utf-8")
+    try:
+        content = skill_md.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as e:
+        raise OSError(f"Failed to read {skill_md}: {e}") from e
 
     # Parse existing frontmatter
     frontmatter, body = _split_frontmatter(content)
@@ -35,8 +41,15 @@ def inject_metadata(skill_path: Path, content_hash: str, source: str) -> bool:
         # No frontmatter exists - shouldn't happen for valid skills, but handle it
         return False
 
+    # Validate frontmatter is a dict
+    if not isinstance(frontmatter, dict):
+        return False
+
     # Ensure metadata field exists
     if "metadata" not in frontmatter:
+        frontmatter["metadata"] = {}
+    elif not isinstance(frontmatter["metadata"], dict):
+        # metadata exists but is not a dict - fix it
         frontmatter["metadata"] = {}
 
     # Inject oasr tracking metadata
@@ -47,8 +60,11 @@ def inject_metadata(skill_path: Path, content_hash: str, source: str) -> bool:
     }
 
     # Write back
-    new_content = _serialize_frontmatter(frontmatter) + body
-    skill_md.write_text(new_content, encoding="utf-8")
+    try:
+        new_content = _serialize_frontmatter(frontmatter) + body
+        skill_md.write_text(new_content, encoding="utf-8")
+    except (OSError, UnicodeEncodeError) as e:
+        raise OSError(f"Failed to write {skill_md}: {e}") from e
 
     return True
 
@@ -61,18 +77,37 @@ def extract_metadata(skill_path: Path) -> dict | None:
 
     Returns:
         Dictionary with 'hash', 'source', 'synced' keys, or None if not tracked
+        Returns None on any error (file not found, encoding issues, corrupted metadata)
     """
     skill_md = skill_path / "SKILL.md"
     if not skill_md.exists():
         return None
 
-    content = skill_md.read_text(encoding="utf-8")
-    frontmatter, _ = _split_frontmatter(content)
-
-    if frontmatter is None:
+    try:
+        content = skill_md.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        # Cannot read file - treat as untracked
         return None
 
-    return frontmatter.get("metadata", {}).get("oasr")
+    frontmatter, _ = _split_frontmatter(content)
+
+    if frontmatter is None or not isinstance(frontmatter, dict):
+        return None
+
+    # Safely extract metadata.oasr
+    metadata = frontmatter.get("metadata")
+    if not isinstance(metadata, dict):
+        return None
+
+    oasr = metadata.get("oasr")
+    if not isinstance(oasr, dict):
+        return None
+
+    # Validate required fields
+    if "hash" not in oasr or "source" not in oasr:
+        return None
+
+    return oasr
 
 
 def strip_tracking_metadata(frontmatter: dict) -> dict:

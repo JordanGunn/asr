@@ -50,9 +50,20 @@ def copy_skill(
 
     # Inject tracking metadata if requested
     if inject_tracking:
-        from tracking import inject_metadata
+        try:
+            from tracking import inject_metadata
 
-        inject_metadata(dest_path, source_hash, source)
+            success = inject_metadata(dest_path, source_hash, source)
+            if not success:
+                # Log warning but don't fail the copy
+                import sys
+
+                print(f"Warning: Failed to inject tracking metadata for {dest_path.name}", file=sys.stderr)
+        except Exception as e:
+            # Log warning but don't fail the copy
+            import sys
+
+            print(f"Warning: Error injecting tracking metadata: {e}", file=sys.stderr)
 
     return dest_path
 

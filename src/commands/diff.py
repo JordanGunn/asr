@@ -67,28 +67,45 @@ def run(args: argparse.Namespace) -> int:
         tracked_hash = metadata.get("hash")
         tracked_source = metadata.get("source")
 
-        # Compute current file hash (excluding metadata.oasr for comparison)
-        from discovery import parse_frontmatter
+        # Validate metadata structure
+        if not tracked_hash or not tracked_source:
+            untracked += 1
+            results.append(
+                {
+                    "name": skill_name,
+                    "path": str(skill_dir),
+                    "status": "error",
+                    "message": "Corrupted metadata (missing hash or source)",
+                }
+            )
+            if not args.quiet and not args.json:
+                print(f"  ✗ {skill_name}: corrupted metadata", file=sys.stderr)
+            continue
 
-        skill_md = skill_dir / "SKILL.md"
-        if skill_md.exists():
-            content = skill_md.read_text(encoding="utf-8")
-            frontmatter_dict = parse_frontmatter(content)
-            if frontmatter_dict:
-                # Strip tracking metadata for hash comparison
-                # We'll compare hashes by temporarily computing without metadata
-                # For now, just use the manifest hash comparison
-                pass
-
-        # For simplicity: check if tracked_hash matches registry hash
-        # The tracked_hash should be the registry hash at time of copy
+        # Check if in registry
         from registry import load_registry
 
-        entries = load_registry()
+        try:
+            entries = load_registry()
+        except Exception as e:
+            if not args.quiet and not args.json:
+                print(f"Error loading registry: {e}", file=sys.stderr)
+            return 1
+
         entry = next((e for e in entries if e.name == skill_name), None)
 
         if entry:
-            manifest = load_manifest(skill_name)
+            try:
+                manifest = load_manifest(skill_name)
+            except Exception as e:
+                untracked += 1
+                results.append(
+                    {"name": skill_name, "path": str(skill_dir), "status": "error", "message": f"Manifest error: {e}"}
+                )
+                if not args.quiet and not args.json:
+                    print(f"  ✗ {skill_name}: manifest error", file=sys.stderr)
+                continue
+
             if manifest:
                 # Compare tracked hash with registry hash
                 if manifest.content_hash == tracked_hash:
