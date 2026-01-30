@@ -13,7 +13,7 @@ from pathlib import Path
 from commands import adapter, clean, diff, find, registry, sync, update, use, validate
 from commands import help as help_cmd
 
-__version__ = "0.3.2"
+__version__ = "0.3.3"
 
 
 def main(argv: list[str] | None = None) -> int:
