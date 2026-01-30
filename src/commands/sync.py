@@ -52,6 +52,17 @@ def run(args: argparse.Namespace) -> int:
             for n in missing:
                 print(f"⚠ Skill not found: {n}", file=sys.stderr)
 
+    # Check for remote skills and show progress header
+    from skillcopy.remote import is_remote_source
+    remote_count = 0
+    for entry in entries:
+        manifest = load_manifest(entry.name)
+        if manifest and is_remote_source(manifest.source_path):
+            remote_count += 1
+    
+    if remote_count > 0 and not args.quiet and not args.json:
+        print(f"Checking {remote_count} remote skill(s)...", file=sys.stderr)
+
     results = []
     synced = 0
     missing_count = 0
@@ -70,7 +81,16 @@ def run(args: argparse.Namespace) -> int:
             save_manifest(manifest)
             status_info = {"name": entry.name, "status": "created", "message": "Manifest created"}
         else:
+            # Show progress for remote skills
+            is_remote = is_remote_source(manifest.source_path)
+            if is_remote and not args.quiet and not args.json:
+                platform = "GitHub" if "github.com" in manifest.source_path else "GitLab" if "gitlab.com" in manifest.source_path else "remote"
+                print(f"  ↓ {entry.name} (checking {platform}...)", file=sys.stderr, flush=True)
+            
             status = check_manifest(manifest)
+            
+            if is_remote and not args.quiet and not args.json:
+                print(f"  ✓ {entry.name} (checked)", file=sys.stderr)
 
             if status.status == "missing":
                 missing_count += 1
