@@ -40,6 +40,8 @@ def register(subparsers) -> None:
     # registry add
     add_p = registry_subparsers.add_parser("add", help="Add skill(s) to registry")
     add_p.add_argument("paths", nargs="+", help="Path(s) or URL(s) to skill directories")
+    add_p.add_argument("-r", "--recursive", action="store_true", help="Recursively discover skills")
+    add_p.add_argument("--strict", action="store_true", help="Fail on validation warnings")
     add_p.add_argument("--json", action="store_true", help="Output in JSON format")
     add_p.add_argument("--quiet", action="store_true", help="Suppress info/warnings")
     add_p.add_argument("--config", type=Path, help="Override config file path")
@@ -48,6 +50,7 @@ def register(subparsers) -> None:
     # registry rm
     rm_p = registry_subparsers.add_parser("rm", help="Remove skill(s) from registry")
     rm_p.add_argument("names", nargs="+", help="Skill name(s) to remove")
+    rm_p.add_argument("-r", "--recursive", action="store_true", help="Recursively remove skills")
     rm_p.add_argument("--json", action="store_true", help="Output in JSON format")
     rm_p.add_argument("--quiet", action="store_true", help="Suppress info/warnings")
     rm_p.set_defaults(func=run_rm)
