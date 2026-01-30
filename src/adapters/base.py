@@ -88,7 +88,7 @@ class BaseAdapter(ABC):
         base = self.target_subdir.split("/")[0]  # e.g., ".windsurf" or ".github"
         return output_dir / base / "skills"
     
-    def copy_skill(self, skill: SkillInfo, skills_dir: Path) -> Path:
+    def copy_skill(self, skill: SkillInfo, skills_dir: Path, show_progress: bool = False) -> Path:
         """Copy a skill to the local skills directory.
         
         Uses unified copy interface (handles both local and remote).
@@ -96,12 +96,13 @@ class BaseAdapter(ABC):
         Args:
             skill: Skill to copy.
             skills_dir: Target skills directory.
+            show_progress: If True, show progress for remote skills
         
         Returns:
             Path to the copied skill directory.
         """
         dest = skills_dir / skill.name
-        return copy_skill_unified(skill.path, dest, validate=False)
+        return copy_skill_unified(skill.path, dest, validate=False, show_progress=show_progress, skill_name=skill.name)
     
     def get_skill_path(self, skill: SkillInfo, output_dir: Path, copy: bool = True) -> str:
         """Get the skill path to use in generated files.
@@ -143,15 +144,57 @@ class BaseAdapter(ABC):
         skills_dir = self.get_skills_dir(output_dir)
         skills_dir.mkdir(parents=True, exist_ok=True)
         
+        # Separate remote and local skills
+        from skillcopy.remote import is_remote_source
+        remote_skills = [(s, skills_dir / s.name) for s in skills if s.name not in exclude and is_remote_source(s.path)]
+        local_skills = [(s, skills_dir / s.name) for s in skills if s.name not in exclude and not is_remote_source(s.path)]
+        
         failed_skills = []
-        for skill in skills:
-            if skill.name not in exclude:
+        
+        # Copy remote skills in parallel
+        if remote_skills:
+            print(f"\nCopying {len(remote_skills)} remote skill(s)...", file=sys.stderr)
+            from concurrent.futures import ThreadPoolExecutor, as_completed
+            import threading
+            
+            # Thread-safe print lock
+            print_lock = threading.Lock()
+            
+            def copy_remote_with_progress(skill, dest):
+                """Copy a remote skill with thread-safe progress output."""
                 try:
-                    self.copy_skill(skill, skills_dir)
+                    with print_lock:
+                        platform = "GitHub" if "github.com" in skill.path else "GitLab" if "gitlab.com" in skill.path else "remote"
+                        print(f"  ↓ {skill.name} (fetching from {platform}...)", file=sys.stderr, flush=True)
+                    
+                    result = self.copy_skill(skill, skills_dir, show_progress=False)  # We handle progress here
+                    
+                    with print_lock:
+                        print(f"  ✓ {skill.name} (downloaded)", file=sys.stderr)
+                    
+                    return skill.name, True, None
                 except Exception as e:
-                    # Warn but don't fail entire operation
-                    print(f"⚠ Warning: Failed to copy {skill.name}: {e}", file=sys.stderr)
-                    failed_skills.append(skill.name)
+                    with print_lock:
+                        print(f"  ✗ {skill.name} ({str(e)[:50]}...)", file=sys.stderr)
+                    return skill.name, False, str(e)
+            
+            # Fetch remote skills in parallel (max 4 concurrent)
+            with ThreadPoolExecutor(max_workers=4) as executor:
+                futures = {executor.submit(copy_remote_with_progress, skill, dest): skill.name 
+                          for skill, dest in remote_skills}
+                
+                for future in as_completed(futures):
+                    skill_name, success, error = future.result()
+                    if not success:
+                        failed_skills.append(skill_name)
+        
+        # Copy local skills sequentially (fast anyway)
+        for skill, dest in local_skills:
+            try:
+                self.copy_skill(skill, skills_dir, show_progress=False)
+            except Exception as e:
+                print(f"⚠ Warning: Failed to copy {skill.name}: {e}", file=sys.stderr)
+                failed_skills.append(skill.name)
         
         generated = []
         valid_names = set()
