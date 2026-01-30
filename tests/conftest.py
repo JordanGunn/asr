@@ -119,6 +119,20 @@ def sample_registry(tmp_skills_dir, sample_skills, monkeypatch):
 @pytest.fixture
 def cli_runner(monkeypatch, capsys):
     """Helper to run CLI commands and capture output."""
+    # Patch manifest loading globally for all CLI tests
+    import manifest as manifest_mod
+    
+    def mock_load_manifest(name):
+        """Return a mock manifest with content hash for tracking."""
+        from manifest import Manifest
+        return Manifest(
+            name=name,
+            description=f"Description for {name}",
+            content_hash=f"hash_{name}",  # Mock hash for tracking
+        )
+    
+    monkeypatch.setattr(manifest_mod, "load_manifest", mock_load_manifest)
+    
     def run(argv):
         import cli
         try:
@@ -128,5 +142,7 @@ def cli_runner(monkeypatch, capsys):
         
         captured = capsys.readouterr()
         return exit_code, captured.out, captured.err
+    
+    return run
     
     return run
