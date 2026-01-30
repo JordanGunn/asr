@@ -21,16 +21,17 @@ def is_remote_source(source: str) -> bool:
     )
 
 
-def copy_remote_skill(url: str, dest: Path, *, validate: bool = True) -> Path:
+def copy_remote_skill(url: str, dest: Path, *, validate: bool = True, force_refresh: bool = False) -> Path:
     """Copy a skill from remote URL to destination.
     
-    Fetches the skill to a temporary directory, then copies to destination.
-    Automatically cleans up temporary directory.
+    Smart caching: If destination exists and content matches manifest hash,
+    skip the fetch to avoid unnecessary API calls.
     
     Args:
         url: Remote skill URL
         dest: Destination directory
         validate: Whether to validate skill structure (reserved for future)
+        force_refresh: If True, always fetch (ignore cache)
     
     Returns:
         Path to copied skill directory
@@ -39,12 +40,32 @@ def copy_remote_skill(url: str, dest: Path, *, validate: bool = True) -> Path:
         ValueError: If URL is invalid
         OSError: If fetch or copy operation fails
     """
+    dest = dest.resolve()
+    
+    # Smart check: if destination exists and is up-to-date, skip fetch
+    if not force_refresh and dest.exists():
+        try:
+            from manifest import load_manifest, hash_directory
+            
+            # Try to load manifest to get expected hash
+            # Derive skill name from destination directory name
+            skill_name = dest.name
+            manifest = load_manifest(skill_name)
+            
+            # If manifest source matches this URL, compare hashes
+            if manifest and manifest.source_path == url:
+                current_hash, _ = hash_directory(dest)
+                if current_hash == manifest.content_hash:
+                    # Destination is up-to-date, no need to fetch
+                    return dest
+        except Exception:
+            # If any error checking cache, proceed with fetch
+            pass
+    
     # Fetch to temporary directory
     temp_dir = fetch_remote_to_temp(url)
     
     try:
-        dest = dest.resolve()
-        
         # Remove existing destination if it exists
         if dest.exists():
             shutil.rmtree(dest)
