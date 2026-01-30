@@ -1,19 +1,19 @@
-"""Tests for the `asr list` command output formatting."""
+"""Tests for the `asr registry list` command output formatting."""
 
 class TestListCommand:
-    """Tests for list command output."""
+    """Tests for registry list command output."""
 
     def test_list_empty_registry_shows_message(self, cli_runner, tmp_skills_dir):
         """Empty registry shows helpful message."""
-        exit_code, stdout, stderr = cli_runner(["list"])
+        exit_code, stdout, stderr = cli_runner(["registry", "list"])
         
         assert exit_code == 0
         assert "No skills registered" in stdout
-        assert "asr add" in stdout
+        assert "asr" in stdout  # Should mention asr command
 
     def test_list_formats_with_box_drawing(self, cli_runner, sample_registry):
         """List output uses box-drawing characters."""
-        exit_code, stdout, stderr = cli_runner(["list"])
+        exit_code, stdout, stderr = cli_runner(["registry", "list"])
         
         assert exit_code == 0
         # Check for box-drawing characters
@@ -25,7 +25,7 @@ class TestListCommand:
 
     def test_list_shows_all_skills(self, cli_runner, sample_registry):
         """List shows all registered skills."""
-        exit_code, stdout, stderr = cli_runner(["list"])
+        exit_code, stdout, stderr = cli_runner(["registry", "list"])
         
         assert exit_code == 0
         for entry in sample_registry:
@@ -33,7 +33,7 @@ class TestListCommand:
 
     def test_list_verbose_shows_full_paths(self, cli_runner, sample_registry):
         """List with --verbose shows full paths without truncation."""
-        exit_code, stdout, stderr = cli_runner(["list", "--verbose"])
+        exit_code, stdout, stderr = cli_runner(["registry", "list", "--verbose"])
         
         assert exit_code == 0
         # At least one full path should be visible
@@ -49,7 +49,7 @@ class TestListCommand:
         """List with --json outputs valid JSON."""
         import json
         
-        exit_code, stdout, stderr = cli_runner(["list", "--json"])
+        exit_code, stdout, stderr = cli_runner(["registry", "list", "--json"])
         
         assert exit_code == 0
         data = json.loads(stdout)

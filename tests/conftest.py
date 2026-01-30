@@ -84,10 +84,22 @@ description: {description}
 def sample_registry(tmp_skills_dir, sample_skills, monkeypatch):
     """Create a pre-populated registry with sample skills."""
     import registry
+    import manifest as manifest_mod
     
-    # Disable manifest creation for tests
+    # Create a mock manifest for each skill
+    def mock_load_manifest(name):
+        """Return a mock manifest with content hash for tracking."""
+        from manifest import Manifest
+        return Manifest(
+            name=name,
+            description=f"Description for {name}",
+            content_hash=f"hash_{name}",  # Mock hash for tracking
+        )
+    
+    # Patch manifest operations
+    monkeypatch.setattr(manifest_mod, "load_manifest", mock_load_manifest)
     monkeypatch.setattr(registry, "create_manifest", lambda **kw: None)
-    monkeypatch.setattr(registry, "save_manifest", lambda m: None)
+    monkeypatch.setattr(registry, "save_manifest", lambda n, m: None)
     monkeypatch.setattr(registry, "delete_manifest", lambda n: None)
     
     entries = [
