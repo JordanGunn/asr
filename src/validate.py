@@ -68,6 +68,7 @@ def validate_skill(
     path: Path,
     reference_max_lines: int = 500,
     check_exists: bool = True,
+    skip_name_match: bool = False,
 ) -> ValidationResult:
     """Validate a skill directory.
     
@@ -75,6 +76,7 @@ def validate_skill(
         path: Path to skill directory.
         reference_max_lines: Maximum lines for reference files (W007).
         check_exists: If True, check if path exists (for I001).
+        skip_name_match: If True, skip W002 directory name check (for remote skills).
     
     Returns:
         ValidationResult with all messages.
@@ -163,7 +165,7 @@ def validate_skill(
             ))
             result.valid = False
         
-        if name != path.name:
+        if not skip_name_match and name != path.name:
             result.warnings.append(ValidationMessage(
                 code="W002",
                 severity=Severity.WARNING,

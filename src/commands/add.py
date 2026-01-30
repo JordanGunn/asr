@@ -137,8 +137,8 @@ def run(args: argparse.Namespace) -> int:
             continue
         
         try:
-            # Validate fetched content
-            result = validate_skill(temp_dir, reference_max_lines=max_lines)
+            # Validate fetched content (skip name match for temp directory)
+            result = validate_skill(temp_dir, reference_max_lines=max_lines, skip_name_match=True)
             if not args.quiet and not args.json:
                 _print_validation_result(result)
                 print()

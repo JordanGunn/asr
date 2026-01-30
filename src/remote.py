@@ -438,13 +438,17 @@ def check_remote_reachability(url: str) -> tuple[bool, int, str]:
     Returns:
         Tuple of (is_reachable, status_code, message)
     """
-    # Parse URL to get API endpoint
+    # Parse URL to get API endpoint for the specific path
     github_parsed = parse_github_url(url)
     gitlab_parsed = parse_gitlab_url(url)
     
     if github_parsed:
         parsed = github_parsed
-        api_url = f"https://api.github.com/repos/{parsed['owner']}/{parsed['repo']}"
+        # Check the specific path, not just the repo
+        path = parsed['path'] or ""
+        api_url = f"https://api.github.com/repos/{parsed['owner']}/{parsed['repo']}/contents/{path}"
+        if parsed['ref']:
+            api_url += f"?ref={parsed['ref']}"
         token = _get_auth_token("github")
         headers = {}
         if token:
@@ -452,7 +456,11 @@ def check_remote_reachability(url: str) -> tuple[bool, int, str]:
     elif gitlab_parsed:
         parsed = gitlab_parsed
         project_id = f"{parsed['owner']}%2F{parsed['repo']}"
-        api_url = f"https://gitlab.com/api/v4/projects/{project_id}"
+        path = parsed['path'] or ""
+        # Check the specific path, not just the project
+        api_url = f"https://gitlab.com/api/v4/projects/{project_id}/repository/tree?path={path}"
+        if parsed['ref']:
+            api_url += f"&ref={parsed['ref']}"
         token = _get_auth_token("gitlab")
         headers = {}
         if token:

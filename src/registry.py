@@ -111,7 +111,7 @@ def add_skill(
     if create_manifest_artifact:
         manifest = create_manifest(
             name=entry.name,
-            source_path=Path(entry.path),
+            source_path=entry.path,  # Keep as string (can be URL or path)
             description=entry.description,
         )
         save_manifest(manifest)
