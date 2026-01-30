@@ -69,7 +69,54 @@ def run(args: argparse.Namespace) -> int:
     for pattern in unmatched:
         warnings.append(f"No skills matched: {pattern}")
 
-    for name in sorted(matched_names):
+    # Separate remote and local skills for parallel processing
+    from skillcopy.remote import is_remote_source
+    remote_names = [name for name in matched_names if is_remote_source(entry_map[name].path)]
+    local_names = [name for name in matched_names if not is_remote_source(entry_map[name].path)]
+    
+    # Handle remote skills with parallel fetching
+    if remote_names:
+        print(f"Fetching {len(remote_names)} remote skill(s)...", file=sys.stderr)
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+        import threading
+        
+        print_lock = threading.Lock()
+        
+        def copy_remote_entry(name):
+            """Copy a remote skill with thread-safe progress."""
+            entry = entry_map[name]
+            dest = output_dir / name
+            
+            try:
+                with print_lock:
+                    platform = "GitHub" if "github.com" in entry.path else "GitLab" if "gitlab.com" in entry.path else "remote"
+                    print(f"  ↓ {name} (fetching from {platform}...)", file=sys.stderr, flush=True)
+                
+                copy_skill(entry.path, dest, validate=False, show_progress=False, skill_name=name)
+                
+                with print_lock:
+                    print(f"  ✓ {name} (downloaded)", file=sys.stderr)
+                
+                return {"name": name, "src": entry.path, "dest": str(dest)}, None
+            except Exception as e:
+                with print_lock:
+                    print(f"  ✗ {name} ({str(e)[:50]}...)", file=sys.stderr)
+                return None, f"Failed to copy {name}: {e}"
+        
+        # Copy remote skills in parallel
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            futures = {executor.submit(copy_remote_entry, name): name 
+                      for name in remote_names}
+            
+            for future in as_completed(futures):
+                result, error = future.result()
+                if result:
+                    copied.append(result)
+                if error:
+                    warnings.append(error)
+    
+    # Handle local skills sequentially (fast anyway)
+    for name in sorted(local_names):
         entry = entry_map[name]
         dest = output_dir / name
 
