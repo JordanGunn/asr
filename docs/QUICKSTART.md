@@ -46,10 +46,16 @@ oasr --version
 
 ```bash
 # Register a skill
-oasr add /path/to/your/skill
+oasr registry add /path/to/your/skill
 
 # List registered skills
-oasr list
+oasr registry list
+
+# Copy a skill to your workspace (with tracking)
+oasr use my-skill
+
+# Check status of tracked skills
+oasr diff
 
 # Generate IDE adapters
 oasr adapter cursor

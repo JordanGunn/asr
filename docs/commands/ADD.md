@@ -1,24 +1,19 @@
-# `oasr add`
+# `oasr add` (Deprecated in v0.3.0)
 
-Register skills in the registry.
+> **⚠️ DEPRECATED**  
+> As of v0.3.0, this command has moved to `oasr registry add`.  
+> See [oasr registry](REGISTRY.md) for current documentation.
+
+## Migration
 
 ```bash
+# Old (v0.2.0)
 oasr add /path/to/skill
-oasr add https://github.com/user/repo/tree/main/skills/my-skill  # Remote URL
-oasr add /path/to/skills/*          # Glob paths
-oasr add /path/to/skill --strict    # Fail on validation warnings
-oasr add -r /path/to/root           # Recursive discovery
+
+# New (v0.3.0)
+oasr registry add /path/to/skill
 ```
 
-**Remote Skills:**
+All functionality remains the same, just under the `registry` subcommand for better organization.
 
-- Supports GitHub and GitLab URLs
-- Formats: `https://github.com/{user}/{repo}/tree/{branch}/{path}`
-- Set `GITHUB_TOKEN` or `GITLAB_TOKEN` for authentication
-- Files validated during registration, fetched on-demand during use
-
-*Adding local skills*
-![oasr add](../.images/add.png)
-
-*Adding remote skills from GitHub*
-![oasr add remote](../.images/add-remote.png)
+See the full documentation at [oasr registry add](REGISTRY.md#oasr-registry-add).
