@@ -162,13 +162,13 @@ def get_manifests_dir(config_dir: Path | None = None) -> Path:
     """Get the manifests directory path.
     
     Args:
-        config_dir: Override config directory (default: ~/.skills).
+        config_dir: Override config directory (default: ~/.oasr).
     
     Returns:
         Path to manifests directory.
     """
     if config_dir is None:
-        config_dir = Path.home() / ".skills"
+        config_dir = Path.home() / ".oasr"
     return config_dir / MANIFESTS_DIR
 
 

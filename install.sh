@@ -189,6 +189,63 @@ install_shims() {
   fi
 }
 
+migrate_data() {
+  # Safely migrate from ~/.skills/ to ~/.oasr/
+  # Only moves oasr-managed files: manifests/, registry.toml, config.toml
+  
+  local old_dir="${HOME}/.skills"
+  local new_dir="${HOME}/.oasr"
+  
+  # If new directory already exists and has data, skip migration
+  if [[ -d "${new_dir}" ]] && [[ -f "${new_dir}/registry.toml" ]]; then
+    return 0
+  fi
+  
+  # If old directory doesn't exist, nothing to migrate
+  if [[ ! -d "${old_dir}" ]]; then
+    return 0
+  fi
+  
+  # Check if there's anything to migrate
+  local has_oasr_data=0
+  [[ -d "${old_dir}/manifests" ]] && has_oasr_data=1
+  [[ -f "${old_dir}/registry.toml" ]] && has_oasr_data=1
+  [[ -f "${old_dir}/config.toml" ]] && has_oasr_data=1
+  
+  if [[ "$has_oasr_data" -eq 0 ]]; then
+    return 0
+  fi
+  
+  echo "Migrating oasr data from ~/.skills/ to ~/.oasr/ ..."
+  
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    echo "dry-run: would migrate oasr files from ${old_dir} to ${new_dir}"
+    return 0
+  fi
+  
+  # Create new directory
+  mkdir -p "${new_dir}"
+  
+  # Move only oasr-managed files
+  if [[ -d "${old_dir}/manifests" ]]; then
+    echo "  Moving manifests/ ..."
+    mv "${old_dir}/manifests" "${new_dir}/"
+  fi
+  
+  if [[ -f "${old_dir}/registry.toml" ]]; then
+    echo "  Moving registry.toml ..."
+    mv "${old_dir}/registry.toml" "${new_dir}/"
+  fi
+  
+  if [[ -f "${old_dir}/config.toml" ]]; then
+    echo "  Moving config.toml ..."
+    mv "${old_dir}/config.toml" "${new_dir}/"
+  fi
+  
+  echo "  ✓ Migration complete"
+  echo "  Note: ~/.skills/ directory preserved (may contain other files)"
+}
+
 echo "Installing ASR from: ${SCRIPT_DIR}"
 echo "Venv: ${VENV_DIR}"
 echo "Shims: ${BIN_DIR}"
@@ -196,6 +253,7 @@ echo "Shims: ${BIN_DIR}"
 create_venv
 install_project
 install_shims
+migrate_data
 ensure_path "${BIN_DIR}"
 
 cat <<EOF

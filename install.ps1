@@ -124,6 +124,66 @@ function Ensure-Path {
   }
 }
 
+function Migrate-Data {
+  # Safely migrate from ~/.skills/ to ~/.oasr/
+  # Only moves oasr-managed files: manifests/, registry.toml, config.toml
+  
+  $oldDir = Join-Path $env:USERPROFILE ".skills"
+  $newDir = Join-Path $env:USERPROFILE ".oasr"
+  
+  # If new directory already exists and has data, skip migration
+  if ((Test-Path $newDir) -and (Test-Path (Join-Path $newDir "registry.toml"))) {
+    return
+  }
+  
+  # If old directory doesn't exist, nothing to migrate
+  if (-not (Test-Path $oldDir)) {
+    return
+  }
+  
+  # Check if there's anything to migrate
+  $hasOasrData = $false
+  if (Test-Path (Join-Path $oldDir "manifests")) { $hasOasrData = $true }
+  if (Test-Path (Join-Path $oldDir "registry.toml")) { $hasOasrData = $true }
+  if (Test-Path (Join-Path $oldDir "config.toml")) { $hasOasrData = $true }
+  
+  if (-not $hasOasrData) {
+    return
+  }
+  
+  Write-Host "Migrating oasr data from ~/.skills/ to ~/.oasr/ ..."
+  
+  if ($DryRun) {
+    Write-Host "dry-run: would migrate oasr files from $oldDir to $newDir"
+    return
+  }
+  
+  # Create new directory
+  New-Item -ItemType Directory -Force -Path $newDir | Out-Null
+  
+  # Move only oasr-managed files
+  $manifestsPath = Join-Path $oldDir "manifests"
+  if (Test-Path $manifestsPath) {
+    Write-Host "  Moving manifests/ ..."
+    Move-Item -Path $manifestsPath -Destination $newDir -Force
+  }
+  
+  $registryPath = Join-Path $oldDir "registry.toml"
+  if (Test-Path $registryPath) {
+    Write-Host "  Moving registry.toml ..."
+    Move-Item -Path $registryPath -Destination $newDir -Force
+  }
+  
+  $configPath = Join-Path $oldDir "config.toml"
+  if (Test-Path $configPath) {
+    Write-Host "  Moving config.toml ..."
+    Move-Item -Path $configPath -Destination $newDir -Force
+  }
+  
+  Write-Host "  ✓ Migration complete"
+  Write-Host "  Note: ~/.skills/ directory preserved (may contain other files)"
+}
+
 Write-Host "Installing ASR from: $ScriptDir"
 Write-Host "Venv: $VenvDir"
 Write-Host "Shims: $BinDir"
@@ -133,6 +193,7 @@ Ensure-Venv
 Install-Project
 Write-Shim -Name "asr"
 Write-Shim -Name "skills"
+Migrate-Data
 Ensure-Path
 
 Write-Host ""

@@ -1,4 +1,4 @@
-"""Registry management for ~/.skills/registry.toml."""
+"""Registry management for ~/.oasr/registry.toml."""
 
 import sys
 from dataclasses import dataclass
@@ -11,10 +11,10 @@ else:
 
 import tomli_w
 
-from config import ensure_skills_dir, SKILLS_DIR
+from config import ensure_oasr_dir, OASR_DIR
 from manifest import create_manifest, save_manifest, delete_manifest
 
-REGISTRY_FILE = SKILLS_DIR / "registry.toml"
+REGISTRY_FILE = OASR_DIR / "registry.toml"
 
 
 @dataclass
@@ -46,7 +46,7 @@ def load_registry(registry_path: Path | None = None) -> list[SkillEntry]:
     """Load registry from TOML file.
     
     Args:
-        registry_path: Override registry file path. Defaults to ~/.skills/registry.toml.
+        registry_path: Override registry file path. Defaults to ~/.oasr/registry.toml.
     
     Returns:
         List of registered skill entries.
