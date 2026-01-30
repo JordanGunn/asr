@@ -9,7 +9,7 @@ oasr find /path/to/search --json
 ```
 
 *Finding skills*
-![oasr find](../images/oasr-find.png)
+![oasr find](../.images/find.png)
 
 *Discover and add found skills*
-![oasr find add](../images/oasr-find-add.png)
+![oasr find add](../.images/find-add.png)

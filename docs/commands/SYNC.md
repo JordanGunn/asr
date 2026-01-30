@@ -15,7 +15,7 @@ oasr sync --prune      # Remove entries for missing source paths
 > `--prune` behaviour can also be accomplished through `oasr clean`
 
 *Syncing manifests (dry-run)*
-![oasr sync](../images/oasr-sync.png)
+![oasr sync](../.images/sync.png)
 
 *Syncing manifests (update)*
-![oasr sync update](../images/oasr-sync-update.png)
+![oasr sync update](../.images/sync-update.png)

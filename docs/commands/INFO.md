@@ -6,3 +6,8 @@ Print information about the target skill.
 oasr info <skill-name>
 ```
 
+> **Note**:  
+> `<skill-name>` refers to the name of the skill in the `oasr` registry.
+
+*Display information about a skill*
+![oasr info](../.images/info.png)

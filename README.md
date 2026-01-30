@@ -1,6 +1,6 @@
-# ASR
+# OASR
 
-**Agent Skill Registry** — Manage reusable AI agent skills across IDEs without drift.
+**Open Agent Skill Registry** — Manage reusable AI agent skills across IDEs without drift.
 
 ---
 
@@ -9,6 +9,7 @@
 You've built useful skills for your AI coding assistant. They work great in Cursor. Now you want them in Windsurf. And Claude. And Copilot.
 
 Each tool expects skills in different locations with different formats:
+
 - Cursor: `.cursor/skills/`
 - Windsurf: `.windsurf/skills/`
 - Claude: `.claude/commands/`
@@ -20,7 +21,7 @@ So you copy your skills everywhere. Then you improve one. Now the copies are sta
 
 ASR keeps your skills in one place and generates thin adapters for each IDE.
 
-```
+```text
 ┌─────────────────────────────────────────────────────────┐
 │           Your Skills (canonical source)                │
 │           ~/skills/git-commit/SKILL.md                  │
@@ -42,7 +43,7 @@ No copying. No drift. One source of truth.
 
 ## Quick Example
 
-![oasr list screenshot](docs/images/oasr-list.png)
+![oasr list screenshot](docs/.images/oasr-list.png)
 *List all registered skills with metadata*
 
 ```bash
@@ -67,7 +68,7 @@ oasr adapter --output-dir ~/projects/my-app
 
 ## Remote Skills
 
-![oasr add remote screenshot](docs/images/oasr-add-remote.png)
+![oasr add remote screenshot](docs/.images/oasr-add-remote.png)
 *Register skills directly from GitHub or GitLab*
 
 ASR supports registering skills directly from GitHub and GitLab repositories:
@@ -87,6 +88,7 @@ oasr use my-skill -d ./output
 ```
 
 **Authentication** (optional, for private repos and higher rate limits):
+
 ```bash
 export GITHUB_TOKEN=ghp_your_token_here
 export GITLAB_TOKEN=glpat_your_token_here
@@ -106,13 +108,13 @@ Remote skills are fetched on-demand during `adapter` and `use` operations. The r
 
 ## Supported `asr adapter` IDEs
 
-| IDE | Adapter | Output |
-|-----|---------|--------|
-| Cursor | `cursor` | `.cursor/commands/*.md` |
-| Windsurf | `windsurf` | `.windsurf/workflows/*.md` |
-| Codex | `codex` | `.codex/skills/*.md` |
-| GitHub Copilot | `copilot` | `.github/prompts/*.prompt.md` |
-| Claude Code | `claude` | `.claude/commands/*.md` |
+| IDE            | Adapter    | Output                        |
+|----------------|------------|-------------------------------|
+| Cursor         | `cursor`   | `.cursor/commands/*.md`       |
+| Windsurf       | `windsurf` | `.windsurf/workflows/*.md`    |
+| Codex          | `codex`    | `.codex/skills/*.md`          |
+| GitHub Copilot | `copilot`  | `.github/prompts/*.prompt.md` |
+| Claude Code    | `claude`   | `.claude/commands/*.md`       |
 
 ---
 
@@ -126,12 +128,12 @@ See [LICENSE](LICENSE).
 
 | Command | Screenshot |
 |---------|-----------|
-| **oasr list** | ![list](docs/images/oasr-list.png) |
-| **oasr add** (local) | ![add](docs/images/oasr-add.png) |
-| **oasr add** (remote) | ![add-remote](docs/images/oasr-add-remote.png) |
-| **oasr sync** | ![sync](docs/images/oasr-sync.png) |
-| **oasr status** | ![status](docs/images/oasr-status.png) |
-| **oasr find** | ![find](docs/images/oasr-find.png) |
-| **oasr adapter** | ![adapter](docs/images/oasr-adapter-windsurf.png) |
+| **oasr list** | ![list](docs/.images/list.png) |
+| **oasr add** (local) | ![add](docs/.images/add.png) |
+| **oasr add** (remote) | ![add-remote](docs/.images/add-remote.png) |
+| **oasr sync** | ![sync](docs/.images/sync.png) |
+| **oasr status** | ![status](docs/.images/status.png) |
+| **oasr find** | ![find](docs/.images/find.png) |
+| **oasr adapter** | ![adapter](docs/.images/adapter.png) |
 
-See [docs/images/](docs/images/) for all screenshots.
+See [docs/.images/](docs/.images/) for all screenshots.

@@ -16,4 +16,4 @@ oasr use skill-one skill-two        # Multiple skills
 > Remote skills are automatically fetched during copy.
 
 *Using skills*
-![oasr use](../images/oasr-use.png)
+![oasr use](../.images/use.png)

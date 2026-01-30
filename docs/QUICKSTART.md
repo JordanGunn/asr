@@ -1,22 +1,8 @@
 # Quickstart
 
-## Install with uv (recommended)
+---
 
-```bash
-git clone https://github.com/OWNER/oasr.git
-cd oasr
-uv pip install -e .
-```
-
-## Install with pip
-
-```bash
-git clone https://github.com/OWNER/oasr.git
-cd oasr
-pip install -e .
-```
-
-## Global Installation
+## Option A: Global Installation
 
 To make `oasr` available system-wide:
 
@@ -30,11 +16,31 @@ To make `oasr` available system-wide:
 
 This installs into an isolated environment and adds shims to your PATH (`~/.local/bin` on Unix, `%LOCALAPPDATA%\oasr\bin` on Windows).
 
+## Option B: Install with `uv`
+
+```bash
+git clone https://github.com/JordanGunn/oasr.git
+cd oasr
+uv pip install -e .
+```
+
+## Option C:Install with `pip`
+
+```bash
+git clone https://github.com/JordanGunn/oasr.git
+cd oasr
+pip install -e .
+```
+
+---
+
 ## Verify Installation
 
 ```bash
 oasr --version
 ```
+
+---
 
 ## First Steps
 
@@ -49,4 +55,4 @@ oasr list
 oasr adapter cursor
 ```
 
-See [COMMANDS.md](COMMANDS.md) for the full command reference.
+See [Command Documentation](commands/.INDEX.md) for the full command reference.

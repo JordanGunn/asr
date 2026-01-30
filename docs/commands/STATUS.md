@@ -10,4 +10,4 @@ oasr status --json
 States: `valid`, `modified`, `missing`, `untracked`
 
 *Showing status*
-![oasr status](../images/oasr-status.png)
+![oasr status](../.images/status.png)

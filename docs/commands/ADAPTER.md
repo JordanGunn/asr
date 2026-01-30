@@ -41,4 +41,4 @@ oasr adapter --output-dir /path/to/project
 | claude   | `.claude/commands/{skill}.md`    |
 
 *Generating adapters*
-![oasr adapter](../images/oasr-adapter.png)
+![oasr adapter](../.images/adapter.png)

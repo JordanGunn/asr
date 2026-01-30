@@ -11,7 +11,7 @@ oasr rm -r /path/to/root            # Recursive removal
 ```
 
 *Removing skills*
-![oasr rm](../images/oasr-rm.png)
+![oasr rm](../.images/rm.png)
 
 *Removing multiple skills*
-![oasr rm multiple](../images/oasr-rm-glob.png)
+![oasr rm multiple](../.images/rm-glob.png)

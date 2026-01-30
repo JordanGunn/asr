@@ -8,4 +8,4 @@ oasr list --json       # JSON output
 oasr list --verbose    # Show full paths
 ```
 
-![oasr list](../images/oasr-list.png)
+![oasr list](../.images/list.png)

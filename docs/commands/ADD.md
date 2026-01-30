@@ -18,7 +18,7 @@ oasr add -r /path/to/root           # Recursive discovery
 - Files validated during registration, fetched on-demand during use
 
 *Adding local skills*
-![oasr add](../images/oasr-add.png)
+![oasr add](../.images/add.png)
 
 *Adding remote skills from GitHub*
-![oasr add remote](../images/oasr-add-remote.png)
+![oasr add remote](../.images/add-remote.png)
