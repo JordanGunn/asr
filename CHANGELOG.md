@@ -6,6 +6,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.4] - 2026-02-01
+
+### Fixed
+- Enable PyPI trusted publishing workflow and update package metadata for `oasr`
+
+## [0.3.3] - 2026-01-30
+
+### Fixed
+- **Critical**: Adapters now inject tracking metadata when copying skills
+  - Skills copied by `oasr adapter cursor`, `claude`, etc. now include `metadata.oasr`
+  - Enables `oasr diff` and `oasr sync` to work with adapter-copied skills
+  - Graceful degradation if manifest cannot be loaded
+
 ## [0.3.2] - 2026-01-30
 
 ### Fixed
