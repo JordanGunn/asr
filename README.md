@@ -1,6 +1,6 @@
 # OASR
 
-[![PyPI - Downloads](https://img.shields.io/pypi/dt/oasr)](https://pypi.org/project/oasr/)
+[![Downloads](https://static.pepy.tech/badge/oasr)](https://pepy.tech/project/oasr)
 
 **Open Agent Skill Registry** — Manage reusable AI agent skills across IDEs without drift.
 
