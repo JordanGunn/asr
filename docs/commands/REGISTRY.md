@@ -105,6 +105,40 @@ Syncing remote skills...
 Synced: 2 skills
 ```
 
+### `oasr registry prune`
+
+Clean up corrupted/missing skills and orphaned artifacts:
+
+```bash
+oasr registry prune              # Interactive cleanup
+oasr registry prune -y           # Skip confirmation
+oasr registry prune --dry-run    # Show what would be cleaned
+oasr registry prune --json       # JSON output
+```
+
+This command:
+- Removes skills whose source files/URLs are no longer accessible
+- Removes orphaned manifest files not in the registry
+- Requires confirmation unless `-y` flag is used
+
+**Example output:**
+```bash
+$ oasr registry prune
+Checking 3 remote skill(s)...
+  ↓ python-analyzer (checking GitHub...)
+  ✓ python-analyzer (checked)
+
+The following will be cleaned:
+
+Skills with missing sources:
+  ✗ old-skill (/path/to/missing)
+
+Proceed with cleanup? [y/N] y
+Removed skill: old-skill
+
+Cleaned 1 skill(s), 0 manifest(s)
+```
+
 ## Migration from v0.2.0
 
 The v0.3.0 CLI taxonomy reorganizes commands under the `registry` subcommand:
@@ -117,3 +151,5 @@ The v0.3.0 CLI taxonomy reorganizes commands under the `registry` subcommand:
 | `oasr status` | `oasr registry -v` |
 | `oasr sync` (manifest validation) | `oasr registry` |
 | `oasr sync --update` (remote sync) | `oasr registry sync` |
+
+**v0.4.1 update:** `oasr clean` → `oasr registry prune`
