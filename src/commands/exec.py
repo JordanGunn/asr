@@ -67,7 +67,7 @@ def run(args: argparse.Namespace) -> int:
     # Get the skill content - look for SKILL.md in the skill directory
     skill_dir = Path(skill_source)
     skill_path = skill_dir / "SKILL.md"
-    
+
     if not skill_path.exists():
         print(f"Error: Skill file not found: {skill_path}", file=sys.stderr)
         print("\nTry running 'oasr sync' to update your skills.", file=sys.stderr)

@@ -46,9 +46,7 @@ class AgentDriver(ABC):
             Command as list of strings (for subprocess).
         """
 
-    def execute(
-        self, skill_content: str, user_prompt: str, cwd: Path | None = None
-    ) -> subprocess.CompletedProcess:
+    def execute(self, skill_content: str, user_prompt: str, cwd: Path | None = None) -> subprocess.CompletedProcess:
         """Execute skill with agent.
 
         Args:
@@ -63,9 +61,7 @@ class AgentDriver(ABC):
             FileNotFoundError: If agent binary not found.
         """
         if not self.detect():
-            raise FileNotFoundError(
-                f"{self.get_name()} binary '{self.get_binary_name()}' not found in PATH"
-            )
+            raise FileNotFoundError(f"{self.get_name()} binary '{self.get_binary_name()}' not found in PATH")
 
         working_dir = cwd or Path.cwd()
         cmd = self.build_command(skill_content, user_prompt, working_dir)

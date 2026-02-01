@@ -8,7 +8,6 @@ from typing import Any
 
 import yaml
 
-
 DOCTOR_DIR = Path(".doctor")
 EVIDENCE_DIR = DOCTOR_DIR / "evidence"
 SESSION_FILE = DOCTOR_DIR / "session.yaml"
@@ -86,7 +85,7 @@ def add_symptom(description: str, category: str = "unknown", evidence: str = "")
     session = load_session()
     if session is None:
         session = init_session()
-    
+
     symptom = {
         "description": description,
         "category": category if category in SYMPTOM_CATEGORIES else "unknown",
@@ -102,7 +101,7 @@ def add_hypothesis(description: str, confidence: int, falsifiable_by: str = "") 
     session = load_session()
     if session is None:
         session = init_session()
-    
+
     hypothesis = {
         "description": description,
         "confidence": max(0, min(100, confidence)),
@@ -115,12 +114,14 @@ def add_hypothesis(description: str, confidence: int, falsifiable_by: str = "") 
     return session
 
 
-def set_diagnosis(summary: str, confidence: int, root_cause: str = "", factors: list[str] | None = None) -> dict[str, Any]:
+def set_diagnosis(
+    summary: str, confidence: int, root_cause: str = "", factors: list[str] | None = None
+) -> dict[str, Any]:
     """Set the diagnosis for the current session."""
     session = load_session()
     if session is None:
         session = init_session()
-    
+
     session["diagnosis"] = {
         "summary": summary,
         "confidence": max(0, min(100, confidence)),
@@ -139,10 +140,10 @@ def surface_scan(patterns: list[str] | None = None, path: str = ".") -> list[str
     """
     if patterns is None:
         patterns = ["*.py", "*.ts", "*.js", "*.yaml", "*.yml", "*.json", "*.md", "*.toml"]
-    
+
     results = []
     base = Path(path)
-    
+
     for pattern in patterns:
         for f in base.rglob(pattern):
             # Skip hidden directories and common noise
@@ -153,7 +154,7 @@ def surface_scan(patterns: list[str] | None = None, path: str = ".") -> list[str
             if any(p in ["node_modules", "__pycache__", "venv", ".venv", "dist", "build"] for p in parts):
                 continue
             results.append(str(f))
-    
+
     return sorted(set(results))
 
 
@@ -171,54 +172,56 @@ def grep_search(term: str, path: str = ".", file_type: str = "") -> tuple[list[d
     if file_type:
         cmd.extend(["--include", f"*.{file_type}"])
     cmd.extend([term, path])
-    
+
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
         lines = result.stdout.strip().split("\n") if result.stdout.strip() else []
     except (subprocess.TimeoutExpired, FileNotFoundError):
         lines = []
-    
+
     matches = []
     for line in lines[:100]:  # Limit results
         if ":" in line:
             parts = line.split(":", 2)
             if len(parts) >= 3:
-                matches.append({
-                    "file": parts[0],
-                    "line": parts[1],
-                    "content": parts[2].strip(),
-                })
-    
+                matches.append(
+                    {
+                        "file": parts[0],
+                        "line": parts[1],
+                        "content": parts[2].strip(),
+                    }
+                )
+
     return matches, len(lines)
 
 
 def save_evidence(term: str, matches: list[dict], count: int) -> str:
     """Save evidence snapshot to .doctor/evidence/."""
     ensure_doctor_dir()
-    
+
     content = f"# Evidence: {term}\n\n"
     content += f"**Date:** {to_rfc3339(now_utc())}\n"
     content += f"**Matches:** {count}\n\n"
     content += "## Results\n\n"
-    
+
     for m in matches[:50]:
         content += f"- `{m['file']}:{m['line']}` — {m['content'][:80]}\n"
-    
+
     if count > 50:
         content += f"\n*...and {count - 50} more matches*\n"
-    
+
     file_hash = hash_content(content)
     filename = f"{file_hash}.md"
     filepath = EVIDENCE_DIR / filename
     filepath.write_text(content, encoding="utf-8")
-    
+
     # Update session
     session = load_session()
     if session:
         if filename not in session.get("evidence_files", []):
             session.setdefault("evidence_files", []).append(filename)
             save_session(session)
-    
+
     return filename
 
 
@@ -300,15 +303,15 @@ def generate_treatment(diagnosis: dict[str, Any], options: list[dict[str, Any]],
     content += "*None specified*\n\n"
     content += "## Follow-up\n\n"
     content += "*None specified*\n"
-    
+
     TREATMENT_FILE.write_text(content, encoding="utf-8")
-    
+
     # Update session
     session = load_session()
     if session:
         session["status"] = "treated"
         save_session(session)
-    
+
     return str(TREATMENT_FILE)
 
 
@@ -317,6 +320,7 @@ def clean_doctor() -> bool:
     if not DOCTOR_DIR.exists():
         return False
     import shutil
+
     shutil.rmtree(DOCTOR_DIR)
     return True
 
@@ -325,13 +329,13 @@ def get_status() -> dict[str, Any]:
     """Get comprehensive status of current session."""
     if not session_exists():
         return {"exists": False}
-    
+
     session = load_session()
     if session is None:
         return {"exists": False}
-    
+
     evidence_count = len(list(EVIDENCE_DIR.glob("*.md"))) if EVIDENCE_DIR.exists() else 0
-    
+
     return {
         "exists": True,
         "status": session.get("status", "investigating"),

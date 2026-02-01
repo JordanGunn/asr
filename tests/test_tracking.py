@@ -1,6 +1,5 @@
 """Tests for tracking metadata functionality."""
 
-
 import yaml
 
 from tracking import extract_metadata, inject_metadata, strip_tracking_metadata

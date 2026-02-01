@@ -24,11 +24,11 @@ def mock_registry(tmp_path):
         name="test-skill",
         description="A test skill",
     )
-    
+
     missing_skill_dir = tmp_path / "missing-skill"
     missing_skill_dir.mkdir()
     # No SKILL.md file in this one
-    
+
     missing_skill = SkillEntry(
         path=str(missing_skill_dir),
         name="missing-source-skill",
@@ -113,10 +113,11 @@ class TestExecCommand:
         mock_driver = mock.Mock()
         mock_driver.execute.return_value = mock_result
 
-        with mock.patch("commands.exec.load_registry", return_value=registry), \
-             mock.patch("commands.exec.load_config", return_value=mock_config_with_agent), \
-             mock.patch("commands.exec.get_driver", return_value=mock_driver):
-
+        with (
+            mock.patch("commands.exec.load_registry", return_value=registry),
+            mock.patch("commands.exec.load_config", return_value=mock_config_with_agent),
+            mock.patch("commands.exec.get_driver", return_value=mock_driver),
+        ):
             result = exec_cmd.run(args)
 
         assert result == 0
@@ -148,10 +149,11 @@ class TestExecCommand:
         mock_driver = mock.Mock()
         mock_driver.execute.return_value = mock_result
 
-        with mock.patch("commands.exec.load_registry", return_value=registry), \
-             mock.patch("commands.exec.load_config", return_value=mock_config_with_agent), \
-             mock.patch("commands.exec.get_driver", return_value=mock_driver):
-
+        with (
+            mock.patch("commands.exec.load_registry", return_value=registry),
+            mock.patch("commands.exec.load_config", return_value=mock_config_with_agent),
+            mock.patch("commands.exec.get_driver", return_value=mock_driver),
+        ):
             result = exec_cmd.run(args)
 
         assert result == 1
@@ -183,10 +185,11 @@ class TestExecCommand:
             "opencode": False,
         }
 
-        with mock.patch("commands.exec.load_registry", return_value=registry), \
-             mock.patch("commands.exec.get_driver", return_value=mock_driver), \
-             mock.patch("commands.exec.detect_available_agents", return_value=available_agents):
-
+        with (
+            mock.patch("commands.exec.load_registry", return_value=registry),
+            mock.patch("commands.exec.get_driver", return_value=mock_driver),
+            mock.patch("commands.exec.detect_available_agents", return_value=available_agents),
+        ):
             result = exec_cmd.run(args)
 
         assert result == 0
@@ -347,8 +350,10 @@ class TestGetAgentName:
             "opencode": False,
         }
 
-        with mock.patch("commands.exec.load_config", return_value=config), \
-             mock.patch("commands.exec.detect_available_agents", return_value=available_agents):
+        with (
+            mock.patch("commands.exec.load_config", return_value=config),
+            mock.patch("commands.exec.detect_available_agents", return_value=available_agents),
+        ):
             result = exec_cmd._get_agent_name(args)
 
         assert result is None

@@ -17,9 +17,7 @@ def validate_config(config: dict[str, Any]) -> None:
     if "agent" in config and "default" in config["agent"]:
         agent = config["agent"]["default"]
         if agent is not None and agent not in VALID_AGENTS:
-            raise ValueError(
-                f"Invalid agent '{agent}'. Must be one of: {', '.join(sorted(VALID_AGENTS))}"
-            )
+            raise ValueError(f"Invalid agent '{agent}'. Must be one of: {', '.join(sorted(VALID_AGENTS))}")
 
     if "validation" in config:
         if "reference_max_lines" in config["validation"]:

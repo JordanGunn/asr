@@ -43,4 +43,3 @@ def run(args: argparse.Namespace) -> int:
 
     # Delegate to clone command
     return clone.run(args)
-

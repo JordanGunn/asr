@@ -157,7 +157,9 @@ def run(args: argparse.Namespace) -> int:
                         skipped_count += len(skill_dirs)
                         for skill_dir in skill_dirs:
                             rel_path = skill_dir.relative_to(temp_dir)
-                            results.append({"url": url, "skill": str(rel_path), "added": False, "reason": "user declined"})
+                            results.append(
+                                {"url": url, "skill": str(rel_path), "added": False, "reason": "user declined"}
+                            )
                         continue
 
                 # Add all skills
