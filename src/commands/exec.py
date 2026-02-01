@@ -48,25 +48,28 @@ def setup_parser(subparsers):
 def run(args: argparse.Namespace) -> int:
     """Execute a skill from the registry."""
     # Load registry to find the skill
-    registry = load_registry()
+    entries = load_registry()
+    entry_map = {e.name: e for e in entries}
     skill_name = args.skill_name
 
-    if skill_name not in registry:
+    if skill_name not in entry_map:
         print(f"Error: Skill '{skill_name}' not found in registry", file=sys.stderr)
         print("\nUse 'oasr registry list' to see available skills.", file=sys.stderr)
         return 1
 
-    skill_entry = registry[skill_name]
-    skill_source = skill_entry.get("source")
+    skill_entry = entry_map[skill_name]
+    skill_source = skill_entry.path
 
     if not skill_source:
         print(f"Error: Skill '{skill_name}' has no source configured", file=sys.stderr)
         return 1
 
-    # Get the skill content
-    skill_path = Path(skill_source)
+    # Get the skill content - look for SKILL.md in the skill directory
+    skill_dir = Path(skill_source)
+    skill_path = skill_dir / "SKILL.md"
+    
     if not skill_path.exists():
-        print(f"Error: Skill file not found: {skill_source}", file=sys.stderr)
+        print(f"Error: Skill file not found: {skill_path}", file=sys.stderr)
         print("\nTry running 'oasr sync' to update your skills.", file=sys.stderr)
         return 1
 

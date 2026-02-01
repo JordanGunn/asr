@@ -7,24 +7,35 @@ from unittest import mock
 import pytest
 
 from commands import exec as exec_cmd
+from registry import SkillEntry
 
 
 @pytest.fixture
 def mock_registry(tmp_path):
     """Create a mock registry with a test skill."""
-    skill_file = tmp_path / "test-skill.md"
+    skill_dir = tmp_path / "test-skill"
+    skill_dir.mkdir()
+    skill_file = skill_dir / "SKILL.md"
     skill_file.write_text("# Test Skill\n\nThis is a test skill.")
 
-    registry = {
-        "test-skill": {
-            "source": str(skill_file),
-            "namespace": "local",
-            "hash": "abc123",
-        },
-        "missing-source-skill": {
-            "namespace": "local",
-        },
-    }
+    # Registry returns list of SkillEntry objects
+    test_skill = SkillEntry(
+        path=str(skill_dir),
+        name="test-skill",
+        description="A test skill",
+    )
+    
+    missing_skill_dir = tmp_path / "missing-skill"
+    missing_skill_dir.mkdir()
+    # No SKILL.md file in this one
+    
+    missing_skill = SkillEntry(
+        path=str(missing_skill_dir),
+        name="missing-source-skill",
+        description="Skill with no SKILL.md",
+    )
+
+    registry = [test_skill, missing_skill]
     return registry, skill_file
 
 
@@ -65,32 +76,12 @@ class TestExecCommand:
         captured = capsys.readouterr()
         assert "Skill 'nonexistent-skill' not found in registry" in captured.err
 
-    def test_exec_skill_no_source(self, capsys):
-        """Test exec with a skill that has no source."""
+    def test_exec_skill_file_not_found(self, capsys, mock_registry):
+        """Test exec with a skill whose SKILL.md file doesn't exist."""
+        registry, _ = mock_registry
+
         args = argparse.Namespace(
             skill_name="missing-source-skill",
-            prompt="Do something",
-            instructions=None,
-            agent="codex",
-        )
-
-        registry = {"missing-source-skill": {"namespace": "local"}}
-
-        with mock.patch("commands.exec.load_registry", return_value=registry):
-            result = exec_cmd.run(args)
-
-        assert result == 1
-        captured = capsys.readouterr()
-        assert "has no source configured" in captured.err
-
-    def test_exec_skill_file_not_found(self, capsys, mock_registry):
-        """Test exec with a skill whose source file doesn't exist."""
-        registry, _ = mock_registry
-        # Point to non-existent file
-        registry["test-skill"]["source"] = "/nonexistent/path/skill.md"
-
-        args = argparse.Namespace(
-            skill_name="test-skill",
             prompt="Do something",
             instructions=None,
             agent="codex",
