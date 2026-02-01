@@ -139,9 +139,54 @@ def run(args: argparse.Namespace) -> int:
 
             temp_dir = fetch_remote_to_temp(url)
 
+            # Check for multiple skills in the repo
+            skill_dirs = _find_skill_dirs(temp_dir)
+
+            if len(skill_dirs) > 1:
+                # Multiple skills found
+                if not args.quiet and not args.json:
+                    print(f"✓ Found {len(skill_dirs)} skills in repository:", file=sys.stderr)
+                    for skill_dir in skill_dirs:
+                        rel_path = skill_dir.relative_to(temp_dir)
+                        print(f"    - {rel_path}", file=sys.stderr)
+                    print(file=sys.stderr)
+
+                    # Prompt user
+                    response = input("Add all skills? [Y/n]: ").strip().lower()
+                    if response and response not in ("y", "yes"):
+                        skipped_count += len(skill_dirs)
+                        for skill_dir in skill_dirs:
+                            rel_path = skill_dir.relative_to(temp_dir)
+                            results.append({"url": url, "skill": str(rel_path), "added": False, "reason": "user declined"})
+                        continue
+
+                # Add all skills
+                for skill_dir in skill_dirs:
+                    rel_path = skill_dir.relative_to(temp_dir)
+                    skill_url = f"{url}/{rel_path}" if str(rel_path) != "." else url
+
+                    result = _add_single_remote_skill(
+                        skill_dir,
+                        skill_url,
+                        url,  # repo_root
+                        args,
+                        max_lines,
+                        results,
+                    )
+
+                    if result["added"]:
+                        added_count += 1
+                    else:
+                        skipped_count += 1
+
+                continue  # Skip single-skill handling
+
+            # Single skill handling (original logic)
+            skill_dir = skill_dirs[0] if skill_dirs else temp_dir
+
             if not args.quiet and not args.json:
                 # Count files validated
-                file_count = sum(1 for _ in temp_dir.rglob("*") if _.is_file())
+                file_count = sum(1 for _ in skill_dir.rglob("*") if _.is_file())
                 print(f"✓ Validated {file_count} file(s)", file=sys.stderr)
         except Exception as e:
             skipped_count += 1
@@ -152,8 +197,8 @@ def run(args: argparse.Namespace) -> int:
             continue
 
         try:
-            # Validate fetched content (skip name match for temp directory)
-            result = validate_skill(temp_dir, reference_max_lines=max_lines, skip_name_match=True)
+            # Validate fetched content
+            result = validate_skill(skill_dir, reference_max_lines=max_lines, skip_name_match=True)
             if not args.quiet and not args.json:
                 _print_validation_result(result)
                 print()
@@ -171,7 +216,7 @@ def run(args: argparse.Namespace) -> int:
                 continue
 
             # Discover skill info from fetched content
-            discovered = discover_single(temp_dir)
+            discovered = discover_single(skill_dir)
             if not discovered:
                 skipped_count += 1
                 results.append({"url": url, "added": False, "reason": "could not discover skill info"})
@@ -300,3 +345,89 @@ def _run_recursive(args: argparse.Namespace, root: Path, max_lines: int) -> int:
         print(f"\n{added_count} skill(s) added, {skipped_count} skipped")
 
     return 0
+
+
+def _find_skill_dirs(root: Path) -> list[Path]:
+    """Find all directories containing SKILL.md files.
+
+    Args:
+        root: Root directory to search.
+
+    Returns:
+        List of directories containing SKILL.md (sorted by depth, then name).
+    """
+    skill_dirs = []
+
+    for skill_md in root.rglob("SKILL.md"):
+        skill_dir = skill_md.parent
+        skill_dirs.append(skill_dir)
+
+    # Sort by depth (shallowest first), then alphabetically
+    skill_dirs.sort(key=lambda p: (len(p.relative_to(root).parts), str(p)))
+
+    return skill_dirs
+
+
+def _add_single_remote_skill(
+    skill_dir: Path,
+    skill_url: str,
+    repo_root_url: str,
+    args: argparse.Namespace,
+    max_lines: int,
+    results: list[dict],
+) -> dict:
+    """Add a single remote skill.
+
+    Args:
+        skill_dir: Local path to skill directory (in temp).
+        skill_url: Full URL to this specific skill.
+        repo_root_url: URL to repository root.
+        args: Command arguments.
+        max_lines: Max reference lines for validation.
+        results: Results list to append to.
+
+    Returns:
+        Result dictionary with 'added' status.
+    """
+    # Validate skill
+    result = validate_skill(skill_dir, reference_max_lines=max_lines, skip_name_match=True)
+
+    if not result.valid:
+        res = {"url": skill_url, "added": False, "reason": "validation errors"}
+        results.append(res)
+        if not args.quiet and not args.json:
+            print(f"⚠ Skipping {skill_dir.name}: validation errors", file=sys.stderr)
+        return res
+
+    if args.strict and result.warnings:
+        res = {"url": skill_url, "added": False, "reason": "validation warnings (strict mode)"}
+        results.append(res)
+        if not args.quiet and not args.json:
+            print(f"⚠ Skipping {skill_dir.name}: validation warnings (strict)", file=sys.stderr)
+        return res
+
+    # Discover skill info
+    discovered = discover_single(skill_dir)
+    if not discovered:
+        res = {"url": skill_url, "added": False, "reason": "could not discover skill info"}
+        results.append(res)
+        if not args.quiet and not args.json:
+            print(f"⚠ Skipping {skill_dir.name}: could not discover skill info", file=sys.stderr)
+        return res
+
+    # Create entry with skill-specific URL
+    entry = SkillEntry(
+        path=skill_url,  # Full path to this skill
+        name=discovered.name,
+        description=discovered.description,
+    )
+
+    is_new = add_skill(entry)
+    res = {"name": entry.name, "url": skill_url, "added": True, "new": is_new}
+    results.append(res)
+
+    if not args.quiet and not args.json:
+        action = "Added" if is_new else "Updated"
+        print(f"{action} skill: {entry.name}", file=sys.stderr)
+
+    return res

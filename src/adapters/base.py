@@ -105,15 +105,15 @@ class BaseAdapter(ABC):
             Path to the copied skill directory.
         """
         dest = skills_dir / skill.name
-        
+
         # Get the skill's content hash from manifest for tracking
         # If manifest doesn't exist, skip tracking (graceful degradation)
         inject_tracking = False
         source_hash = None
-        
+
         try:
             from manifest import load_manifest
-            
+
             manifest = load_manifest(skill.name)
             if manifest:
                 source_hash = manifest.content_hash
@@ -121,7 +121,7 @@ class BaseAdapter(ABC):
         except Exception:
             # Gracefully skip tracking if manifest cannot be loaded
             pass
-        
+
         return copy_skill_unified(
             skill.path,
             dest,

@@ -11,18 +11,21 @@ else:
 
 import tomli_w
 
+from config.defaults import DEFAULT_CONFIG
+from config.schema import validate_config
+
 OASR_DIR = Path.home() / ".oasr"
 CONFIG_FILE = OASR_DIR / "config.toml"
 
-DEFAULT_CONFIG: dict[str, Any] = {
-    "validation": {
-        "reference_max_lines": 500,
-        "strict": False,
-    },
-    "adapter": {
-        "default_targets": ["cursor", "windsurf"],
-    },
-}
+__all__ = [
+    "OASR_DIR",
+    "CONFIG_FILE",
+    "ensure_oasr_dir",
+    "ensure_skills_dir",
+    "load_config",
+    "save_config",
+    "get_default_config",
+]
 
 
 def ensure_oasr_dir() -> Path:
@@ -48,9 +51,12 @@ def load_config(config_path: Path | None = None) -> dict[str, Any]:
     """
     path = config_path or CONFIG_FILE
 
-    config = DEFAULT_CONFIG.copy()
-    config["validation"] = DEFAULT_CONFIG["validation"].copy()
-    config["adapter"] = DEFAULT_CONFIG["adapter"].copy()
+    # Deep copy defaults
+    config = {
+        "validation": DEFAULT_CONFIG["validation"].copy(),
+        "adapter": DEFAULT_CONFIG["adapter"].copy(),
+        "agent": DEFAULT_CONFIG["agent"].copy(),
+    }
 
     if path.exists():
         with open(path, "rb") as f:
@@ -60,6 +66,8 @@ def load_config(config_path: Path | None = None) -> dict[str, Any]:
             config["validation"].update(loaded["validation"])
         if "adapter" in loaded:
             config["adapter"].update(loaded["adapter"])
+        if "agent" in loaded:
+            config["agent"].update(loaded["agent"])
 
     return config
 
@@ -70,17 +78,32 @@ def save_config(config: dict[str, Any], config_path: Path | None = None) -> None
     Args:
         config: Configuration dictionary to save.
         config_path: Override config file path. Defaults to ~/.oasr/config.toml.
+
+    Raises:
+        ValueError: If configuration is invalid.
     """
+    validate_config(config)
+
     path = config_path or CONFIG_FILE
     ensure_oasr_dir()
 
+    # Deep copy and remove None values (TOML can't serialize None)
+    config_to_save = {}
+    for section, values in config.items():
+        if isinstance(values, dict):
+            config_to_save[section] = {k: v for k, v in values.items() if v is not None}
+        else:
+            if values is not None:
+                config_to_save[section] = values
+
     with open(path, "wb") as f:
-        tomli_w.dump(config, f)
+        tomli_w.dump(config_to_save, f)
 
 
 def get_default_config() -> dict[str, Any]:
     """Return a copy of the default configuration."""
-    config = DEFAULT_CONFIG.copy()
-    config["validation"] = DEFAULT_CONFIG["validation"].copy()
-    config["adapter"] = DEFAULT_CONFIG["adapter"].copy()
-    return config
+    return {
+        "validation": DEFAULT_CONFIG["validation"].copy(),
+        "adapter": DEFAULT_CONFIG["adapter"].copy(),
+        "agent": DEFAULT_CONFIG["agent"].copy(),
+    }

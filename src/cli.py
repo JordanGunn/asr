@@ -10,10 +10,10 @@ import json
 import sys
 from pathlib import Path
 
-from commands import adapter, clean, diff, find, registry, sync, update, use, validate
+from commands import adapter, clean, clone, config, diff, exec, find, registry, sync, update, use, validate
 from commands import help as help_cmd
 
-__version__ = "0.3.4"
+__version__ = "0.4.0"
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -67,13 +67,16 @@ def create_parser() -> argparse.ArgumentParser:
 
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
-    # New taxonomy (v0.3.0)
+    # New taxonomy (v0.3.0+)
     registry.register(subparsers)  # Registry operations (add, rm, sync, list)
     diff.register(subparsers)  # Show tracked skill status
     sync.register(subparsers)  # Refresh tracked skills
+    config.register(subparsers)  # Configuration management
+    clone.register(subparsers)  # Clone skills to directory
+    exec.register(subparsers)  # Execute skills with agent CLI
 
-    # Unchanged commands
-    use.register(subparsers)
+    # Deprecated commands
+    use.register(subparsers)  # DEPRECATED - use clone instead
     find.register(subparsers)
     validate.register(subparsers)
     clean.register(subparsers)
