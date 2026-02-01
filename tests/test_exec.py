@@ -107,8 +107,7 @@ class TestExecCommand:
         )
 
         mock_result = mock.Mock()
-        mock_result.success = True
-        mock_result.output = "Agent output here"
+        mock_result.returncode = 0  # Success
 
         mock_driver = mock.Mock()
         mock_driver.execute.return_value = mock_result
@@ -122,7 +121,6 @@ class TestExecCommand:
 
         assert result == 0
         captured = capsys.readouterr()
-        assert "Agent output here" in captured.out
         assert "Executing skill 'test-skill' with codex" in captured.err
 
         # Verify driver was called with skill content and prompt
@@ -143,8 +141,7 @@ class TestExecCommand:
         )
 
         mock_result = mock.Mock()
-        mock_result.success = False
-        mock_result.error = "Agent failed with error"
+        mock_result.returncode = 1  # Failure
 
         mock_driver = mock.Mock()
         mock_driver.execute.return_value = mock_result
@@ -157,8 +154,6 @@ class TestExecCommand:
             result = exec_cmd.run(args)
 
         assert result == 1
-        captured = capsys.readouterr()
-        assert "Agent failed with error" in captured.err
 
     def test_exec_with_explicit_agent(self, capsys, mock_registry):
         """Test exec with explicit agent flag."""
@@ -172,8 +167,7 @@ class TestExecCommand:
         )
 
         mock_result = mock.Mock()
-        mock_result.success = True
-        mock_result.output = "Success"
+        mock_result.returncode = 0  # Success
 
         mock_driver = mock.Mock()
         mock_driver.execute.return_value = mock_result

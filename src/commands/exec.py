@@ -104,14 +104,9 @@ def run(args: argparse.Namespace) -> int:
 
     try:
         result = driver.execute(skill_content, user_prompt)
-        if result.success:
-            # Print agent output to stdout (this is the actual result)
-            print(result.output)
-            return 0
-        else:
-            print("\nError executing skill:", file=sys.stderr)
-            print(result.error, file=sys.stderr)
-            return 1
+        # CompletedProcess has returncode attribute (0 = success)
+        # Output was already streamed to stdout since capture_output=False
+        return result.returncode
     except Exception as e:
         print(f"\nUnexpected error: {e}", file=sys.stderr)
         return 1
