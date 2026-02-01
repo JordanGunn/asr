@@ -1,19 +1,21 @@
-"""`asr use` command."""
+"""`asr use` command - DEPRECATED, use `oasr clone` instead."""
 
 from __future__ import annotations
 
 import argparse
-import fnmatch
-import json
 import sys
 from pathlib import Path
 
-from registry import load_registry
-from skillcopy import copy_skill
+from commands import clone
 
 
 def register(subparsers) -> None:
-    p = subparsers.add_parser("use", help="Copy skill(s) to target directory")
+    """Register the deprecated use command."""
+    p = subparsers.add_parser(
+        "use",
+        help="[DEPRECATED] Copy skill(s) - use 'clone' instead",
+        description="DEPRECATED: Use 'oasr clone' instead. This command will be removed in v0.5.0.",
+    )
     p.add_argument("names", nargs="+", help="Skill name(s) or glob pattern(s) to copy")
     p.add_argument(
         "-d",
@@ -28,145 +30,16 @@ def register(subparsers) -> None:
     p.set_defaults(func=run)
 
 
-def _match_skills(patterns: list[str], entry_map: dict) -> tuple[list[str], list[str]]:
-    """Match skill names against patterns (exact or glob).
-
-    Returns:
-        Tuple of (matched_names, unmatched_patterns).
-    """
-    matched = set()
-    unmatched = []
-    all_names = list(entry_map.keys())
-
-    for pattern in patterns:
-        if pattern in entry_map:
-            matched.add(pattern)
-        elif any(c in pattern for c in "*?["):
-            # Glob pattern
-            matches = fnmatch.filter(all_names, pattern)
-            if matches:
-                matched.update(matches)
-            else:
-                unmatched.append(pattern)
-        else:
-            unmatched.append(pattern)
-
-    return list(matched), unmatched
-
-
 def run(args: argparse.Namespace) -> int:
-    entries = load_registry()
-    entry_map = {e.name: e for e in entries}
-
-    output_dir = args.output_dir.resolve()
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    copied = []
-    warnings = []
-
-    matched_names, unmatched = _match_skills(args.names, entry_map)
-
-    for pattern in unmatched:
-        warnings.append(f"No skills matched: {pattern}")
-
-    # Get manifests for tracking metadata
-    from manifest import load_manifest
-
-    # Separate remote and local skills for parallel processing
-    from skillcopy.remote import is_remote_source
-
-    remote_names = [name for name in matched_names if is_remote_source(entry_map[name].path)]
-    local_names = [name for name in matched_names if not is_remote_source(entry_map[name].path)]
-
-    # Handle remote skills with parallel fetching
-    if remote_names:
-        print(f"Fetching {len(remote_names)} remote skill(s)...", file=sys.stderr)
-        import threading
-        from concurrent.futures import ThreadPoolExecutor, as_completed
-
-        print_lock = threading.Lock()
-
-        def copy_remote_entry(name):
-            """Copy a remote skill with thread-safe progress."""
-            entry = entry_map[name]
-            dest = output_dir / name
-
-            try:
-                with print_lock:
-                    platform = (
-                        "GitHub" if "github.com" in entry.path else "GitLab" if "gitlab.com" in entry.path else "remote"
-                    )
-                    print(f"  ↓ {name} (fetching from {platform}...)", file=sys.stderr, flush=True)
-
-                # Get manifest hash for tracking
-                manifest = load_manifest(name)
-                source_hash = manifest.content_hash if manifest else None
-
-                copy_skill(
-                    entry.path,
-                    dest,
-                    validate=False,
-                    show_progress=False,
-                    skill_name=name,
-                    inject_tracking=True,
-                    source_hash=source_hash,
-                )
-
-                with print_lock:
-                    print(f"  ✓ {name} (downloaded)", file=sys.stderr)
-
-                return {"name": name, "src": entry.path, "dest": str(dest)}, None
-            except Exception as e:
-                with print_lock:
-                    print(f"  ✗ {name} ({str(e)[:50]}...)", file=sys.stderr)
-                return None, f"Failed to copy {name}: {e}"
-
-        # Copy remote skills in parallel
-        with ThreadPoolExecutor(max_workers=4) as executor:
-            futures = {executor.submit(copy_remote_entry, name): name for name in remote_names}
-
-            for future in as_completed(futures):
-                result, error = future.result()
-                if result:
-                    copied.append(result)
-                if error:
-                    warnings.append(error)
-
-    # Handle local skills sequentially (fast anyway)
-    for name in sorted(local_names):
-        entry = entry_map[name]
-        dest = output_dir / name
-
-        try:
-            # Get manifest hash for tracking
-            manifest = load_manifest(name)
-            source_hash = manifest.content_hash if manifest else None
-
-            # Unified copy with tracking
-            copy_skill(entry.path, dest, validate=False, inject_tracking=True, source_hash=source_hash)
-            copied.append({"name": name, "src": entry.path, "dest": str(dest)})
-        except Exception as e:
-            warnings.append(f"Failed to copy {name}: {e}")
-
-    if not args.quiet:
-        for w in warnings:
-            print(f"⚠ {w}", file=sys.stderr)
-
-    if args.json:
+    """Execute the deprecated use command (delegates to clone)."""
+    # Show deprecation warning unless --quiet or --json
+    if not args.quiet and not args.json:
         print(
-            json.dumps(
-                {
-                    "copied": len(copied),
-                    "warnings": len(warnings),
-                    "skills": copied,
-                },
-                indent=2,
-            )
+            "⚠ Warning: 'oasr use' is deprecated. Use 'oasr clone' instead.",
+            file=sys.stderr,
         )
-    else:
-        for c in copied:
-            print(f"Copied: {c['name']} → {c['dest']}")
-        if copied:
-            print(f"\n{len(copied)} skill(s) copied to {output_dir}")
+        print("  This command will be removed in v0.5.0.", file=sys.stderr)
+        print(file=sys.stderr)
 
-    return 1 if warnings and not copied else 0
+    # Delegate to clone command
+    return clone.run(args)

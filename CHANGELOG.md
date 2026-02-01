@@ -6,6 +6,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - TBD
+
+### Added
+- **🚀 `oasr exec` command** — Execute skills as CLI tools from anywhere
+  - Run skills with agent-driven execution: `oasr exec <skill> -p "prompt"`
+  - Multiple prompt input methods: inline (`-p`), file (`-i`), or stdin (pipe)
+  - Agent selection via flag (`--agent`) or config default
+  - Graceful error handling with helpful guidance
+- **`oasr config` command** — Manage OASR configuration
+  - `config set <key> <value>` — Set config values (e.g., default agent)
+  - `config get <key>` — Retrieve config values
+  - `config list` — Display all configuration with agent availability
+  - `config path` — Show config file location
+- **`oasr clone` command** — Renamed from `oasr use` for clarity
+  - Clones skills from registry to current directory
+  - Same functionality as deprecated `oasr use`
+- **Agent driver system** — Support for multiple AI agent CLIs
+  - Codex: `codex exec "<prompt>"`
+  - GitHub Copilot: `copilot -p "<prompt>"`
+  - Claude CLI: `claude <prompt> -p`
+  - OpenCode: `opencode run "<prompt>"`
+  - Auto-detection of available agent binaries
+  - Extensible driver architecture for adding new agents
+- **Multi-skill repository support** — Detect and add multiple skills from one repo
+  - `oasr registry add <repo-url>` automatically finds all SKILL.md files
+  - Interactive prompt for bulk addition: "Found 3 skills. Add all? [Y/n]"
+  - Each skill registered with proper subdirectory URL
+
+### Changed
+- **Config system refactored** — Moved to subpackage architecture
+  - `src/config/` subpackage with schema validation
+  - New `agent.default` field in config for default agent selection
+  - TOML serialization improved (strips None values)
+  - Backward compatible with existing configs
+
+### Deprecated
+- **`oasr use` command** — Use `oasr clone` instead
+  - Shows deprecation warning (suppressible with `--quiet` or `--json`)
+  - Warning: "This command will be removed in v0.5.0"
+  - Fully functional shim delegates to `oasr clone`
+
+### Fixed
+- Config validation now properly handles None values in TOML serialization
+
 ## [0.3.4] - 2026-02-01
 
 ### Fixed
