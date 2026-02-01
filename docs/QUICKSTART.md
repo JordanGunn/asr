@@ -16,20 +16,24 @@ To make `oasr` available system-wide:
 
 This installs into an isolated environment and adds shims to your PATH (`~/.local/bin` on Unix, `%LOCALAPPDATA%\oasr\bin` on Windows).
 
-## Option B: Install with `uv`
+## Option B: Install from PyPI with `pip`
+
+```bash
+pip install oasr
+```
+
+## Option C: Install from PyPI with `uv`
+
+```bash
+uv pip install oasr
+```
+
+## Option D: Install from source
 
 ```bash
 git clone https://github.com/JordanGunn/oasr.git
 cd oasr
 uv pip install -e .
-```
-
-## Option C:Install with `pip`
-
-```bash
-git clone https://github.com/JordanGunn/oasr.git
-cd oasr
-pip install -e .
 ```
 
 ---
