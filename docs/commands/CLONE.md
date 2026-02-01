@@ -17,7 +17,6 @@ oasr clone skill-one skill-two        # Multiple skills
 ## Options
 
 - `-d, --dest DIR` — Destination directory (default: current directory)
-- `-r, --recursive` — Create destination directory if it doesn't exist
 - `--quiet` — Suppress informational output
 - `--json` — Output results in JSON format
 
