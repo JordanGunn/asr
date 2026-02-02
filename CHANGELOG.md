@@ -4,6 +4,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.1] - 2026-02-02
+
+### Added
+- **🌍 Environment Variable Support** — Full OASR_* environment variable support for all configuration
+  - Naming convention: `OASR_<SECTION>_<KEY>` (e.g., `OASR_AGENT`, `OASR_PROFILE`)
+  - Type-aware parsing: bool, int, list (comma-separated), string
+  - Clear precedence: CLI flags > env vars > config file > defaults
+  - 17 documented environment variables
+- **✅ Enhanced Config Validation** — Early validation with helpful error messages
+  - `oasr config set` validates agent names against available drivers
+  - Profile reference validation (checks if profile exists)
+  - `--force` flag to bypass validation when needed
+  - Dotted notation support: `validation.strict`, `adapter.default`
+  - Suggestions in error messages: "Invalid agent 'foo'. Valid agents: codex, copilot..."
+- **📚 Configuration Documentation Restructure** — Progressive disclosure documentation
+  - New `docs/configuration/` directory with 12 files (~37KB)
+  - Navigation manifest: `.INDEX` file for documentation structure
+  - 7 detailed guides: Overview, Agent, Profiles, Validation, Adapter, Env Vars, Precedence
+  - 4 example configs: Minimal, Development, CI/CD, Production
+  - Easy-to-find specific information with cross-references
+
+### Changed
+- **Config loading**: Now accepts `cli_overrides` parameter for precedence merging
+- **Config command**: Enhanced validation and better error messages
+- **Documentation**: `docs/commands/CONFIG.md` updated with pointers to new structure
+
+### Technical
+- **New module**: `src/config/env.py` with parsing, type coercion, and merging logic
+- **50 new tests**: 40 env var tests + 10 integration tests (287 total tests passing)
+- **Backward compatible**: All existing functionality preserved
+- **Type safety**: Enhanced type checking and validation throughout
+
+### Documentation
+- **[docs/configuration/](docs/configuration/README.md)**: New comprehensive configuration guide
+- **[Environment Variables](docs/configuration/environment-variables.md)**: Complete OASR_* reference
+- **[Precedence](docs/configuration/precedence.md)**: Detailed precedence rules and examples
+- **[Examples](docs/configuration/examples/)**: 4 ready-to-use configuration examples
+
 ## [0.5.0] - 2026-02-02
 
 ### Added
