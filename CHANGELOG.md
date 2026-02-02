@@ -4,6 +4,47 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-02-02
+
+### Added
+- **🔒 Execution Policy System** — Host-level security boundaries for `oasr exec`
+  - Policy profiles define what agents can and cannot do
+  - Conservative safe defaults (fail closed)
+  - User-defined custom profiles in `config.toml`
+  - Pre-execution confirmation for risky operations
+  - Risk triggers: stdin, file prompts, non-safe profiles, network/env/shell access
+- **New CLI flags for `oasr exec`**:
+  - `--profile <name>` — Choose execution policy profile
+  - `-y/--yes` — Skip confirmation prompt
+  - `--confirm` — Force confirmation even for safe operations
+- **Configuration support for policies**:
+  - `[oasr]` section with `default_profile` setting
+  - `[profiles.<name>]` tables for custom profiles
+  - Policy field validation in config schema
+  - Built-in "safe" profile with conservative defaults
+
+### Changed
+- **Security model**: `oasr exec` now requires explicit confirmation for risky execution contexts
+- **Config schema**: Extended to support execution policy profiles
+
+### Security
+- **Prompt injection mitigation**: Policy enforcement reduces impact of malicious skill instructions
+- **Sensitive file protection**: Default deny list includes `~/.ssh`, `~/.aws`, `~/.gnupg`, `.env`, etc.
+- **Execution boundaries**: Clear limits on filesystem access, network, environment variables, and shell commands
+- **User awareness**: Policy summary shown before risky executions
+- **Fail-closed design**: Missing/malformed config falls back to safe defaults
+
+### Documentation
+- **[EXEC.md](docs/commands/EXEC.md)**: Added comprehensive Security Model section
+- **[CONFIG.md](docs/commands/CONFIG.md)**: Added Execution Policy Profiles documentation
+- **Policy examples**: Multiple profile configurations for different use cases
+
+### Technical
+- **New module**: `src/policy/` subpackage with clean API (Profile, load, assess_risk, prompt_confirmation)
+- **41 new tests**: 30 policy tests + 11 config profile tests
+- **Test coverage**: 187 total tests passing (all existing tests still pass)
+- **Backward compatible**: No breaking changes to existing commands
+
 ## [0.4.2] - 2026-02-01
 
 ### Added

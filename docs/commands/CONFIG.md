@@ -241,6 +241,63 @@ Configure a different agent:
   oasr config set agent copilot
 ```
 
+## Execution Policy Profiles (v0.5.0+)
+
+Policy profiles define security boundaries for `oasr exec`. They control what agents can do during skill execution.
+
+### Default Profile
+
+Set the default execution policy profile:
+
+```bash
+oasr config set oasr.default_profile safe
+```
+
+This determines which profile is used unless overridden with `--profile`.
+
+### Defining Custom Profiles
+
+Add custom profiles to `~/.oasr/config.toml`:
+
+```toml
+[oasr]
+default_profile = "safe"
+
+# Conservative default
+[profiles.safe]
+fs_read_roots = ["./"]
+fs_write_roots = ["./out", "./.oasr"]
+deny_paths = ["~/.ssh", "~/.aws", "~/.gnupg", ".env"]
+allowed_commands = ["rg", "fd", "jq", "cat"]
+deny_shell = true
+network = false
+allow_env = false
+
+# Development profile (more permissive)
+[profiles.dev]
+fs_read_roots = ["./", "~/projects"]
+fs_write_roots = ["./", "~/projects/output"]
+deny_paths = ["~/.ssh", "~/.aws"]
+allowed_commands = ["bash", "curl", "git", "python"]
+deny_shell = false
+network = true
+allow_env = true
+```
+
+### Profile Settings Reference
+
+| Setting | Type | Description |
+|---------|------|-------------|
+| `fs_read_roots` | list[string] | Allowed filesystem read locations |
+| `fs_write_roots` | list[string] | Allowed filesystem write locations |
+| `deny_paths` | list[string] | Explicitly denied paths |
+| `allowed_commands` | list[string] | Permitted shell commands |
+| `deny_shell` | bool | Deny all shell execution |
+| `network` | bool | Allow network access |
+| `allow_env` | bool | Allow environment variable access |
+
+See [`oasr exec` documentation](EXEC.md#security-model) for detailed security model explanation.
+
 ## Advanced Usage
 
 ### Direct Config File Editing

@@ -1,0 +1,220 @@
+# OASR Configuration Example
+# Location: ~/.oasr/config.toml
+#
+# This file demonstrates the configuration options for OASR v0.5.0+
+# Copy relevant sections to your own config file.
+
+# =============================================================================
+# OASR Settings
+# =============================================================================
+[oasr]
+# Default execution policy profile for 'oasr exec'
+# Options: "safe" (default), or any custom profile name defined below
+default_profile = "safe"
+
+# =============================================================================
+# Agent Configuration
+# =============================================================================
+[agent]
+# Default agent for 'oasr exec' command
+# Options: "codex", "copilot", "claude", "opencode", or null
+default = "codex"
+
+# =============================================================================
+# Validation Settings
+# =============================================================================
+[validation]
+# Maximum lines to show in skill reference output
+reference_max_lines = 500
+
+# Strict validation mode (fail on warnings)
+strict = false
+
+# =============================================================================
+# Adapter Settings
+# =============================================================================
+[adapter]
+# Default targets for 'oasr adapter' command
+default_targets = ["cursor", "windsurf"]
+
+# =============================================================================
+# Execution Policy Profiles (v0.5.0+)
+# =============================================================================
+# Policy profiles define security boundaries for 'oasr exec'.
+# They control what agents can do during skill execution.
+
+# -----------------------------------------------------------------------------
+# Safe Profile (Built-in Default)
+# -----------------------------------------------------------------------------
+# Conservative default with minimal permissions
+[profiles.safe]
+fs_read_roots = ["./"]                 # Only read from current directory
+fs_write_roots = ["./out", "./.oasr"]  # Limited write locations
+deny_paths = [                         # Always deny these paths
+    "~/.ssh",
+    "~/.aws",
+    "~/.gnupg",
+    "~/.config",
+    ".env",
+    "~/.bashrc",
+    "~/.zshrc",
+    "~/.profile",
+]
+allowed_commands = ["rg", "fd", "jq", "cat"]  # Read-only tools
+deny_shell = true                      # No shell execution
+network = false                        # No network access
+allow_env = false                      # No environment variables
+
+# -----------------------------------------------------------------------------
+# Development Profile
+# -----------------------------------------------------------------------------
+# More permissive for development work
+[profiles.dev]
+fs_read_roots = ["./", "~/projects"]
+fs_write_roots = ["./", "~/projects/output", "./build", "./dist"]
+deny_paths = [
+    "~/.ssh",          # Still protect SSH keys
+    "~/.aws",          # Still protect AWS credentials
+    "~/.gnupg",        # Still protect GPG keys
+]
+allowed_commands = [
+    "bash", "sh",      # Shell access
+    "curl", "wget",    # Network tools
+    "git",             # Version control
+    "python", "node", "go",  # Programming languages
+    "npm", "pip", "cargo",   # Package managers
+    "rg", "fd", "jq",        # Search/parse tools
+]
+deny_shell = false   # Allow shell commands
+network = true       # Allow network access
+allow_env = true     # Allow environment variables
+
+# -----------------------------------------------------------------------------
+# Testing Profile
+# -----------------------------------------------------------------------------
+# Isolated profile for running tests
+[profiles.test]
+fs_read_roots = ["./tests", "./fixtures", "./test-data"]
+fs_write_roots = ["./test-output", "./coverage", "./.pytest_cache"]
+deny_paths = [
+    "~/.ssh",
+    "~/.aws",
+    "~/",              # Deny entire home directory
+]
+allowed_commands = [
+    "pytest", "coverage",   # Python testing
+    "jest", "vitest",       # JavaScript testing
+    "cargo", "go",          # Other language test runners
+    "rg", "fd",             # Search tools
+]
+deny_shell = true
+network = false      # Tests should not need network
+allow_env = false
+
+# -----------------------------------------------------------------------------
+# CI/CD Profile
+# -----------------------------------------------------------------------------
+# Profile for continuous integration environments
+[profiles.ci]
+fs_read_roots = ["./", "/tmp/ci"]
+fs_write_roots = ["./build", "./dist", "./coverage", "/tmp/ci"]
+deny_paths = [
+    "~/.ssh",          # Protect credentials
+    "~/.aws",          # (CI should use injected secrets)
+]
+allowed_commands = [
+    "npm", "yarn", "pnpm",
+    "python", "pip",
+    "cargo", "go",
+    "git",
+    "docker",          # Container builds
+    "kubectl",         # Kubernetes
+]
+deny_shell = false
+network = true       # May need to fetch dependencies
+allow_env = true     # CI environment variables needed
+
+# -----------------------------------------------------------------------------
+# Data Analysis Profile
+# -----------------------------------------------------------------------------
+# Profile for data science and analysis tasks
+[profiles.analysis]
+fs_read_roots = ["./data", "./datasets", "./notebooks"]
+fs_write_roots = ["./output", "./reports", "./plots"]
+deny_paths = [
+    "~/.ssh",
+    "~/.aws",
+    "~/.gnupg",
+]
+allowed_commands = [
+    "python",
+    "jupyter",
+    "pandas",
+    "rg", "fd",
+]
+deny_shell = false   # May need Python subprocess
+network = false      # Analysis should be offline
+allow_env = false
+
+# -----------------------------------------------------------------------------
+# Production Profile
+# -----------------------------------------------------------------------------
+# Extremely restrictive profile for production use
+[profiles.production]
+fs_read_roots = ["./"]
+fs_write_roots = ["./logs"]   # Only write logs
+deny_paths = [
+    "~/.ssh",
+    "~/.aws",
+    "~/.gnupg",
+    "~/.config",
+    ".env",
+    "~/",
+]
+allowed_commands = ["rg", "cat"]  # Minimal read-only
+deny_shell = true
+network = false
+allow_env = false
+
+# =============================================================================
+# Usage Examples
+# =============================================================================
+#
+# Use default profile:
+#   oasr exec my-skill -p "prompt"
+#
+# Use specific profile:
+#   oasr exec my-skill -p "prompt" --profile dev
+#
+# Skip confirmation (use carefully!):
+#   echo "data" | oasr exec my-skill --yes
+#
+# Force confirmation:
+#   oasr exec my-skill -p "prompt" --confirm
+#
+# Set default profile:
+#   oasr config set oasr.default_profile dev
+#
+# =============================================================================
+# Security Notes
+# =============================================================================
+#
+# 1. Always protect sensitive directories in deny_paths:
+#    - ~/.ssh (SSH keys)
+#    - ~/.aws (AWS credentials)
+#    - ~/.gnupg (GPG keys)
+#    - .env (environment secrets)
+#
+# 2. Use the most restrictive profile that works for your use case
+#
+# 3. Create custom profiles for different trust levels:
+#    - "safe" for untrusted skills
+#    - "dev" for development
+#    - "ci" for automation
+#    - Custom profiles for specific projects
+#
+# 4. Review policy summary before confirming risky operations
+#
+# 5. Use --yes flag sparingly and only when you understand the risks
+#
+# =============================================================================
