@@ -88,6 +88,11 @@ def create_parser() -> argparse.ArgumentParser:
 
     info_cmd.register(subparsers)
 
+    # Import and register completion command
+    from commands import completion as completion_cmd
+
+    completion_cmd.register_parser(subparsers)
+
     help_cmd.register(subparsers, parser)
 
     return parser
