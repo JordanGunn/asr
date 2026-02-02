@@ -41,9 +41,7 @@ def ensure_skills_dir() -> Path:
     return ensure_oasr_dir()
 
 
-def load_config(
-    config_path: Path | None = None, cli_overrides: dict[str, Any] | None = None
-) -> dict[str, Any]:
+def load_config(config_path: Path | None = None, cli_overrides: dict[str, Any] | None = None) -> dict[str, Any]:
     """Load configuration from multiple sources with precedence.
 
     Precedence order (highest to lowest):

@@ -122,9 +122,7 @@ class TestLoadEnvConfig:
 
     def test_oasr_adapter_targets_env_var(self):
         """Test OASR_ADAPTER_TARGETS environment variable."""
-        with patch.dict(
-            os.environ, {"OASR_ADAPTER_TARGETS": "cursor,windsurf"}, clear=True
-        ):
+        with patch.dict(os.environ, {"OASR_ADAPTER_TARGETS": "cursor,windsurf"}, clear=True):
             config = load_env_config()
             assert config == {"adapter": {"default_targets": ["cursor", "windsurf"]}}
 
@@ -148,9 +146,7 @@ class TestLoadEnvConfig:
 
     def test_invalid_bool_value_skipped(self, capsys):
         """Test invalid boolean value is skipped with warning."""
-        with patch.dict(
-            os.environ, {"OASR_VALIDATION_STRICT": "invalid"}, clear=True
-        ):
+        with patch.dict(os.environ, {"OASR_VALIDATION_STRICT": "invalid"}, clear=True):
             config = load_env_config()
             assert config == {}
             captured = capsys.readouterr()
@@ -159,9 +155,7 @@ class TestLoadEnvConfig:
 
     def test_invalid_int_value_skipped(self, capsys):
         """Test invalid integer value is skipped with warning."""
-        with patch.dict(
-            os.environ, {"OASR_VALIDATION_MAX_LINES": "not_a_number"}, clear=True
-        ):
+        with patch.dict(os.environ, {"OASR_VALIDATION_MAX_LINES": "not_a_number"}, clear=True):
             config = load_env_config()
             assert config == {}
             captured = capsys.readouterr()

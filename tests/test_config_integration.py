@@ -58,9 +58,7 @@ class TestConfigIntegration:
 
                 # With CLI override, CLI should win
                 cli_overrides = {"agent": {"default": "claude"}}
-                config = load_config(
-                    config_path=config_path, cli_overrides=cli_overrides
-                )
+                config = load_config(config_path=config_path, cli_overrides=cli_overrides)
                 assert config["agent"]["default"] == "claude"
         finally:
             config_path.unlink()
@@ -69,7 +67,7 @@ class TestConfigIntegration:
         """Test loading config from multiple sources simultaneously."""
         with tempfile.NamedTemporaryFile(mode="w", suffix=".toml", delete=False) as f:
             f.write('[agent]\ndefault = "codex"\n')
-            f.write('[validation]\nstrict = false\n')
+            f.write("[validation]\nstrict = false\n")
             config_path = Path(f.name)
 
         try:
@@ -134,15 +132,13 @@ class TestConfigIntegration:
     def test_load_config_env_only_overrides_specified(self):
         """Test env vars only override specified keys, not entire sections."""
         with tempfile.NamedTemporaryFile(mode="w", suffix=".toml", delete=False) as f:
-            f.write('[validation]\n')
-            f.write('strict = false\n')
-            f.write('reference_max_lines = 500\n')
+            f.write("[validation]\n")
+            f.write("strict = false\n")
+            f.write("reference_max_lines = 500\n")
             config_path = Path(f.name)
 
         try:
-            with patch.dict(
-                os.environ, {"OASR_VALIDATION_STRICT": "true"}, clear=True
-            ):
+            with patch.dict(os.environ, {"OASR_VALIDATION_STRICT": "true"}, clear=True):
                 config = load_config(config_path=config_path)
                 # strict overridden by env
                 assert config["validation"]["strict"] is True
