@@ -23,7 +23,7 @@ class TestConfigSet:
         """Set agent to codex."""
         with tempfile.TemporaryDirectory() as tmpdir:
             config_path = Path(tmpdir) / "config.toml"
-            args = MockArgs(key="agent", value="codex", config=config_path)
+            args = MockArgs(force=False, key="agent", value="codex", config=config_path)
 
             result = run_set(args)
 
@@ -39,7 +39,7 @@ class TestConfigSet:
         """Set agent to copilot."""
         with tempfile.TemporaryDirectory() as tmpdir:
             config_path = Path(tmpdir) / "config.toml"
-            args = MockArgs(key="agent", value="copilot", config=config_path)
+            args = MockArgs(force=False, key="agent", value="copilot", config=config_path)
 
             result = run_set(args)
 
@@ -51,7 +51,7 @@ class TestConfigSet:
         """Set agent to invalid value fails."""
         with tempfile.TemporaryDirectory() as tmpdir:
             config_path = Path(tmpdir) / "config.toml"
-            args = MockArgs(key="agent", value="invalid", config=config_path)
+            args = MockArgs(force=False, key="agent", value="invalid", config=config_path)
 
             result = run_set(args)
 
@@ -63,13 +63,13 @@ class TestConfigSet:
         """Set unsupported key fails."""
         with tempfile.TemporaryDirectory() as tmpdir:
             config_path = Path(tmpdir) / "config.toml"
-            args = MockArgs(key="unsupported", value="value", config=config_path)
+            args = MockArgs(force=False, key="unsupported", value="value", config=config_path)
 
             result = run_set(args)
 
             assert result == 1
             captured = capsys.readouterr()
-            assert "Unsupported config key" in captured.err
+            assert "Invalid key" in captured.err
 
     @patch("commands.config.detect_available_agents")
     def test_set_agent_warns_when_binary_missing(self, mock_detect, capsys):
@@ -78,7 +78,7 @@ class TestConfigSet:
 
         with tempfile.TemporaryDirectory() as tmpdir:
             config_path = Path(tmpdir) / "config.toml"
-            args = MockArgs(key="agent", value="codex", config=config_path)
+            args = MockArgs(force=False, key="agent", value="codex", config=config_path)
 
             result = run_set(args)
 
@@ -98,7 +98,7 @@ class TestConfigGet:
             config = {"agent": {"default": "codex"}, "validation": {}, "adapter": {}}
             save_config(config, config_path)
 
-            args = MockArgs(key="agent", config=config_path)
+            args = MockArgs(force=False, key="agent", config=config_path)
             result = run_get(args)
 
             assert result == 0
@@ -109,7 +109,7 @@ class TestConfigGet:
         """Get agent when not configured."""
         with tempfile.TemporaryDirectory() as tmpdir:
             config_path = Path(tmpdir) / "config.toml"
-            args = MockArgs(key="agent", config=config_path)
+            args = MockArgs(force=False, key="agent", config=config_path)
 
             result = run_get(args)
 
@@ -121,7 +121,7 @@ class TestConfigGet:
         """Get unsupported key fails."""
         with tempfile.TemporaryDirectory() as tmpdir:
             config_path = Path(tmpdir) / "config.toml"
-            args = MockArgs(key="unsupported", config=config_path)
+            args = MockArgs(force=False, key="unsupported", config=config_path)
 
             result = run_get(args)
 

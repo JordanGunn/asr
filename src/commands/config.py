@@ -5,6 +5,7 @@ import sys
 
 from agents import detect_available_agents, get_all_agent_names
 from config import CONFIG_FILE, load_config, save_config
+from config.schema import validate_agent, validate_profile_reference
 
 
 def register(subparsers: argparse._SubParsersAction) -> None:
@@ -25,6 +26,11 @@ def register(subparsers: argparse._SubParsersAction) -> None:
     )
     set_parser.add_argument("key", help="Configuration key (e.g., 'agent')")
     set_parser.add_argument("value", help="Configuration value")
+    set_parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Skip validation (use carefully)",
+    )
     set_parser.set_defaults(func=run_set)
 
     # config get
@@ -57,40 +63,86 @@ def register(subparsers: argparse._SubParsersAction) -> None:
 
 
 def run_set(args: argparse.Namespace) -> int:
-    """Set a configuration value."""
+    """Set a configuration value with validation."""
     key = args.key.lower()
     value = args.value
+    force = getattr(args, "force", False)
 
-    # Only support agent for now
-    if key == "agent":
-        # Validate agent name
-        valid_agents = get_all_agent_names()
-        if value not in valid_agents:
-            print(
-                f"Error: Invalid agent '{value}'. Must be one of: {', '.join(valid_agents)}",
-                file=sys.stderr,
-            )
+    # Parse key (support dotted notation like "validation.strict")
+    if "." in key:
+        parts = key.split(".", 1)
+        if len(parts) != 2:
+            print(f"Error: Invalid key '{key}'. Use format 'section.field' or 'agent'", file=sys.stderr)
+            return 1
+        section, field = parts
+    elif key == "agent":
+        # Special case: bare "agent" means "agent.default"
+        section, field = "agent", "default"
+    else:
+        print(f"Error: Invalid key '{key}'. Use format 'section.field' or 'agent'", file=sys.stderr)
+        return 1
+
+    # Type coercion based on field
+    original_value = value
+    if field == "strict":
+        value = value.lower() in ("true", "1", "yes", "on")
+    elif field == "reference_max_lines":
+        try:
+            value = int(value)
+            if value < 1:
+                print(f"Error: '{field}' must be a positive integer", file=sys.stderr)
+                return 1
+        except ValueError:
+            print(f"Error: '{field}' must be an integer", file=sys.stderr)
             return 1
 
-        # Load config, update, save
-        config = load_config(args.config if hasattr(args, "config") else None)
-        config["agent"]["default"] = value
-        save_config(config, args.config if hasattr(args, "config") else None)
+    # Load config
+    config_path = getattr(args, "config", None)
+    config = load_config(config_path=config_path)
 
-        # Show available vs configured
-        available = detect_available_agents()
-        if value in available:
-            print(f"✓ Default agent set to: {value}")
+    # Validate before setting (unless --force)
+    if not force:
+        # Validate agent
+        if section == "agent" and field == "default":
+            is_valid, error_msg = validate_agent(value)
+            if not is_valid:
+                print(f"Error: {error_msg}", file=sys.stderr)
+                print("\nTo set anyway, use: oasr config set --force agent <name>", file=sys.stderr)
+                return 1
+
+        # Validate profile reference
+        if section == "oasr" and field == "default_profile":
+            is_valid, error_msg = validate_profile_reference(value, config)
+            if not is_valid:
+                print(f"Error: {error_msg}", file=sys.stderr)
+                print("\nCreate the profile in ~/.oasr/config.toml first, or use:", file=sys.stderr)
+                print(f"  oasr config set --force oasr.default_profile {value}", file=sys.stderr)
+                return 1
+
+    # Set the value
+    if section not in config:
+        config[section] = {}
+
+    config[section][field] = value
+
+    try:
+        save_config(config, config_path=config_path)
+        
+        # Show confirmation
+        if section == "agent" and field == "default":
+            # Special handling for agent - check if available
+            available = detect_available_agents()
+            if value in available:
+                print(f"✓ Default agent set to: {value}")
+            else:
+                print(f"✓ Default agent set to: {value}")
+                print(f"  Warning: '{value}' binary not found in PATH. Install it to use this agent.", file=sys.stderr)
         else:
-            print(f"✓ Default agent set to: {value}")
-            print(
-                f"  Warning: '{value}' binary not found in PATH. Install it to use this agent.",
-                file=sys.stderr,
-            )
-
+            print(f"✓ Set {section}.{field} = {original_value}")
+        
         return 0
-    else:
-        print(f"Error: Unsupported config key '{key}'. Only 'agent' is supported.", file=sys.stderr)
+    except ValueError as e:
+        print(f"Error: {e}", file=sys.stderr)
         return 1
 
 
