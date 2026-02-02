@@ -46,15 +46,18 @@ def detect_shell():
         str: Shell name (bash, zsh, fish, powershell)
     """
     if platform.system() == "Windows":
+        shell_env = os.environ.get("SHELL", "").lower()
+        if "bash" in shell_env:
+            return "bash"
         # Check for PowerShell
         if "PSModulePath" in os.environ or "POWERSHELL" in os.environ.get("SHELL", "").upper():
             return "powershell"
-        # Check for Git Bash
-        elif "bash" in os.environ.get("SHELL", "").lower():
-            return "bash"
-        else:
-            # Default to PowerShell on Windows
-            return "powershell"
+        if "zsh" in shell_env:
+            return "zsh"
+        if "fish" in shell_env:
+            return "fish"
+        # Default to PowerShell on Windows
+        return "powershell"
     else:
         # Linux/macOS
         shell = os.environ.get("SHELL", "")
