@@ -4,6 +4,7 @@ import argparse
 import sys
 from pathlib import Path
 
+import policy
 from agents.registry import detect_available_agents, get_driver
 from config import load_config
 from registry import load_registry
@@ -41,6 +42,21 @@ def setup_parser(subparsers):
         "-a",
         "--agent",
         help="Override the default agent (codex, copilot, claude, opencode)",
+    )
+    parser.add_argument(
+        "--profile",
+        help="Execution policy profile to use (default: from config)",
+    )
+    parser.add_argument(
+        "-y",
+        "--yes",
+        action="store_true",
+        help="Skip confirmation prompt for risky operations",
+    )
+    parser.add_argument(
+        "--confirm",
+        action="store_true",
+        help="Force confirmation prompt even for safe operations",
     )
     parser.set_defaults(func=run)
 
@@ -90,6 +106,36 @@ def run(args: argparse.Namespace) -> int:
     if agent_name is None:
         # Error already printed by _get_agent_name
         return 1
+
+    # === POLICY ENFORCEMENT ===
+    # Load configuration
+    config = load_config()
+
+    # Determine which profile to use (flag overrides config)
+    profile_name = args.profile if args.profile else config.get("oasr", {}).get("default_profile", "safe")
+
+    # Load the policy profile
+    profile = policy.load(config, profile_name)
+
+    # Detect execution context for risk assessment
+    stdin_used = not sys.stdin.isatty() and not args.prompt and not args.instructions
+    instructions_file_used = bool(args.instructions)
+
+    # Assess risk and determine if confirmation is needed
+    needs_confirm, reasons = policy.assess_risk(
+        profile=profile,
+        stdin_used=stdin_used,
+        instructions_file_used=instructions_file_used,
+        force_confirm=args.confirm,
+    )
+
+    # Require confirmation unless --yes flag is present
+    if needs_confirm and not args.yes:
+        summary = policy.summarize(profile, skill_name, agent_name)
+        if not policy.prompt_confirmation(summary, reasons):
+            return 1  # User aborted
+
+    # === END POLICY ENFORCEMENT ===
 
     # Get the agent driver
     try:

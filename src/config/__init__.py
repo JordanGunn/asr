@@ -56,6 +56,8 @@ def load_config(config_path: Path | None = None) -> dict[str, Any]:
         "validation": DEFAULT_CONFIG["validation"].copy(),
         "adapter": DEFAULT_CONFIG["adapter"].copy(),
         "agent": DEFAULT_CONFIG["agent"].copy(),
+        "oasr": DEFAULT_CONFIG["oasr"].copy(),
+        "profiles": {k: v.copy() for k, v in DEFAULT_CONFIG["profiles"].items()},
     }
 
     if path.exists():
@@ -68,6 +70,12 @@ def load_config(config_path: Path | None = None) -> dict[str, Any]:
             config["adapter"].update(loaded["adapter"])
         if "agent" in loaded:
             config["agent"].update(loaded["agent"])
+        if "oasr" in loaded:
+            config["oasr"].update(loaded["oasr"])
+        if "profiles" in loaded:
+            # Merge user profiles with defaults (user profiles take precedence)
+            for profile_name, profile_data in loaded["profiles"].items():
+                config["profiles"][profile_name] = profile_data
 
     return config
 
@@ -106,4 +114,6 @@ def get_default_config() -> dict[str, Any]:
         "validation": DEFAULT_CONFIG["validation"].copy(),
         "adapter": DEFAULT_CONFIG["adapter"].copy(),
         "agent": DEFAULT_CONFIG["agent"].copy(),
+        "oasr": DEFAULT_CONFIG["oasr"].copy(),
+        "profiles": {k: v.copy() for k, v in DEFAULT_CONFIG["profiles"].items()},
     }

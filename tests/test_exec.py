@@ -41,10 +41,22 @@ def mock_registry(tmp_path):
 
 @pytest.fixture
 def mock_config_with_agent():
-    """Return a config with a default agent."""
+    """Return a config with a default agent and safe policy profile."""
     return {
         "agent": {"default": "codex"},
         "validation": {"reference_max_lines": 500, "strict": False},
+        "oasr": {"default_profile": "safe"},
+        "profiles": {
+            "safe": {
+                "fs_read_roots": ["./"],
+                "fs_write_roots": ["./out"],
+                "deny_paths": ["~/.ssh"],
+                "allowed_commands": ["rg", "fd"],
+                "deny_shell": True,
+                "network": False,
+                "allow_env": False,
+            }
+        },
     }
 
 
@@ -54,6 +66,18 @@ def mock_config_no_agent():
     return {
         "agent": {},
         "validation": {"reference_max_lines": 500, "strict": False},
+        "oasr": {"default_profile": "safe"},
+        "profiles": {
+            "safe": {
+                "fs_read_roots": ["./"],
+                "fs_write_roots": ["./out"],
+                "deny_paths": ["~/.ssh"],
+                "allowed_commands": ["rg", "fd"],
+                "deny_shell": True,
+                "network": False,
+                "allow_env": False,
+            }
+        },
     }
 
 
@@ -67,9 +91,12 @@ class TestExecCommand:
             prompt="Do something",
             instructions=None,
             agent="codex",
+            profile=None,
+            yes=False,
+            confirm=False,
         )
 
-        with mock.patch("commands.exec.load_registry", return_value={}):
+        with mock.patch("commands.exec.load_registry", return_value=[]):
             result = exec_cmd.run(args)
 
         assert result == 1
@@ -85,6 +112,9 @@ class TestExecCommand:
             prompt="Do something",
             instructions=None,
             agent="codex",
+            profile=None,
+            yes=False,
+            confirm=False,
         )
 
         with mock.patch("commands.exec.load_registry", return_value=registry):
@@ -104,6 +134,9 @@ class TestExecCommand:
             prompt="Do something",
             instructions=None,
             agent=None,  # Use default from config
+            profile=None,
+            yes=True,  # Skip confirmation
+            confirm=False,
         )
 
         mock_result = mock.Mock()
@@ -138,6 +171,9 @@ class TestExecCommand:
             prompt="Do something",
             instructions=None,
             agent=None,
+            profile=None,
+            yes=True,
+            confirm=False,
         )
 
         mock_result = mock.Mock()
@@ -155,8 +191,8 @@ class TestExecCommand:
 
         assert result == 1
 
-    def test_exec_with_explicit_agent(self, capsys, mock_registry):
-        """Test exec with explicit agent flag."""
+    def test_exec_with_explicit_agent(self, capsys, mock_registry, mock_config_with_agent):
+        """Test exec with explicit --agent flag."""
         registry, skill_file = mock_registry
 
         args = argparse.Namespace(
@@ -164,6 +200,9 @@ class TestExecCommand:
             prompt="Do something",
             instructions=None,
             agent="copilot",  # Explicit agent
+            profile=None,
+            yes=True,
+            confirm=False,
         )
 
         mock_result = mock.Mock()
@@ -181,6 +220,7 @@ class TestExecCommand:
 
         with (
             mock.patch("commands.exec.load_registry", return_value=registry),
+            mock.patch("commands.exec.load_config", return_value=mock_config_with_agent),
             mock.patch("commands.exec.get_driver", return_value=mock_driver),
             mock.patch("commands.exec.detect_available_agents", return_value=available_agents),
         ):

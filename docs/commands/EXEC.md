@@ -2,6 +2,8 @@
 
 Execute skills as CLI tools from anywhere on your system. Run skills with agent-driven execution without needing to clone them first.
 
+> **🔒 Security Note**: As of v0.5.0, `oasr exec` includes host-level execution policy enforcement to protect against prompt injection and unsafe agent behavior. See [Security Model](#security-model) below.
+
 ## Usage
 
 ```bash
@@ -13,6 +15,9 @@ oasr exec <skill-name> [options]
 - `-p, --prompt TEXT` — Inline prompt/instructions for the agent
 - `-i, --instructions FILE` — Read prompt from a file
 - `-a, --agent AGENT` — Override the default agent (codex, copilot, claude, opencode)
+- `--profile PROFILE` — Use a specific execution policy profile (default: from config)
+- `-y, --yes` — Skip confirmation prompt for risky operations
+- `--confirm` — Force confirmation even for safe operations
 
 ## Features
 
@@ -310,6 +315,173 @@ This allows skills to:
 - Repeated manual use
 - Tracking skill versions
 - Working offline
+
+## Security Model
+
+### Overview
+
+OASR enforces **host-level execution policies** to reduce the impact of prompt injection and unsafe agent behavior. Policies define what agents can and cannot do, protecting sensitive files and preventing unauthorized actions.
+
+**Key Principles:**
+- OASR does not judge skills
+- OASR enforces user-defined host policy (execution ceilings)
+- Skills and agents cannot override policy
+- Policies stored in `~/.oasr/config.toml`
+- Conservative defaults (fail closed)
+
+### Policy Profiles
+
+Execution policies are organized into profiles. Each profile defines:
+
+| Setting | Description | Safe Default |
+|---------|-------------|--------------|
+| `fs_read_roots` | Allowed read locations | `["./"]` |
+| `fs_write_roots` | Allowed write locations | `["./out", "./.oasr"]` |
+| `deny_paths` | Explicitly denied paths | `["~/.ssh", "~/.aws", "~/.gnupg", ".env"]` |
+| `allowed_commands` | Permitted shell commands | `["rg", "fd", "jq", "cat"]` |
+| `deny_shell` | Block shell execution | `true` |
+| `network` | Allow network access | `false` |
+| `allow_env` | Allow environment access | `false` |
+
+### Risk Triggers
+
+OASR requires explicit confirmation when:
+
+1. **Input from stdin** (non-interactive/piped)
+2. **Prompt from file** (`-i/--instructions`)
+3. **Non-safe profile** in use
+4. **Environment access** enabled
+5. **Network access** enabled
+6. **Shell execution** allowed
+7. **Force confirmation** flag (`--confirm`)
+
+### Confirmation Flow
+
+When risk triggers are detected:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EXECUTION POLICY REVIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Skill:             csv-analyzer
+Agent:             codex
+Profile:           safe
+Network:           denied
+Environment:       denied
+Shell:             denied
+Allowed commands:  rg, fd, jq, cat
+Read roots:        ./
+Write roots:       ./out, ./.oasr
+Deny paths:        ~/.ssh, ~/.aws, ~/.gnupg, ~/.config, .env
+
+⚠  This execution requires confirmation due to:
+   - Input from stdin (non-interactive)
+
+Proceed? [y/N] 
+```
+
+**Default answer is No** (safe).
+
+### Configuration
+
+Define profiles in `~/.oasr/config.toml`:
+
+```toml
+[oasr]
+default_profile = "safe"
+
+[profiles.safe]
+fs_read_roots = ["./"]
+fs_write_roots = ["./out", "./.oasr"]
+deny_paths = ["~/.ssh", "~/.aws", "~/.gnupg", "~/.config", ".env"]
+allowed_commands = ["rg", "fd", "jq", "cat"]
+deny_shell = true
+network = false
+allow_env = false
+
+[profiles.dev]
+# More permissive for development
+network = true
+allow_env = true
+deny_shell = false
+allowed_commands = ["bash", "curl", "git", "python", "node"]
+```
+
+### Usage Examples
+
+#### Safe Default (No Confirmation)
+```bash
+# Interactive prompt, safe profile
+oasr exec csv-analyzer -p "Analyze data"
+# No confirmation needed
+```
+
+#### Stdin Triggers Confirmation
+```bash
+# Non-interactive input
+echo "data" | oasr exec csv-analyzer
+# Requires confirmation (unless --yes)
+```
+
+#### Skip Confirmation
+```bash
+# Use --yes to bypass (use carefully!)
+echo "data" | oasr exec csv-analyzer --yes
+```
+
+#### Use Different Profile
+```bash
+# Use 'dev' profile with more permissions
+oasr exec api-tester -p "Run tests" --profile dev
+```
+
+#### Force Confirmation
+```bash
+# Force confirmation even if safe
+oasr exec data-processor -p "Process" --confirm
+```
+
+### Best Practices
+
+1. **Use safe defaults**: Start with the built-in safe profile
+2. **Create custom profiles**: Define profiles for different trust levels
+3. **Be explicit with --yes**: Only skip confirmation when you understand the risks
+4. **Review policy before confirming**: Read the summary carefully
+5. **Protect sensitive paths**: Always include `~/.ssh`, `~/.aws`, etc. in `deny_paths`
+6. **Limit commands**: Only allow necessary commands in `allowed_commands`
+7. **Use profiles per context**: Different profiles for dev/prod/testing
+
+### What This Protects Against
+
+✅ **Prompt injection attempts** that try to access sensitive files  
+✅ **Unsafe agent behavior** (network calls, shell execution)  
+✅ **Accidental exposure** of credentials or secrets  
+✅ **Unauthorized file access** outside allowed roots  
+✅ **Malicious skill instructions** that exceed policy
+
+### What This Does NOT Do
+
+❌ NLP-based prompt injection detection  
+❌ Prompt rewriting or sanitization  
+❌ Skill correctness validation  
+❌ Agent-specific permission models  
+❌ Plan-gated execution (staged for future)
+
+### Limitations
+
+- **Confirmation is on execution, not per-action**: Policy is checked before running, not during
+- **Agent behavior is not monitored**: Once confirmed, agent runs with specified permissions
+- **Trust required**: You must trust the agent CLI itself
+- **File-level enforcement not yet implemented**: Path checks are advisory in v0.5.0
+
+### Future Enhancements
+
+Planned for future releases:
+- Plan-gated execution (structured plan approval)
+- Runtime file access enforcement
+- Command allowlist enforcement via executor
+- Network access controls
+- Real-time policy violations monitoring
 
 ## Configuration
 

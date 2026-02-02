@@ -201,3 +201,124 @@ class TestValidAgentsConstant:
     def test_valid_agents_count(self):
         """VALID_AGENTS has exactly 4 agents."""
         assert len(VALID_AGENTS) == 4
+
+
+class TestConfigProfiles:
+    """Test policy profile configuration support."""
+
+    def test_default_config_has_oasr_section(self):
+        """Default config includes oasr section."""
+        config = get_default_config()
+        assert "oasr" in config
+        assert "default_profile" in config["oasr"]
+
+    def test_default_profile_is_safe(self):
+        """Default execution profile is 'safe'."""
+        config = get_default_config()
+        assert config["oasr"]["default_profile"] == "safe"
+
+    def test_default_config_has_profiles_section(self):
+        """Default config includes profiles section."""
+        config = get_default_config()
+        assert "profiles" in config
+        assert isinstance(config["profiles"], dict)
+
+    def test_safe_profile_exists_by_default(self):
+        """Safe profile is defined in defaults."""
+        config = get_default_config()
+        assert "safe" in config["profiles"]
+        safe = config["profiles"]["safe"]
+        assert safe["deny_shell"] is True
+        assert safe["network"] is False
+        assert safe["allow_env"] is False
+
+    def test_load_user_defined_profile(self):
+        """Load user-defined custom profile from config."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            config_path = Path(tmpdir) / "config.toml"
+            with open(config_path, "w") as f:
+                f.write("""
+[oasr]
+default_profile = "dev"
+
+[profiles.dev]
+network = true
+allow_env = true
+deny_shell = false
+allowed_commands = ["bash", "curl", "git"]
+""")
+
+            loaded = load_config(config_path)
+            assert loaded["oasr"]["default_profile"] == "dev"
+            assert "dev" in loaded["profiles"]
+            assert loaded["profiles"]["dev"]["network"] is True
+            assert loaded["profiles"]["dev"]["allow_env"] is True
+            assert loaded["profiles"]["dev"]["deny_shell"] is False
+
+    def test_user_profiles_merge_with_defaults(self):
+        """User profiles are added alongside default profiles."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            config_path = Path(tmpdir) / "config.toml"
+            with open(config_path, "w") as f:
+                f.write("""
+[profiles.custom]
+network = true
+""")
+
+            loaded = load_config(config_path)
+            # Safe profile should still exist
+            assert "safe" in loaded["profiles"]
+            # Custom profile should be added
+            assert "custom" in loaded["profiles"]
+
+    def test_validate_invalid_default_profile(self):
+        """Invalid default_profile type raises ValueError."""
+        config = {"oasr": {"default_profile": 123}}
+        with pytest.raises(ValueError, match="must be a string"):
+            validate_config(config)
+
+    def test_validate_invalid_profiles_not_dict(self):
+        """Invalid profiles structure raises ValueError."""
+        config = {"profiles": "not a dict"}
+        with pytest.raises(ValueError, match="must be a table"):
+            validate_config(config)
+
+    def test_validate_invalid_profile_data_not_dict(self):
+        """Invalid profile data raises ValueError."""
+        config = {"profiles": {"custom": "not a dict"}}
+        with pytest.raises(ValueError, match="must be a table"):
+            validate_config(config)
+
+    def test_validate_profile_fields(self):
+        """Validate profile field types."""
+        # Test invalid fs_read_roots
+        config = {"profiles": {"custom": {"fs_read_roots": "not a list"}}}
+        with pytest.raises(ValueError, match="fs_read_roots must be a list"):
+            validate_config(config)
+
+        # Test invalid deny_shell
+        config = {"profiles": {"custom": {"deny_shell": "not a bool"}}}
+        with pytest.raises(ValueError, match="deny_shell must be a boolean"):
+            validate_config(config)
+
+        # Test invalid network
+        config = {"profiles": {"custom": {"network": "not a bool"}}}
+        with pytest.raises(ValueError, match="network must be a boolean"):
+            validate_config(config)
+
+    def test_save_and_load_profiles(self):
+        """Save config with profiles and load it back."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            config_path = Path(tmpdir) / "config.toml"
+            config = get_default_config()
+            config["oasr"]["default_profile"] = "dev"
+            config["profiles"]["dev"] = {
+                "network": True,
+                "allow_env": True,
+                "deny_shell": False,
+            }
+            save_config(config, config_path)
+
+            loaded = load_config(config_path)
+            assert loaded["oasr"]["default_profile"] == "dev"
+            assert loaded["profiles"]["dev"]["network"] is True
