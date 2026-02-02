@@ -77,14 +77,24 @@ def get_completion_script(shell):
     Returns:
         str: Completion script content
     """
-    # Will be implemented in Phase 2
-    scripts = {
-        "bash": "# bash completion placeholder",
-        "zsh": "# zsh completion placeholder",
-        "fish": "# fish completion placeholder",
-        "powershell": "# PowerShell completion placeholder",
+    # Map shell names to completion files
+    script_files = {
+        "bash": "bash.sh",
+        "zsh": "zsh.sh",
+        "fish": "fish.fish",
+        "powershell": "powershell.ps1",
     }
-    return scripts.get(shell, "")
+
+    if shell not in script_files:
+        return ""
+
+    # Get the path to the completion script
+    completion_file = Path(__file__).parent.parent / "completions" / script_files[shell]
+
+    if not completion_file.exists():
+        return f"# {shell} completion script not found"
+
+    return completion_file.read_text()
 
 
 def get_completion_path(shell, system=False):
