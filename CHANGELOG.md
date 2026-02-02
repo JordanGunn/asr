@@ -4,6 +4,54 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.2] - 2026-02-02
+
+### Added
+- **⌨️ Shell Completion Support** — Intelligent tab completion for all major shells
+  - Cross-platform support: Bash, Zsh, Fish, PowerShell
+  - `oasr completion install` — Auto-detect shell and install completions
+  - `oasr completion <shell>` — Output completion script for specific shell
+  - Dynamic completions: skill names, agents, profiles fetched live from registry
+  - Command, subcommand, and flag completion for all OASR commands
+  - Smart shell detection (platform + $SHELL environment variable)
+  - Installation paths: `~/.bash_completion.d/`, `~/.zsh/completion/`, `~/.config/fish/completions/`, `~/.config/powershell/`
+  - Backup mechanism: existing completions backed up before overwrite
+  - `--force` and `--dry-run` flags for installation control
+  - `oasr completion uninstall` — Remove installed completions
+  - Configuration support: `oasr.completions` config option
+- **🧪 Comprehensive E2E Tests** — 16 new end-to-end tests covering all commands
+  - Registry subcommands (list, sync, prune)
+  - Diff, sync, info, validate, clean commands
+  - Adapter, find, help commands
+  - Total test count: 282 tests (all passing)
+  - Ensures no regressions in existing functionality
+
+### Documentation
+- **[docs/commands/COMPLETION.md](docs/commands/COMPLETION.md)**: Complete completion command reference
+  - Installation instructions for all shells
+  - Shell-specific configuration notes
+  - Troubleshooting guide
+  - Examples and usage patterns
+- **[README.md](README.md)**: Added Shell Completions section with quickstart
+- **[docs/commands/.INDEX.md](docs/commands/.INDEX.md)**: Added completion to command index
+
+### Technical
+- **New module**: `src/commands/completion.py` (259 lines) with shell detection and installation
+- **Completion scripts**: 4 shell-specific scripts (~691 lines total)
+  - `src/completions/bash.sh` (197 lines)
+  - `src/completions/zsh.sh` (259 lines) with descriptions
+  - `src/completions/fish.fish` (120 lines) with native Fish syntax
+  - `src/completions/powershell.ps1` (115 lines) with ArgumentCompleter
+- **45 new tests**: 29 completion tests + 16 E2E tests
+- **Dynamic completion**: Scripts invoke `oasr` commands for live data (registry list, config keys)
+- **Cross-platform**: Handles Windows, macOS, Linux path conventions
+
+### Quality of Life
+- Tab completion reduces typing and prevents typos
+- Discovery: see available skills, agents, and profiles at your fingertips
+- Professional UX: OASR now feels like a polished CLI tool
+- Backward compatible: no changes to existing commands
+
 ## [0.5.1] - 2026-02-02
 
 ### Added

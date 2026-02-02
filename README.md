@@ -98,6 +98,26 @@ Remote skills are fetched on-demand during `adapter` and `use` operations. The r
 
 ---
 
+## Shell Completions
+
+OASR supports intelligent tab completion for Bash, Zsh, Fish, and PowerShell:
+
+```bash
+# Install for your current shell
+oasr completion install
+
+# Now try it:
+oasr <TAB>          # Complete commands
+oasr info <TAB>     # Complete skill names
+oasr exec --<TAB>   # Complete flags
+```
+
+Completions are **dynamic** — skill names, agents, and profiles are fetched live from your registry.
+
+See [`oasr completion --help`](docs/commands/COMPLETION.md) for details.
+
+---
+
 ## Documentation
 
 - **[Quickstart](docs/QUICKSTART.md)** — Installation and first steps
