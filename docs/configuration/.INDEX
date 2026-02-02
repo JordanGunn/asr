@@ -1,0 +1,58 @@
+[[doc]]
+path = "README.md"
+title = "Configuration Overview"
+description = "Getting started with OASR configuration - quick start and common scenarios"
+
+[[doc]]
+path = "agent.md"
+title = "Agent Configuration"
+description = "Configure default agent and agent-specific settings"
+
+[[doc]]
+path = "profiles.md"
+title = "Policy Profiles"
+description = "Execution policy profiles for security and isolation"
+
+[[doc]]
+path = "validation.md"
+title = "Validation Settings"
+description = "Skill validation and reference display settings"
+
+[[doc]]
+path = "adapter.md"
+title = "Adapter Configuration"
+description = "IDE adapter targets and settings"
+
+[[doc]]
+path = "environment-variables.md"
+title = "Environment Variables"
+description = "Complete OASR_* environment variable reference"
+
+[[doc]]
+path = "precedence.md"
+title = "Configuration Precedence"
+description = "Understanding how CLI flags, env vars, config file, and defaults interact"
+
+[[section]]
+name = "Examples"
+description = "Ready-to-use configuration examples for common scenarios"
+
+[[example]]
+path = "examples/development.toml"
+title = "Development Configuration"
+description = "Permissive config for local development"
+
+[[example]]
+path = "examples/ci-cd.toml"
+title = "CI/CD Configuration"
+description = "Config for continuous integration pipelines"
+
+[[example]]
+path = "examples/production.toml"
+title = "Production Configuration"
+description = "Hardened config for production environments"
+
+[[example]]
+path = "examples/minimal.toml"
+title = "Minimal Configuration"
+description = "Bare minimum config to get started"

@@ -16,11 +16,11 @@ def validate_agent(agent: str | None) -> tuple[bool, str | None]:
     """
     if agent is None:
         return (True, None)
-    
+
     if agent not in VALID_AGENTS:
         sorted_agents = ", ".join(sorted(VALID_AGENTS))
         return (False, f"Invalid agent '{agent}'. Valid agents: {sorted_agents}")
-    
+
     return (True, None)
 
 
@@ -35,11 +35,11 @@ def validate_profile_reference(profile_name: str, config: dict[str, Any]) -> tup
         Tuple of (is_valid, error_message)
     """
     profiles = config.get("profiles", {})
-    
+
     if profile_name not in profiles:
         available = ", ".join(sorted(profiles.keys()))
         return (False, f"Profile '{profile_name}' not found. Available profiles: {available}")
-    
+
     return (True, None)
 
 

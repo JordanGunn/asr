@@ -1,0 +1,71 @@
+# CI/CD OASR Configuration
+#
+# Configuration optimized for continuous integration and deployment pipelines.
+# Allows necessary tools while maintaining security boundaries.
+
+[agent]
+default = "codex"
+
+[validation]
+reference_max_lines = 500
+strict = true  # Fail fast on any validation issues
+
+[adapter]
+default_targets = ["cursor"]  # Minimal for CI
+
+[oasr]
+default_profile = "ci"
+
+# CI/CD profile
+[profiles.ci]
+fs_read_roots = ["./", "/tmp/ci", "/workspace"]
+fs_write_roots = [
+    "./build",
+    "./dist",
+    "./target",
+    "./coverage",
+    "/tmp/ci",
+    "/workspace/artifacts",
+]
+deny_paths = [
+    "~/.ssh",
+    "~/.aws",      # CI should use injected secrets, not user credentials
+    "~/.gnupg",
+]
+allowed_commands = [
+    # Build tools
+    "npm", "yarn", "pnpm", "pip", "cargo", "go", "make", "cmake",
+    # Testing
+    "pytest", "jest", "vitest", "cargo", "go",
+    # Version control
+    "git",
+    # Container tools
+    "docker", "kubectl", "helm",
+    # Deployment
+    "terraform", "ansible",
+    # Utility
+    "rg", "fd", "jq", "cat",
+]
+deny_shell = false  # CI often needs shell access
+network = true      # May need to fetch dependencies or deploy
+allow_env = true    # CI environment variables needed (BUILD_ID, etc.)
+
+# Build profile (isolated build environment)
+[profiles.build]
+fs_read_roots = ["./", "/tmp/build"]
+fs_write_roots = ["./build", "./dist", "./target", "/tmp/build"]
+deny_paths = ["~/.ssh", "~/.aws"]
+allowed_commands = ["npm", "yarn", "pip", "cargo", "go", "make", "cmake"]
+deny_shell = false
+network = true   # May need to fetch dependencies
+allow_env = true # Build environment variables
+
+# Deploy profile (production deployment)
+[profiles.deploy]
+fs_read_roots = ["./", "./build", "./dist"]
+fs_write_roots = ["./logs", "/tmp/deploy"]
+deny_paths = ["~/.ssh", "~/.aws"]
+allowed_commands = ["kubectl", "helm", "terraform", "ansible", "docker"]
+deny_shell = false
+network = true   # Deployment requires network
+allow_env = true # Deployment credentials from env

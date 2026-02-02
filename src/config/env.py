@@ -27,7 +27,6 @@ Type handling:
 import os
 from typing import Any
 
-
 # Mapping of environment variable names to config paths
 ENV_VAR_MAP = {
     "OASR_AGENT": ("agent", "default"),
@@ -98,11 +97,11 @@ def parse_value(value: str, expected_type: type) -> Any:
     Raises:
         ValueError: If value cannot be parsed to expected type
     """
-    if expected_type == bool:
+    if expected_type is bool:
         return parse_bool(value)
-    elif expected_type == int:
+    elif expected_type is int:
         return parse_int(value)
-    elif expected_type == list:
+    elif expected_type is list:
         return parse_list(value)
     else:
         return value  # String, return as-is

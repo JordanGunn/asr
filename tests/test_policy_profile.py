@@ -1,9 +1,6 @@
 """Tests for policy.profile module."""
 
 from pathlib import Path
-from unittest import mock
-
-import pytest
 
 import policy
 from policy import Profile

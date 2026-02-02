@@ -1,0 +1,61 @@
+# Production OASR Configuration
+#
+# Hardened configuration for production environments.
+# Minimal permissions, maximum security.
+
+[agent]
+default = "codex"
+
+[validation]
+reference_max_lines = 500
+strict = true  # No tolerance for validation issues
+
+[adapter]
+default_targets = ["cursor"]  # Minimal
+
+[oasr]
+default_profile = "production"
+
+# Production profile (extremely restrictive)
+[profiles.production]
+fs_read_roots = ["./"]  # Only current directory
+fs_write_roots = ["./logs", "./output"]  # Minimal writes
+deny_paths = [
+    "~/.ssh",
+    "~/.aws",
+    "~/.gnupg",
+    "~/.config",
+    ".env",
+    "~/",          # Deny entire home directory
+    "/etc",        # System configs
+    "/var",        # System data
+]
+allowed_commands = [
+    "cat",  # Read files
+    "rg",   # Search
+    "fd",   # Find files
+    "jq",   # Parse JSON
+]
+deny_shell = true   # No shell execution
+network = false     # No network access
+allow_env = false   # No environment variables
+
+# Monitoring profile (read-only with limited network)
+[profiles.monitoring]
+fs_read_roots = ["./logs", "./metrics"]
+fs_write_roots = []  # Read-only
+deny_paths = ["~/.ssh", "~/.aws", "~/"]
+allowed_commands = ["cat", "rg", "jq"]
+deny_shell = true
+network = true   # May need to send metrics
+allow_env = false
+
+# Recovery profile (emergency access)
+[profiles.recovery]
+fs_read_roots = ["./", "./logs", "./backups"]
+fs_write_roots = ["./recovery", "./logs"]
+deny_paths = ["~/.ssh", "~/.aws"]
+allowed_commands = ["cat", "rg", "fd", "bash"]  # Basic tools
+deny_shell = false  # May need shell for recovery
+network = false
+allow_env = false

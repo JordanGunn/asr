@@ -1,6 +1,25 @@
 # `oasr config`
 
-Manage OASR configuration settings. Configure default agent, validation rules, and adapter preferences.
+Manage OASR configuration settings.
+
+> **Note:** For comprehensive configuration documentation, see [`docs/configuration/`](../configuration/README.md)
+
+## Quick Reference
+
+```bash
+oasr config set <key> <value>   # Set a config value
+oasr config get <key>            # Get a config value
+oasr config list                 # Show all configuration
+oasr config path                 # Show config file location
+```
+
+**See also:**
+- [Configuration Overview](../configuration/README.md) - Complete config guide
+- [Environment Variables](../configuration/environment-variables.md) - OASR_* reference
+- [Agent Configuration](../configuration/agent.md) - Agent settings
+- [Policy Profiles](../configuration/profiles.md) - Execution policies
+
+---
 
 ## Usage
 

@@ -1,0 +1,12 @@
+# Minimal OASR Configuration
+# 
+# This is the bare minimum configuration to get started with OASR.
+# Copy to ~/.oasr/config.toml and customize as needed.
+
+[agent]
+default = "codex"  # Your preferred AI agent
+
+[oasr]
+default_profile = "safe"  # Use built-in safe profile
+
+# That's it! All other settings use sensible defaults.

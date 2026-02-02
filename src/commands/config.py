@@ -3,7 +3,7 @@
 import argparse
 import sys
 
-from agents import detect_available_agents, get_all_agent_names
+from agents import detect_available_agents
 from config import CONFIG_FILE, load_config, save_config
 from config.schema import validate_agent, validate_profile_reference
 
@@ -127,7 +127,7 @@ def run_set(args: argparse.Namespace) -> int:
 
     try:
         save_config(config, config_path=config_path)
-        
+
         # Show confirmation
         if section == "agent" and field == "default":
             # Special handling for agent - check if available
@@ -139,7 +139,7 @@ def run_set(args: argparse.Namespace) -> int:
                 print(f"  Warning: '{value}' binary not found in PATH. Install it to use this agent.", file=sys.stderr)
         else:
             print(f"✓ Set {section}.{field} = {original_value}")
-        
+
         return 0
     except ValueError as e:
         print(f"Error: {e}", file=sys.stderr)

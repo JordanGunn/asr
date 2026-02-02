@@ -1,0 +1,70 @@
+# Development OASR Configuration
+#
+# Permissive configuration for local development work.
+# Allows broader access for productivity while still protecting sensitive paths.
+
+[agent]
+default = "codex"
+
+[validation]
+reference_max_lines = 1000
+strict = false
+
+[adapter]
+default_targets = ["cursor", "windsurf"]
+
+[oasr]
+default_profile = "dev"
+
+# Safe profile (built-in, always available)
+# Kept here for reference
+[profiles.safe]
+fs_read_roots = ["./"]
+fs_write_roots = ["./out", "./.oasr"]
+deny_paths = ["~/.ssh", "~/.aws", "~/.gnupg", "~/.config", ".env"]
+allowed_commands = ["rg", "fd", "jq", "cat"]
+deny_shell = true
+network = false
+allow_env = false
+
+# Development profile (permissive for local work)
+[profiles.dev]
+fs_read_roots = ["./", "~/projects", "~/documents"]
+fs_write_roots = ["./", "~/projects/output", "./build", "./dist"]
+deny_paths = [
+    "~/.ssh",      # Still protect SSH keys
+    "~/.aws",      # Still protect AWS credentials
+    "~/.gnupg",    # Still protect GPG keys
+]
+allowed_commands = [
+    # Shell
+    "bash", "sh", "zsh",
+    # Programming languages
+    "python", "python3", "node", "npm", "go", "cargo",
+    # Version control
+    "git",
+    # Build tools
+    "make", "cmake", "npm", "pip", "yarn",
+    # Network tools
+    "curl", "wget",
+    # Search/utility
+    "rg", "fd", "jq", "cat", "grep", "find",
+]
+deny_shell = false  # Allow shell commands
+network = true      # Allow network access
+allow_env = true    # Allow environment variables
+
+# Testing profile
+[profiles.test]
+fs_read_roots = ["./tests", "./fixtures", "./test-data"]
+fs_write_roots = ["./test-output", "./coverage", "./.pytest_cache", "./.nyc_output"]
+deny_paths = ["~/.ssh", "~/.aws", "~/"]
+allowed_commands = [
+    "pytest", "coverage",  # Python
+    "jest", "vitest",      # JavaScript
+    "cargo", "go",         # Other languages
+    "rg", "fd",            # Search
+]
+deny_shell = true
+network = false
+allow_env = false
