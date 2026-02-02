@@ -33,13 +33,13 @@ class TestShellDetection:
 
     def test_detect_powershell_on_windows(self):
         """Test PowerShell detection on Windows."""
-        with mock.patch.dict(os.environ, {"PSModulePath": "some/path"}):
+        with mock.patch.dict(os.environ, {"PSModulePath": "some/path"}, clear=True):
             with mock.patch("platform.system", return_value="Windows"):
                 assert completion.detect_shell() == "powershell"
 
     def test_detect_bash_on_windows_git_bash(self):
         """Test bash detection on Windows (Git Bash)."""
-        with mock.patch.dict(os.environ, {"SHELL": "/usr/bin/bash"}):
+        with mock.patch.dict(os.environ, {"SHELL": "/usr/bin/bash"}, clear=True):
             with mock.patch("platform.system", return_value="Windows"):
                 assert completion.detect_shell() == "bash"
 
