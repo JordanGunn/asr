@@ -101,18 +101,30 @@ def run(args: argparse.Namespace) -> int:
         # Error already printed by _get_user_prompt
         return 1
 
-    # Determine which agent to use
-    agent_name = _get_agent_name(args)
-    if agent_name is None:
-        # Error already printed by _get_agent_name
-        return 1
-
     # === POLICY ENFORCEMENT ===
-    # Load configuration
-    config = load_config()
+    # Build CLI overrides for config loading
+    cli_overrides = {}
+    if args.agent:
+        cli_overrides["agent"] = {"default": args.agent}
+    if args.profile:
+        cli_overrides["oasr"] = cli_overrides.get("oasr", {})
+        cli_overrides["oasr"]["default_profile"] = args.profile
 
-    # Determine which profile to use (flag overrides config)
-    profile_name = args.profile if args.profile else config.get("oasr", {}).get("default_profile", "safe")
+    # Load configuration with precedence: CLI > env > file > defaults
+    config = load_config(cli_overrides=cli_overrides)
+
+    # Determine agent and profile from merged config
+    agent_name = config.get("agent", {}).get("default")
+    profile_name = config.get("oasr", {}).get("default_profile", "safe")
+
+    # Validate agent is set
+    if not agent_name:
+        print(
+            "Error: No agent configured. Set OASR_AGENT, use --agent flag, or run:",
+            file=sys.stderr,
+        )
+        print("  oasr config set agent <name>", file=sys.stderr)
+        return 1
 
     # Load the policy profile
     profile = policy.load(config, profile_name)

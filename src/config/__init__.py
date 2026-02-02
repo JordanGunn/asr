@@ -12,6 +12,7 @@ else:
 import tomli_w
 
 from config.defaults import DEFAULT_CONFIG
+from config.env import load_env_config, merge_configs
 from config.schema import validate_config
 
 OASR_DIR = Path.home() / ".oasr"
@@ -40,19 +41,29 @@ def ensure_skills_dir() -> Path:
     return ensure_oasr_dir()
 
 
-def load_config(config_path: Path | None = None) -> dict[str, Any]:
-    """Load configuration from TOML file.
+def load_config(
+    config_path: Path | None = None, cli_overrides: dict[str, Any] | None = None
+) -> dict[str, Any]:
+    """Load configuration from multiple sources with precedence.
+
+    Precedence order (highest to lowest):
+        1. cli_overrides - explicit CLI flags
+        2. Environment variables (OASR_*)
+        3. Config file (~/.oasr/config.toml)
+        4. Built-in defaults
 
     Args:
         config_path: Override config file path. Defaults to ~/.oasr/config.toml.
+        cli_overrides: Optional CLI flag overrides (highest precedence)
 
     Returns:
-        Configuration dictionary with defaults applied.
+        Merged configuration dictionary with all sources applied.
     """
     path = config_path or CONFIG_FILE
+    cli_overrides = cli_overrides or {}
 
     # Deep copy defaults
-    config = {
+    defaults = {
         "validation": DEFAULT_CONFIG["validation"].copy(),
         "adapter": DEFAULT_CONFIG["adapter"].copy(),
         "agent": DEFAULT_CONFIG["agent"].copy(),
@@ -60,22 +71,22 @@ def load_config(config_path: Path | None = None) -> dict[str, Any]:
         "profiles": {k: v.copy() for k, v in DEFAULT_CONFIG["profiles"].items()},
     }
 
+    # Load config file
+    file_config = {}
     if path.exists():
         with open(path, "rb") as f:
-            loaded = tomllib.load(f)
+            file_config = tomllib.load(f)
 
-        if "validation" in loaded:
-            config["validation"].update(loaded["validation"])
-        if "adapter" in loaded:
-            config["adapter"].update(loaded["adapter"])
-        if "agent" in loaded:
-            config["agent"].update(loaded["agent"])
-        if "oasr" in loaded:
-            config["oasr"].update(loaded["oasr"])
-        if "profiles" in loaded:
-            # Merge user profiles with defaults (user profiles take precedence)
-            for profile_name, profile_data in loaded["profiles"].items():
-                config["profiles"][profile_name] = profile_data
+    # Load environment variables
+    env_config = load_env_config()
+
+    # Merge all sources with precedence
+    config = merge_configs(
+        cli_overrides=cli_overrides,
+        env_config=env_config,
+        file_config=file_config,
+        defaults=defaults,
+    )
 
     return config
 

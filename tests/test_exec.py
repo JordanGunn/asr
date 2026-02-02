@@ -218,9 +218,9 @@ class TestExecCommand:
             "opencode": False,
         }
 
+        # Don't mock load_config - let it merge CLI overrides properly
         with (
             mock.patch("commands.exec.load_registry", return_value=registry),
-            mock.patch("commands.exec.load_config", return_value=mock_config_with_agent),
             mock.patch("commands.exec.get_driver", return_value=mock_driver),
             mock.patch("commands.exec.detect_available_agents", return_value=available_agents),
         ):
