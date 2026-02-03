@@ -6,6 +6,8 @@ import argparse
 import json
 import subprocess
 import sys
+import urllib.request
+from importlib import metadata
 from pathlib import Path
 
 
@@ -215,6 +217,51 @@ def get_stats(repo_path: Path, old_commit: str, new_commit: str) -> dict:
     return stats
 
 
+def get_installed_version(package: str = "oasr") -> str | None:
+    """Get installed package version."""
+    try:
+        return metadata.version(package)
+    except metadata.PackageNotFoundError:
+        return None
+
+
+def get_latest_pypi_version(package: str = "oasr") -> str | None:
+    """Fetch the latest version from PyPI."""
+    try:
+        with urllib.request.urlopen(f"https://pypi.org/pypi/{package}/json", timeout=5) as response:
+            data = json.load(response)
+            return data.get("info", {}).get("version")
+    except Exception:
+        return None
+
+
+def upgrade_from_pypi(package: str = "oasr") -> tuple[bool, str]:
+    """Upgrade ASR using uv or pip."""
+    commands = [
+        ["uv", "pip", "install", "--upgrade", package],
+        [sys.executable, "-m", "pip", "install", "--upgrade", package],
+    ]
+    last_error = ""
+
+    for cmd in commands:
+        try:
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=60,
+            )
+            if result.returncode == 0:
+                runner = "uv" if cmd[0] == "uv" else "pip"
+                return True, f"Updated with {runner}"
+            last_error = result.stderr.strip() or result.stdout.strip()
+        except (subprocess.TimeoutExpired, FileNotFoundError):
+            last_error = "Update timed out" if isinstance(sys.exc_info()[1], subprocess.TimeoutExpired) else last_error
+            continue
+
+    return False, last_error or "Failed to update with pip"
+
+
 def reinstall_asr(repo_path: Path) -> tuple[bool, str]:
     """Reinstall ASR using uv or pip.
 
@@ -293,10 +340,29 @@ def run(args: argparse.Namespace) -> int:
 
     if not repo_path:
         if args.json:
-            print(json.dumps({"success": False, "error": "Could not find ASR git repository"}))
-        else:
-            print("✗ Could not find ASR git repository", file=sys.stderr)
-            print("  Make sure ASR is installed from git (git clone + pip install -e .)", file=sys.stderr)
+            print(
+                json.dumps(
+                    {
+                        "success": False,
+                        "error": "Could not find ASR git repository",
+                        "hint": "Install from git or use pip to update",
+                    }
+                )
+            )
+            return 1
+
+        print("✗ Could not find ASR git repository", file=sys.stderr)
+        print("  This command updates git installs only.", file=sys.stderr)
+        print("  To update PyPI installs:", file=sys.stderr)
+        print("    pip install --upgrade oasr", file=sys.stderr)
+
+        latest_version = get_latest_pypi_version()
+        installed_version = get_installed_version()
+        if latest_version and installed_version and latest_version != installed_version:
+            print(
+                f"\nUpdate available: {installed_version} → {latest_version}",
+                file=sys.stderr,
+            )
         return 1
 
     if not args.quiet and not args.json:
@@ -306,8 +372,10 @@ def run(args: argparse.Namespace) -> int:
     if not (repo_path / ".git").exists():
         if args.json:
             print(json.dumps({"success": False, "error": "Not a git repository"}))
-        else:
-            print(f"✗ {repo_path} is not a git repository", file=sys.stderr)
+            return 1
+        print(f"✗ {repo_path} is not a git repository", file=sys.stderr)
+        print("  Use pip to update PyPI installs:", file=sys.stderr)
+        print("    pip install --upgrade oasr", file=sys.stderr)
         return 1
 
     # Get remote URL
@@ -348,10 +416,24 @@ def run(args: argparse.Namespace) -> int:
 
     # Check if already up to date
     if message == "already_up_to_date":
+        latest_version = get_latest_pypi_version()
+        installed_version = get_installed_version()
+
         if args.json:
-            print(json.dumps({"success": True, "updated": False, "message": "Already up to date"}))
+            payload = {"success": True, "updated": False, "message": "Already up to date"}
+            if latest_version and installed_version:
+                payload["installed_version"] = installed_version
+                payload["latest_version"] = latest_version
+                payload["pypi_update_available"] = latest_version != installed_version
+            print(json.dumps(payload))
         else:
             print("✓ Already up to date")
+            if latest_version and installed_version and latest_version != installed_version:
+                print(
+                    f"\nPyPI update available: {installed_version} → {latest_version}",
+                    file=sys.stderr,
+                )
+                print("Run: pip install --upgrade oasr", file=sys.stderr)
         return 0
 
     # Get new commit

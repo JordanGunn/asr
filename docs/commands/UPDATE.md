@@ -17,8 +17,8 @@ oasr update --quiet              # Suppress info messages
 - Remote must be configured (typically GitHub)
 
 > **NOTE**
-> PyPI installations are not available yet, but will be coming soon.
-> Current `oasr update` command only works with git installations.
+> `oasr update` targets git installs. For PyPI installs, use:
+> `pip install --upgrade oasr`
 
 **Behavior:**
 
@@ -27,6 +27,7 @@ oasr update --quiet              # Suppress info messages
 - Displays truncated changelog with commit count
 - Reinstalls package with `uv pip install -e .` or falls back to `pip`
 - Suppresses verbose git output
+- If already up to date, checks PyPI and prints update hints to **stderr** when a newer version exists (to preserve stdout for piping)
 
 **JSON Output:**
 
