@@ -25,6 +25,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Adapter, find, help commands
   - Total test count: 282 tests (all passing)
   - Ensures no regressions in existing functionality
+- **⚠️ Exec Unsafe Pass-through** — Optional unsafe mode forwarding for agent CLIs
+  - `oasr exec --unsafe` forwards `--skip-git-repo-check` to Codex
+  - `oasr exec --unsafe` forwards `--dangerously-skip-permissions` to Claude
+  - Unsupported agents (Copilot/OpenCode) emit a warning with guidance
 
 ### Documentation
 - **[docs/commands/COMPLETION.md](docs/commands/COMPLETION.md)**: Complete completion command reference
@@ -34,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Examples and usage patterns
 - **[README.md](README.md)**: Added Shell Completions section with quickstart
 - **[docs/commands/.INDEX.md](docs/commands/.INDEX.md)**: Added completion to command index
+- **[docs/commands/EXEC.md](docs/commands/EXEC.md)**: Documented `--unsafe` and trusted directory guidance
 
 ### Technical
 - **New module**: `src/commands/completion.py` (259 lines) with shell detection and installation
