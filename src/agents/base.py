@@ -34,25 +34,39 @@ class AgentDriver(ABC):
         return shutil.which(self.get_binary_name()) is not None
 
     @abstractmethod
-    def build_command(self, skill_content: str, user_prompt: str, cwd: Path) -> list[str]:
+    def build_command(
+        self,
+        skill_content: str,
+        user_prompt: str,
+        cwd: Path,
+        extra_args: list[str] | None = None,
+    ) -> list[str]:
         """Build the command to execute.
 
         Args:
             skill_content: Full SKILL.md content.
             user_prompt: User's prompt/request.
             cwd: Current working directory.
+            extra_args: Additional CLI arguments for the agent (optional).
 
         Returns:
             Command as list of strings (for subprocess).
         """
 
-    def execute(self, skill_content: str, user_prompt: str, cwd: Path | None = None) -> subprocess.CompletedProcess:
+    def execute(
+        self,
+        skill_content: str,
+        user_prompt: str,
+        cwd: Path | None = None,
+        extra_args: list[str] | None = None,
+    ) -> subprocess.CompletedProcess:
         """Execute skill with agent.
 
         Args:
             skill_content: Full SKILL.md content.
             user_prompt: User's prompt/request.
             cwd: Working directory for execution (defaults to current dir).
+            extra_args: Additional CLI arguments for the agent (optional).
 
         Returns:
             CompletedProcess with stdout/stderr/returncode.
@@ -64,7 +78,7 @@ class AgentDriver(ABC):
             raise FileNotFoundError(f"{self.get_name()} binary '{self.get_binary_name()}' not found in PATH")
 
         working_dir = cwd or Path.cwd()
-        cmd = self.build_command(skill_content, user_prompt, working_dir)
+        cmd = self.build_command(skill_content, user_prompt, working_dir, extra_args=extra_args)
 
         return subprocess.run(
             cmd,

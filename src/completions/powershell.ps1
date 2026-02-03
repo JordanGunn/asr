@@ -79,7 +79,7 @@ $oasrCompletion = {
                 }
                 default {
                     if ($wordToComplete -like '-*') {
-                        @('--agent', '--profile', '--agent-flags', '-y', '--yes', '--confirm', '-p', '--prompt') |
+                        @('--agent', '--profile', '--agent-flags', '-y', '--yes', '--confirm', '-p', '--prompt', '--unsafe') |
                             Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
                             [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
                         }

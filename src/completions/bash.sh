@@ -69,7 +69,7 @@ _oasr() {
                 *)
                     # Complete skill names and flags
                     if [[ "$cur" == -* ]]; then
-                        COMPREPLY=($(compgen -W "--agent --profile --agent-flags -y --yes --confirm -p --prompt" -- "$cur"))
+                        COMPREPLY=($(compgen -W "--agent --profile --agent-flags -y --yes --confirm -p --prompt --unsafe" -- "$cur"))
                     else
                         _oasr_skills
                     fi

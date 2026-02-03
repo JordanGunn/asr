@@ -18,6 +18,7 @@ oasr exec <skill-name> [options]
 - `--profile PROFILE` — Use a specific execution policy profile (default: from config)
 - `-y, --yes` — Skip confirmation prompt for risky operations
 - `--confirm` — Force confirmation even for safe operations
+- `--unsafe` — Pass unsafe mode flags to the agent CLI (see [Unsafe Mode](#unsafe-mode))
 
 ## Features
 
@@ -79,6 +80,30 @@ oasr exec my-skill -p "Do something"
 ```bash
 oasr exec my-skill --agent copilot -p "Generate code"
 ```
+
+### Unsafe Mode
+
+If your agent refuses to run outside a trusted directory or Git repo, you can pass `--unsafe` to forward the agent's unsafe-mode flags.
+
+```bash
+# Codex: skip git repo trust check
+oasr exec my-skill --unsafe -p "Run in this folder"
+
+# Claude: bypass permission prompts
+oasr exec my-skill --agent claude --unsafe -p "Analyze this project"
+```
+
+**Agent behavior:**
+
+- **Codex**: adds `--skip-git-repo-check` (Codex CLI requires git repo by default; see Codex non-interactive docs)
+- **Claude**: adds `--dangerously-skip-permissions` (bypasses Claude permission prompts)
+- **Copilot / OpenCode**: `--unsafe` is not forwarded; configure permissions in their own configs
+
+**Trusted directory guidance:**
+
+- **Codex**: You can avoid `--unsafe` by initializing a git repo (`git init`) or adding trusted directories via Codex config (`--add-dir`).
+- **Claude**: Use `--add-dir` or configure allowed tools/permissions in Claude settings.
+- **OpenCode**: Use `permission.external_directory` in `opencode.json` to allow external paths.
 
 ### Skill Execution Flow
 

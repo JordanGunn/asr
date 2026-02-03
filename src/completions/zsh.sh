@@ -48,7 +48,8 @@ _oasr_exec() {
         '--profile[Policy profile]:profile:_oasr_profiles' \
         '--agent-flags[Additional agent flags]:flags:' \
         '(-y --yes)'{-y,--yes}'[Skip confirmation]' \
-        '--confirm[Force confirmation]' \
+        '--confirm[Force confirmation] \
+        --unsafe[Pass unsafe agent flags]' \
         '(-p --prompt)'{-p,--prompt}'[Prompt from file]:file:_files' \
         '1:skill:_oasr_skills'
 }

@@ -58,6 +58,7 @@ complete -c oasr -f -n __fish_use_subcommand -a help -d "Show help"
 complete -c oasr -f -n __fish_use_subcommand -a completion -d "Manage shell completions"
 
 # exec command
+complete -c oasr -f -n "__fish_seen_subcommand_from exec" -l unsafe -d "Pass unsafe agent flags"
 complete -c oasr -f -n "__fish_seen_subcommand_from exec" -l agent -d "Agent to use" -a "(__oasr_agents)"
 complete -c oasr -f -n "__fish_seen_subcommand_from exec" -l profile -d "Policy profile" -a "(__oasr_profiles)"
 complete -c oasr -f -n "__fish_seen_subcommand_from exec" -l agent-flags -d "Additional agent flags"

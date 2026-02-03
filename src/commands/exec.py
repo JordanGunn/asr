@@ -44,6 +44,11 @@ def setup_parser(subparsers):
         help="Override the default agent (codex, copilot, claude, opencode)",
     )
     parser.add_argument(
+        "--unsafe",
+        action="store_true",
+        help="Pass unsafe mode flags to the agent CLI (use with caution)",
+    )
+    parser.add_argument(
         "--profile",
         help="Execution policy profile to use (default: from config)",
     )
@@ -161,7 +166,22 @@ def run(args: argparse.Namespace) -> int:
     print("━" * 60, file=sys.stderr)
 
     try:
-        result = driver.execute(skill_content, user_prompt)
+        extra_args = []
+        if getattr(args, "unsafe", False):
+            if agent_name == "codex":
+                extra_args.append("--skip-git-repo-check")
+            elif agent_name == "claude":
+                extra_args.append("--dangerously-skip-permissions")
+            else:
+                print(
+                    f"Warning: --unsafe is not supported for agent '{agent_name}'.",
+                    file=sys.stderr,
+                )
+                print(
+                    "See agent docs for trusted directory or permission configuration.",
+                    file=sys.stderr,
+                )
+        result = driver.execute(skill_content, user_prompt, extra_args=extra_args or None)
         # CompletedProcess has returncode attribute (0 = success)
         # Output was already streamed to stdout since capture_output=False
         return result.returncode
