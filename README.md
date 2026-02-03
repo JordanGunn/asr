@@ -1,6 +1,6 @@
 # OASR
 
-**Open Agent Skill Registry** — Manage reusable AI agent skills across IDEs without drift.
+**Open Agent Skill Registry** — Manage reusable AI agent skills across agent vendors without drift.
 
 ---
 
