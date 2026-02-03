@@ -11,6 +11,7 @@ Clone skills from the registry to a target directory. Supports glob patterns and
 oasr clone skill-name
 oasr clone skill-name -d /path/to/project
 oasr clone "git-*"                    # Glob pattern
+oasr clone "*"                        # Clone all skills (quote to avoid shell expansion)
 oasr clone skill-one skill-two        # Multiple skills
 ```
 
@@ -28,7 +29,10 @@ Clone multiple skills matching a pattern:
 ```bash
 oasr clone "python-*"     # All Python-related skills
 oasr clone "*-api"        # All API-related skills
+oasr clone "*"            # All skills in registry
 ```
+
+> **Note:** Always quote `*` or glob patterns to prevent your shell from expanding them before OASR receives the pattern.
 
 ### Remote Skill Fetching
 
