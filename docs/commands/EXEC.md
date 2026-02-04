@@ -15,6 +15,7 @@ oasr exec <skill-name> [options]
 - `-p, --prompt TEXT` — Inline prompt/instructions for the agent
 - `-i, --instructions FILE` — Read prompt from a file
 - `-a, --agent AGENT` — Override the default agent (codex, copilot, claude, opencode)
+- `--agent-flags "FLAGS"` — Additional agent CLI flags (space-separated)
 - `--profile PROFILE` — Use a specific execution policy profile (default: from config; built-ins: safe, strict, dev, unsafe)
 - `-y, --yes` — Skip confirmation prompt for risky operations
 - `--confirm` — Force confirmation even for safe operations
@@ -81,6 +82,12 @@ oasr exec my-skill -p "Do something"
 oasr exec my-skill --agent copilot -p "Generate code"
 ```
 
+#### Agent Flags (advanced)
+```bash
+# Copilot: allow non-interactive access to tools/paths
+oasr exec my-skill --agent copilot --agent-flags "--allow-all-tools --allow-all-paths" -p "Run tasks"
+```
+
 ### Unsafe Mode
 
 If your agent refuses to run outside a trusted directory or Git repo, you can pass `--unsafe` to forward the agent's unsafe-mode flags. Codex now skips the git repo check by default.
@@ -100,13 +107,14 @@ oasr exec my-skill --agent claude --unsafe -p "Analyze this project"
 
 - **Codex**: adds `--skip-git-repo-check` by default (Codex CLI requires git repo by default; see Codex non-interactive docs)
 - **Claude**: adds `--dangerously-skip-permissions` (bypasses Claude permission prompts)
-- **Copilot / OpenCode**: `--unsafe` is not forwarded; configure permissions in their own configs
+- **Copilot / OpenCode**: `--unsafe` is not forwarded; use `--agent-flags` to pass their own permission flags
 
 **Trusted directory guidance:**
 
 - **Codex**: You can avoid `--unsafe` by initializing a git repo (`git init`) or adding trusted directories via Codex config (`--add-dir`).
 - **Claude**: Use `--add-dir` or configure allowed tools/permissions in Claude settings.
-- **OpenCode**: Use `permission.external_directory` in `opencode.json` to allow external paths.
+- **Copilot**: Use `--allow-all-tools`, `--allow-all-paths`, or `--add-dir` in `--agent-flags` to grant access.
+- **OpenCode**: Use `permission.external_directory` in `opencode.json` to allow external paths (or pass flags via `--agent-flags` if supported).
 
 ### Profile Selection
 

@@ -49,6 +49,10 @@ def setup_parser(subparsers):
         help="Pass unsafe mode flags to the agent CLI (use with caution)",
     )
     parser.add_argument(
+        "--agent-flags",
+        help='Additional agent CLI flags (space-separated, e.g. "--allow-all-tools --allow-all-paths")',
+    )
+    parser.add_argument(
         "--profile",
         help="Execution policy profile to use (default: from config)",
     )
@@ -167,6 +171,8 @@ def run(args: argparse.Namespace) -> int:
 
     try:
         extra_args = []
+        if args.agent_flags:
+            extra_args.extend(args.agent_flags.split())
         if agent_name == "codex":
             extra_args.append("--skip-git-repo-check")
         elif getattr(args, "unsafe", False):

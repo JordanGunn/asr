@@ -153,6 +153,7 @@ class TestExecCommand:
             instructions=None,
             agent=None,  # Use default from config
             profile=None,
+            agent_flags=None,
             yes=True,  # Skip confirmation
             confirm=False,
             unsafe=False,
@@ -202,6 +203,7 @@ class TestExecCommand:
             instructions=None,
             agent=None,
             profile=None,
+            agent_flags=None,
             yes=True,
             confirm=False,
             unsafe=False,
@@ -243,6 +245,7 @@ class TestExecCommand:
             instructions=None,
             agent="copilot",  # Explicit agent
             profile=None,
+            agent_flags=None,
             yes=True,
             confirm=False,
             unsafe=False,
@@ -277,6 +280,52 @@ class TestExecCommand:
         captured = capsys.readouterr()
         assert "Executing skill 'test-skill' with copilot" in captured.err
 
+
+    def test_exec_with_agent_flags(self, capsys, mock_registry, mock_config_with_agent):
+        """Agent flags are forwarded to the driver."""
+        registry, skill_file = mock_registry
+
+        args = argparse.Namespace(
+            skill_name="test-skill",
+            prompt="Do something",
+            instructions=None,
+            agent="copilot",
+            profile=None,
+            agent_flags="--allow-all-tools --allow-all-paths",
+            yes=True,
+            confirm=False,
+            unsafe=False,
+        )
+
+        mock_result = mock.Mock()
+        mock_result.returncode = 0
+        mock_driver = mock.Mock()
+        mock_driver.execute.return_value = mock_result
+
+        available_agents = {
+            "codex": True,
+            "copilot": True,
+            "claude": True,
+            "opencode": True,
+        }
+
+        with (
+            mock.patch("commands.exec.load_registry", return_value=registry),
+            mock.patch(
+                "commands.exec.load_config",
+                side_effect=lambda **kwargs: _load_config_with_overrides(mock_config_with_agent, **kwargs),
+            ),
+            mock.patch("commands.exec.get_driver", return_value=mock_driver),
+            mock.patch("commands.exec.detect_available_agents", return_value=available_agents),
+        ):
+            result = exec_cmd.run(args)
+
+        assert result == 0
+        mock_driver.execute.assert_called_once()
+        _, kwargs = mock_driver.execute.call_args
+        assert "--allow-all-tools" in kwargs["extra_args"]
+        assert "--allow-all-paths" in kwargs["extra_args"]
+
     def test_exec_unsafe_codex(self, capsys, mock_registry, mock_config_with_agent):
         """Unsafe mode forwards Codex skip-git check."""
         registry, skill_file = mock_registry
@@ -287,6 +336,7 @@ class TestExecCommand:
             instructions=None,
             agent="codex",
             profile=None,
+            agent_flags=None,
             yes=True,
             confirm=False,
             unsafe=True,
@@ -330,6 +380,7 @@ class TestExecCommand:
             instructions=None,
             agent="claude",
             profile=None,
+            agent_flags=None,
             yes=True,
             confirm=False,
             unsafe=True,
@@ -373,6 +424,7 @@ class TestExecCommand:
             instructions=None,
             agent="copilot",
             profile=None,
+            agent_flags=None,
             yes=True,
             confirm=False,
             unsafe=True,
