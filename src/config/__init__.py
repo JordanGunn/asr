@@ -14,6 +14,7 @@ import tomli_w
 from config.defaults import DEFAULT_CONFIG
 from config.env import load_env_config, merge_configs
 from config.schema import validate_config
+from profiles.loader import load_profiles
 
 OASR_DIR = Path.home() / ".oasr"
 CONFIG_FILE = OASR_DIR / "config.toml"
@@ -74,6 +75,16 @@ def load_config(config_path: Path | None = None, cli_overrides: dict[str, Any] |
     if path.exists():
         with open(path, "rb") as f:
             file_config = tomllib.load(f)
+
+    if not isinstance(file_config, dict):
+        file_config = {}
+
+    # Merge profile files with inline profiles (inline wins)
+    inline_profiles = file_config.get("profiles", {})
+    if not isinstance(inline_profiles, dict):
+        inline_profiles = {}
+    merged_profiles = load_profiles(inline_profiles=inline_profiles)
+    file_config["profiles"] = merged_profiles
 
     # Load environment variables
     env_config = load_env_config()

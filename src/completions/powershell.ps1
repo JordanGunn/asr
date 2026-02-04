@@ -18,10 +18,8 @@ function Get-OasrAgents {
 }
 
 function Get-OasrProfiles {
-    $profiles = oasr config list 2>$null | Select-String '^profiles\.' | ForEach-Object {
-        if ($_ -match '^profiles\.([^=]+)=') {
-            $matches[1]
-        }
+    $profiles = oasr config profiles --names 2>$null | ForEach-Object {
+        $_
     } | Sort-Object -Unique
     return $profiles
 }
@@ -30,9 +28,10 @@ function Get-OasrConfigKeys {
     return @(
         'agent',
         'profile',
-        'adapter.default',
+        'oasr.default_profile',
+        'adapter.default_targets',
         'validation.strict',
-        'validation.show_references',
+        'validation.reference_max_lines',
         'oasr.completions'
     )
 }
@@ -48,7 +47,7 @@ $oasrCompletion = {
     # First argument - main commands
     if ($elementCount -eq 2) {
         $commands = @(
-            'registry', 'diff', 'sync', 'config', 'clone', 'exec', 'use',
+            'registry', 'diff', 'sync', 'config', 'profile', 'clone', 'exec', 'use',
             'find', 'validate', 'clean', 'adapter', 'update', 'info',
             'help', 'completion'
         )
@@ -93,6 +92,67 @@ $oasrCompletion = {
             }
         }
 
+        'config' {
+            if ($elementCount -eq 3) {
+                @('set', 'get', 'list', 'agent', 'validation', 'adapter', 'oasr', 'profiles', 'man', 'validate', 'path') |
+                    Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
+                    [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
+                }
+                return
+            }
+
+            $prevWord = if ($elementCount -gt 2) { $elements[$elementCount - 2].Value } else { '' }
+            if ($prevWord -eq 'set' -and $elementCount -eq 4) {
+                Get-OasrConfigKeys | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
+                    [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', "Key: $_")
+                }
+                return
+            }
+
+            if ($prevWord -eq 'set' -and $elementCount -eq 5) {
+                $key = $elements[3].Value
+                switch ($key) {
+                    'agent' {
+                        Get-OasrAgents | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
+                            [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', "Agent: $_")
+                        }
+                        return
+                    }
+                    'profile' { 
+                        Get-OasrProfiles | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
+                            [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', "Profile: $_")
+                        }
+                        return
+                    }
+                    'oasr.default_profile' {
+                        Get-OasrProfiles | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
+                            [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', "Profile: $_")
+                        }
+                        return
+                    }
+                    'validation.strict' { 
+                        @('true', 'false') | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
+                            [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
+                        }
+                        return
+                    }
+                    'oasr.completions' { 
+                        @('true', 'false') | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
+                            [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
+                        }
+                        return
+                    }
+                }
+            }
+
+            if ($elements[2].Value -eq 'get' -and $elementCount -eq 4) {
+                Get-OasrConfigKeys | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
+                    [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', "Key: $_")
+                }
+                return
+            }
+        }
+
         'completion' {
             if ($elementCount -eq 3) {
                 @('bash', 'zsh', 'fish', 'powershell', 'install', 'uninstall') | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
@@ -107,6 +167,15 @@ $oasrCompletion = {
                 }
             }
             return
+        }
+
+        'profile' {
+            if ($elementCount -eq 3) {
+                Get-OasrProfiles | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
+                    [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', "Profile: $_")
+                }
+                return
+            }
         }
     }
 }

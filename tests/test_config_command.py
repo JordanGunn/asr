@@ -4,7 +4,7 @@ import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
-from commands.config import run_get, run_list, run_path, run_set
+from commands.config import run_get, run_list, run_path, run_set, run_validate
 from config import load_config, save_config
 
 
@@ -14,6 +14,8 @@ class MockArgs:
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
             setattr(self, key, value)
+        if not hasattr(self, "config"):
+            self.config = None
 
 
 class TestConfigSet:
@@ -115,7 +117,7 @@ class TestConfigGet:
 
             assert result == 1
             captured = capsys.readouterr()
-            assert "No default agent configured" in captured.err
+            assert "Config value not set" in captured.err
 
     def test_get_unsupported_key(self, capsys):
         """Get unsupported key fails."""
@@ -127,7 +129,7 @@ class TestConfigGet:
 
             assert result == 1
             captured = capsys.readouterr()
-            assert "Unsupported config key" in captured.err
+            assert "Invalid key" in captured.err
 
 
 class TestConfigList:
@@ -141,6 +143,18 @@ class TestConfigList:
                 "agent": {"default": "codex"},
                 "validation": {"reference_max_lines": 500, "strict": False},
                 "adapter": {"default_targets": ["cursor", "windsurf"]},
+                "oasr": {"default_profile": "safe", "completions": True},
+                "profiles": {
+                    "safe": {
+                        "fs_read_roots": ["./"],
+                        "fs_write_roots": ["./out"],
+                        "deny_paths": ["~/.ssh"],
+                        "allowed_commands": ["rg"],
+                        "deny_shell": True,
+                        "network": False,
+                        "allow_env": False,
+                    }
+                },
             }
             save_config(config, config_path)
 
@@ -153,6 +167,9 @@ class TestConfigList:
             assert "[agent]" in captured.out
             assert "[validation]" in captured.out
             assert "[adapter]" in captured.out
+            assert "[oasr]" in captured.out
+            assert "[profiles]" in captured.out
+            assert "completions = true" in captured.out
 
     def test_list_without_agent_configured(self, capsys):
         """List config when agent is not configured."""
@@ -204,3 +221,18 @@ class TestConfigPath:
         assert result == 0
         captured = capsys.readouterr()
         assert str(custom_path) in captured.out
+
+
+class TestConfigValidate:
+    """Test config validate command."""
+
+    def test_validate_creates_default(self, tmp_path, capsys):
+        config_path = tmp_path / "config.toml"
+        args = MockArgs(config=config_path)
+
+        result = run_validate(args)
+
+        assert result == 0
+        captured = capsys.readouterr()
+        assert "Created default config" in captured.out
+        assert config_path.exists()

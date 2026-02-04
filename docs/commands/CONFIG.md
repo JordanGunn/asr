@@ -10,6 +10,13 @@ Manage OASR configuration settings.
 oasr config set <key> <value>   # Set a config value
 oasr config get <key>            # Get a config value
 oasr config list                 # Show all configuration
+oasr config agent                # Show agent configuration
+oasr config validation           # Show validation settings
+oasr config adapter              # Show adapter settings
+oasr config oasr                 # Show core OASR settings
+oasr config profiles             # Show available profiles
+oasr config man                  # Show config reference
+oasr config validate             # Validate config file
 oasr config path                 # Show config file location
 ```
 
@@ -27,6 +34,13 @@ oasr config path                 # Show config file location
 oasr config set <key> <value>    # Set a config value
 oasr config get <key>             # Get a config value
 oasr config list                  # Show all configuration
+oasr config agent                 # Show agent configuration
+oasr config validation            # Show validation settings
+oasr config adapter               # Show adapter settings
+oasr config oasr                  # Show core OASR settings
+oasr config profiles              # Show available profiles
+oasr config man                   # Show config reference
+oasr config validate              # Validate config file
 oasr config path                  # Show config file location
 ```
 
@@ -59,6 +73,71 @@ Returns the value or indicates if not set:
 codex
 ```
 
+### `config agent`
+
+Show default agent and availability:
+
+```bash
+oasr config agent
+```
+
+### `config validation`
+
+Show validation configuration:
+
+```bash
+oasr config validation
+```
+
+### `config adapter`
+
+Show adapter configuration:
+
+```bash
+oasr config adapter
+```
+
+### `config oasr`
+
+Show core OASR settings:
+
+```bash
+oasr config oasr
+```
+
+### `config profiles`
+
+Show available profiles (built-in + custom + profile files):
+
+```bash
+oasr config profiles
+oasr config profiles --names
+```
+
+### `config man`
+
+Show a concise configuration reference:
+
+```bash
+oasr config man
+```
+
+### `config validate`
+
+Validate your config file (creates default if missing):
+
+```bash
+oasr config validate
+```
+
+### `config path`
+
+Show the location of the configuration file:
+
+```bash
+oasr config path
+```
+
 ### `config list`
 
 Display all configuration with formatted output:
@@ -69,47 +148,34 @@ oasr config list
 
 **Example output:**
 ```
-╭─────────────────────────────────────────╮
-│ OASR Configuration                      │
-├─────────────────────────────────────────┤
-│                                         │
-│ 📍 Config: ~/.oasr/config.toml         │
-│                                         │
-│ Agent Configuration                     │
-│   Default: codex                        │
-│                                         │
-│ Available Agents                        │
-│   ✓ codex                               │
-│   ✓ copilot                             │
-│   ✗ claude                              │
-│   ✗ opencode                            │
-│                                         │
-│ Validation Settings                     │
-│   Reference max lines: 500              │
-│   Strict mode: false                    │
-│                                         │
-│ Adapter Settings                        │
-│   Default targets: cursor, windsurf     │
-│                                         │
-╰─────────────────────────────────────────╯
+Configuration:
+
+  [agent]
+    default = codex ✓
+
+  Available agents: codex, copilot
+
+  [validation]
+    reference_max_lines = 500
+    strict = false
+
+  [adapter]
+    default_targets = cursor, windsurf
+
+  [oasr]
+    default_profile = safe
+    completions = true
+
+  [profiles]
+    safe         network=off env=off shell=off
+    strict       network=off env=off shell=off
+    dev          network=on env=on shell=on
+    unsafe       network=on env=on shell=on
 ```
 
 **Agent Availability Indicators:**
 - ✓ — Agent CLI binary found in PATH
 - ✗ — Agent CLI binary not installed
-
-### `config path`
-
-Show the location of the configuration file:
-
-```bash
-oasr config path
-```
-
-Returns:
-```
-/home/user/.oasr/config.toml
-```
 
 ## Configuration Structure
 
@@ -125,6 +191,13 @@ strict = false
 
 [adapter]
 default_targets = ["cursor", "windsurf"]
+
+[oasr]
+default_profile = "safe"
+completions = true
+
+[profiles.safe]
+# built-in safe profile (override if desired)
 ```
 
 ## Agent Configuration
@@ -234,7 +307,7 @@ oasr config set agent unknown-agent
 
 Output:
 ```
-Error: 'unknown-agent' is not a valid agent
+Error: Invalid agent 'unknown-agent'
 Valid agents: codex, copilot, claude, opencode
 ```
 
@@ -260,6 +333,12 @@ Configure a different agent:
   oasr config set agent copilot
 ```
 
+### Config Validation
+
+```bash
+oasr config validate
+```
+
 ## Execution Policy Profiles (v0.5.0+)
 
 Policy profiles define security boundaries for `oasr exec`. They control what agents can do during skill execution.
@@ -270,6 +349,7 @@ Set the default execution policy profile:
 
 ```bash
 oasr config set oasr.default_profile safe
+oasr profile dev
 ```
 
 This determines which profile is used unless overridden with `--profile`.
@@ -316,6 +396,10 @@ allow_env = true
 | `allow_env` | bool | Allow environment variable access |
 
 See [`oasr exec` documentation](EXEC.md#security-model) for detailed security model explanation.
+
+### Profile Files
+
+Place profile files under `~/.oasr/profile/<name>.toml` (body keys only). Inline profiles override files with the same name.
 
 ## Advanced Usage
 

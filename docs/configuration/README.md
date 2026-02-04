@@ -12,8 +12,12 @@ OASR uses a configuration file at `~/.oasr/config.toml` and supports environment
 # Set your default agent
 oasr config set agent codex
 
-# Or use an environment variable
+# Pick a default profile
+oasr profile
+
+# Or use environment variables
 export OASR_AGENT=codex
+export OASR_PROFILE=dev
 
 # Verify configuration
 oasr config list
@@ -87,7 +91,7 @@ You want different security profiles for different use cases:
 default_profile = "safe"
 
 [profiles.safe]
-# Conservative defaults (built-in)
+    # Conservative defaults (built-in)
 
 [profiles.dev]
 # Development profile
@@ -112,6 +116,12 @@ oasr exec skill -p "prompt" --profile dev
 oasr exec skill -p "prompt" --profile production
 ```
 
+Or set the default profile:
+
+```bash
+oasr profile production
+```
+
 ---
 
 ## Configuration Sections
@@ -124,6 +134,8 @@ oasr exec skill -p "prompt" --profile production
 ### 🔒 Security
 
 - **[profiles.*]** - Execution policy profiles → [Details](profiles.md)
+  - Built-in profiles: `safe`, `strict`, `dev`, `unsafe`
+  - Profile files: `~/.oasr/profile/<name>.toml` (body keys only)
 
 ### ⚙️ Advanced
 
@@ -141,7 +153,8 @@ Complete reference for `OASR_*` environment variables → [Details](environment-
 | File | Purpose |
 |------|---------|
 | `~/.oasr/config.toml` | User configuration file |
-| `~/.oasr/registry.json` | Skill registry (auto-managed) |
+| `~/.oasr/registry.toml` | Skill registry (auto-managed) |
+| `~/.oasr/profile/*.toml` | Optional profile overrides |
 
 **View config location:**
 ```bash
@@ -167,6 +180,7 @@ Recommended for simple settings:
 oasr config set agent codex
 oasr config set validation.strict true
 oasr config set oasr.default_profile dev
+oasr profile dev
 ```
 
 ### Method 2: Environment Variables

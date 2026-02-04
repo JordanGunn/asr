@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-02-03
+
+### Added
+- **🧭 Profile selection command** — New `oasr profile` command with interactive selector or explicit profile selection.
+- **📄 Profile file support** — Auto-load `~/.oasr/profile/*.toml` profiles with inline config overrides.
+- **🔧 Config subcommands** — `oasr config agent|validation|adapter|oasr|profiles` for focused views.
+- **✅ Config validation and reference** — `oasr config validate` and `oasr config man` helpers.
+- **Default profiles** — New built-ins: `strict`, `dev`, `unsafe`.
+
+### Changed
+- **Profiles subsystem** — New `profiles` subpackage with loaders, validation, and summary helpers.
+- **Config listing** — Lists profiles with compact capability summaries and completions setting.
+
+### Documentation
+- **Config + profile docs** — Updated configuration guides and new `docs/commands/PROFILE.md`.
+
 ## [0.5.2] - 2026-02-02
 
 ### Added

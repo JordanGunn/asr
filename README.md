@@ -1,6 +1,6 @@
 # OASR
 
-**Open Agent Skill Registry** — Manage reusable AI agent skills across agent vendors without drift.
+**Open Agent Skill Registry** — Register, sync, and reuse AI agent skills across IDEs with a single source of truth.
 
 ---
 
@@ -10,16 +10,22 @@ You've built useful skills for your AI coding assistant. They work great in Curs
 
 Each tool expects skills in different locations with different formats:
 
-- Cursor: `.cursor/skills/`
-- Windsurf: `.windsurf/skills/`
+- Cursor: `.cursor/commands/`
+- Windsurf: `.windsurf/workflows/`
 - Claude: `.claude/commands/`
-- Copilot: `.github/.md`
+- Copilot: `.github/prompts/`
 
 So you copy your skills everywhere. Then you improve one. Now the copies are stale. You forget which version is current. Some break silently. This is **skill drift**.
 
 ## The Solution
 
-ASR keeps your skills in one place and generates thin adapters for each IDE.
+ASR keeps your skills in a registry, syncs local and remote sources, and generates thin adapters for each IDE.
+It also lets you execute skills safely with policy profiles.
+
+Key capabilities:
+- Register skills once (local folders or GitHub/GitLab URLs)
+- Sync and track drift across sources
+- Generate IDE adapters and run skills via `oasr exec`
 
 ```text
 ┌─────────────────────────────────────────────────────────┐
@@ -48,12 +54,15 @@ No copying. No drift. One source of truth.
 
 ```bash
 # Register local skills
-oasr add ~/skills/git-commit
-oasr add ~/skills/code-review
+oasr registry add ~/skills/git-commit
+oasr registry add ~/skills/code-review
+
+# List registered skills
+oasr registry list
 
 # Register remote skills from GitHub/GitLab
-oasr add https://github.com/user/skills-repo/tree/main/my-skill
-oasr add https://gitlab.com/org/project/tree/main/cool-skill
+oasr registry add https://github.com/user/skills-repo/tree/main/my-skill
+oasr registry add https://gitlab.com/org/project/tree/main/cool-skill
 
 # Generate adapters for a project
 oasr adapter --output-dir ~/projects/my-app
@@ -75,16 +84,16 @@ ASR supports registering skills directly from GitHub and GitLab repositories:
 
 ```bash
 # Add a skill from GitHub
-oasr add https://github.com/user/repo/tree/main/skills/my-skill
+oasr registry add https://github.com/user/repo/tree/main/skills/my-skill
 
 # Add a skill from GitLab
-oasr add https://gitlab.com/org/project/tree/dev/cool-skill
+oasr registry add https://gitlab.com/org/project/tree/dev/cool-skill
 
 # Sync remote skills (check for updates)
-oasr sync
+oasr registry sync
 
 # Use remote skills
-oasr use my-skill -d ./output
+oasr clone my-skill -d ./output
 ```
 
 **Authentication** (optional, for private repos and higher rate limits):
@@ -94,7 +103,7 @@ export GITHUB_TOKEN=ghp_your_token_here
 export GITLAB_TOKEN=glpat_your_token_here
 ```
 
-Remote skills are fetched on-demand during `adapter` and `use` operations. The registry stores the URL, and `sync` checks if the remote source has changed.
+Remote skills are fetched on-demand during `adapter` and `clone` operations. The registry stores the URL, and `oasr registry sync` checks if the remote source has changed.
 
 ---
 
@@ -126,7 +135,7 @@ See [`oasr completion --help`](docs/commands/COMPLETION.md) for details.
 
 ---
 
-## Supported `asr adapter` IDEs
+## Supported `oasr adapter` IDEs
 
 | IDE            | Adapter    | Output                        |
 |----------------|------------|-------------------------------|
@@ -148,11 +157,11 @@ See [LICENSE](LICENSE).
 
 | Command | Screenshot |
 |---------|-----------|
-| **oasr list** | ![list](docs/.images/list.png) |
-| **oasr add** (local) | ![add](docs/.images/add.png) |
-| **oasr add** (remote) | ![add-remote](docs/.images/add-remote.png) |
-| **oasr sync** | ![sync](docs/.images/sync.png) |
-| **oasr status** | ![status](docs/.images/status.png) |
+| **oasr registry list** | ![list](docs/.images/list.png) |
+| **oasr registry add** (local) | ![add](docs/.images/add.png) |
+| **oasr registry add** (remote) | ![add-remote](docs/.images/add-remote.png) |
+| **oasr registry sync** | ![sync](docs/.images/sync.png) |
+| **oasr registry -v** | ![status](docs/.images/status.png) |
 | **oasr find** | ![find](docs/.images/find.png) |
 | **oasr adapter** | ![adapter](docs/.images/adapter.png) |
 

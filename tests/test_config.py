@@ -232,6 +232,12 @@ class TestConfigProfiles:
         assert safe["network"] is False
         assert safe["allow_env"] is False
 
+    def test_builtin_profiles_exist_by_default(self):
+        """Built-in profiles are defined in defaults."""
+        config = get_default_config()
+        for name in ("safe", "strict", "dev", "unsafe"):
+            assert name in config["profiles"]
+
     def test_load_user_defined_profile(self):
         """Load user-defined custom profile from config."""
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -270,6 +276,31 @@ network = true
             assert "safe" in loaded["profiles"]
             # Custom profile should be added
             assert "custom" in loaded["profiles"]
+
+    def test_profile_files_merge_with_inline(self, monkeypatch):
+        """Profile files are loaded and overridden by inline config."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            base_dir = Path(tmpdir)
+            profile_dir = base_dir / ".oasr" / "profile"
+            profile_dir.mkdir(parents=True)
+            (profile_dir / "dev.toml").write_text("network = true\nallow_env = false\n")
+
+            config_path = base_dir / "config.toml"
+            with open(config_path, "w") as f:
+                f.write("""
+[profiles.dev]
+network = false
+allow_env = true
+""")
+
+            import profiles.paths as profile_paths
+
+            monkeypatch.setattr(profile_paths, "get_profile_dir", lambda: profile_dir)
+
+            loaded = load_config(config_path)
+            assert "dev" in loaded["profiles"]
+            assert loaded["profiles"]["dev"]["network"] is False
+            assert loaded["profiles"]["dev"]["allow_env"] is True
 
     def test_validate_invalid_default_profile(self):
         """Invalid default_profile type raises ValueError."""
