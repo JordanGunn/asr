@@ -81,6 +81,22 @@ def mock_config_no_agent():
     }
 
 
+def _load_config_with_overrides(base_config, cli_overrides=None, **_):
+    config = {
+        "agent": base_config.get("agent", {}).copy(),
+        "validation": base_config.get("validation", {}).copy(),
+        "oasr": base_config.get("oasr", {}).copy(),
+        "profiles": {name: profile.copy() for name, profile in base_config.get("profiles", {}).items()},
+    }
+    cli_overrides = cli_overrides or {}
+    for section, values in cli_overrides.items():
+        if isinstance(values, dict):
+            config.setdefault(section, {}).update(values)
+        else:
+            config[section] = values
+    return config
+
+
 class TestExecCommand:
     """Test the exec command."""
 
@@ -157,6 +173,10 @@ class TestExecCommand:
 
         with (
             mock.patch("commands.exec.load_registry", return_value=registry),
+            mock.patch(
+                "commands.exec.load_config",
+                side_effect=lambda **kwargs: _load_config_with_overrides(mock_config_with_agent, **kwargs),
+            ),
             mock.patch("commands.exec.get_driver", return_value=mock_driver),
             mock.patch("commands.exec.detect_available_agents", return_value=available_agents),
         ):
@@ -202,6 +222,10 @@ class TestExecCommand:
 
         with (
             mock.patch("commands.exec.load_registry", return_value=registry),
+            mock.patch(
+                "commands.exec.load_config",
+                side_effect=lambda **kwargs: _load_config_with_overrides(mock_config_with_agent, **kwargs),
+            ),
             mock.patch("commands.exec.get_driver", return_value=mock_driver),
             mock.patch("commands.exec.detect_available_agents", return_value=available_agents),
         ):
@@ -237,9 +261,13 @@ class TestExecCommand:
             "opencode": False,
         }
 
-        # Don't mock load_config - let it merge CLI overrides properly
+        # Mock load_config with CLI override merge
         with (
             mock.patch("commands.exec.load_registry", return_value=registry),
+            mock.patch(
+                "commands.exec.load_config",
+                side_effect=lambda **kwargs: _load_config_with_overrides(mock_config_with_agent, **kwargs),
+            ),
             mock.patch("commands.exec.get_driver", return_value=mock_driver),
             mock.patch("commands.exec.detect_available_agents", return_value=available_agents),
         ):
@@ -278,6 +306,10 @@ class TestExecCommand:
 
         with (
             mock.patch("commands.exec.load_registry", return_value=registry),
+            mock.patch(
+                "commands.exec.load_config",
+                side_effect=lambda **kwargs: _load_config_with_overrides(mock_config_with_agent, **kwargs),
+            ),
             mock.patch("commands.exec.get_driver", return_value=mock_driver),
             mock.patch("commands.exec.detect_available_agents", return_value=available_agents),
         ):
@@ -317,6 +349,10 @@ class TestExecCommand:
 
         with (
             mock.patch("commands.exec.load_registry", return_value=registry),
+            mock.patch(
+                "commands.exec.load_config",
+                side_effect=lambda **kwargs: _load_config_with_overrides(mock_config_with_agent, **kwargs),
+            ),
             mock.patch("commands.exec.get_driver", return_value=mock_driver),
             mock.patch("commands.exec.detect_available_agents", return_value=available_agents),
         ):
@@ -356,6 +392,10 @@ class TestExecCommand:
 
         with (
             mock.patch("commands.exec.load_registry", return_value=registry),
+            mock.patch(
+                "commands.exec.load_config",
+                side_effect=lambda **kwargs: _load_config_with_overrides(mock_config_with_agent, **kwargs),
+            ),
             mock.patch("commands.exec.get_driver", return_value=mock_driver),
             mock.patch("commands.exec.detect_available_agents", return_value=available_agents),
         ):

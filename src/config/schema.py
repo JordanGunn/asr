@@ -3,6 +3,7 @@
 from typing import Any
 
 from profiles.validation import validate_profiles
+
 VALID_AGENTS = {"codex", "copilot", "claude", "opencode"}
 
 

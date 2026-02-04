@@ -7,3 +7,5 @@ Conservative defaults that fail closed. Used when:
 """
 
 from profiles.builtins import SAFE
+
+__all__ = ["SAFE"]
