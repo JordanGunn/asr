@@ -10,10 +10,10 @@ import json
 import sys
 from pathlib import Path
 
-from commands import adapter, clean, clone, config, diff, exec, find, profile, registry, sync, update, use, validate
+from commands import adapter, clone, config, diff, exec, find, profile, registry, sync, update, validate
 from commands import help as help_cmd
 
-__version__ = "0.6.1"
+__version__ = "0.6.2"
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -76,11 +76,8 @@ def create_parser() -> argparse.ArgumentParser:
     clone.register(subparsers)  # Clone skills to directory
     exec.register(subparsers)  # Execute skills with agent CLI
 
-    # Deprecated commands
-    use.register(subparsers)  # DEPRECATED - use clone instead
     find.register(subparsers)
     validate.register(subparsers)
-    clean.register(subparsers)
     adapter.register(subparsers)
     update.register(subparsers)
 

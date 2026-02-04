@@ -34,6 +34,7 @@ oasr completion install
 
 # Install for specific shell
 oasr completion install bash
+oasr completion bash --install  # Shortcut for install
 oasr completion install --force  # Overwrite existing
 
 # Uninstall
@@ -53,12 +54,17 @@ oasr completion install --dry-run
 # Auto-detect shell and install
 oasr completion install
 
+# Install for a specific shell (shortcut)
+oasr completion zsh --install
+
 # Restart your shell or source the completion file
 # Bash:
 source ~/.bash_completion.d/oasr
 
 # Zsh:
-source ~/.zsh/completion/_oasr
+# Ensure fpath is set and compinit is initialized (recommended):
+#   fpath=(~/.zsh/completion $fpath)
+#   autoload -Uz compinit && compinit
 
 # Fish: (automatically loaded)
 
@@ -77,7 +83,7 @@ source ~/.bash_completion.d/oasr
 
 # Zsh
 oasr completion zsh > ~/.zsh/completion/_oasr
-# Add to ~/.zshrc:
+# Add to ~/.zshrc before compinit:
 # fpath=(~/.zsh/completion $fpath)
 # autoload -Uz compinit && compinit
 
@@ -98,7 +104,7 @@ oasr completion powershell > ~/.config/powershell/oasr_completion.ps1
 
 ```bash
 oasr <TAB>
-# Shows: add, adapter, clean, clone, completion, config, diff, exec, find, help, info, list, registry, rm, status, sync, update, use, validate
+# Shows: add, adapter, clone, completion, config, diff, exec, find, help, info, list, registry, rm, status, sync, update, validate
 
 oasr registry <TAB>
 # Shows: add, list, prune, rm, sync, validate
@@ -282,8 +288,9 @@ Installing completion for zsh...
 Completion installed to: /home/user/.zsh/completion/_oasr
 
 To activate:
-  source ~/.zsh/completion/_oasr
-  # Or restart your shell
+  # Ensure fpath + compinit are set, then restart your shell
+  fpath=(~/.zsh/completion $fpath)
+  autoload -Uz compinit && compinit
 ```
 
 ### Generate Script for Manual Review

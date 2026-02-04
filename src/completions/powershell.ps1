@@ -47,8 +47,8 @@ $oasrCompletion = {
     # First argument - main commands
     if ($elementCount -eq 2) {
         $commands = @(
-            'registry', 'diff', 'sync', 'config', 'profile', 'clone', 'exec', 'use',
-            'find', 'validate', 'clean', 'adapter', 'update', 'info',
+            'registry', 'diff', 'sync', 'config', 'profile', 'clone', 'exec',
+            'find', 'validate', 'adapter', 'update', 'info',
             'help', 'completion'
         )
         $commands | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
@@ -162,7 +162,7 @@ $oasrCompletion = {
             }
 
             if ($wordToComplete -like '-*') {
-                @('--force', '--dry-run') | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
+                @('--force', '--dry-run', '--install') | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
                     [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
                 }
             }

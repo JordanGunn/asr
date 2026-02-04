@@ -99,15 +99,15 @@ oasr adapter cursor
 
 ## Migration from `oasr use`
 
-`oasr clone` replaces the deprecated `oasr use` command. The functionality is identical—only the name has changed for clarity:
+`oasr clone` replaces the former `oasr use` command. The functionality is identical—only the name has changed for clarity:
 
 ```bash
-# Old (deprecated)
+# Old
 oasr use my-skill
 
 # New
 oasr clone my-skill
 ```
 
-> **warning**  
-> `oasr use` will be removed in v0.5.0. Update your scripts and workflows to use `oasr clone`.
+> **note**  
+> `oasr use` has been removed. Update your scripts and workflows to use `oasr clone`.

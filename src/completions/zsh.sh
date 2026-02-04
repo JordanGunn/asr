@@ -183,6 +183,7 @@ _oasr_completion() {
 
     _arguments \
         '--force[Force reinstall]' \
+        '--install[Install completions for shell]' \
         '--dry-run[Preview without installing]' \
         '1:shell:->shell'
 
@@ -221,10 +222,8 @@ _oasr() {
         'profile:Select execution profile'
         'clone:Clone skills to directory'
         'exec:Execute a skill'
-        'use:DEPRECATED - use clone instead'
         'find:Find skills recursively'
         'validate:Validate skills'
-        'clean:Clean up corrupted skills'
         'adapter:Generate IDE-specific files'
         'update:Update OASR tool'
         'info:Show skill information'
@@ -281,5 +280,3 @@ _oasr() {
             ;;
     esac
 }
-
-_oasr "$@"

@@ -1,95 +1,32 @@
-"""Tests for use command deprecation shim."""
+"""Tests for clone command."""
 
+import json
 from pathlib import Path
-from unittest.mock import MagicMock, patch
-
-from commands import use
 
 
-class TestUseDeprecation:
-    """Test use command deprecation."""
+def test_clone_glob_patterns(cli_runner, sample_registry, tmp_output_dir):
+    """Clone supports glob pattern matching."""
+    exit_code, stdout, stderr = cli_runner(["clone", "git-*", "-d", str(tmp_output_dir)])
 
-    @patch("commands.clone.run")
-    def test_use_shows_deprecation_warning(self, mock_clone_run, capsys):
-        """Use command shows deprecation warning."""
-        mock_clone_run.return_value = 0
+    assert exit_code == 0
+    assert (tmp_output_dir / "git-commit").exists()
+    assert (tmp_output_dir / "git-review").exists()
+    assert not (tmp_output_dir / "code-format").exists()
 
-        args = MagicMock()
-        args.names = ["test-skill"]
-        args.output_dir = Path("/tmp")
-        args.json = False
-        args.quiet = False
 
-        result = use.run(args)
+def test_clone_no_match_warns(cli_runner, sample_registry, tmp_output_dir):
+    """Clone with no matches warns but does not crash."""
+    exit_code, stdout, stderr = cli_runner(["clone", "nonexistent-*", "-d", str(tmp_output_dir)])
 
-        assert result == 0
-        captured = capsys.readouterr()
-        assert "Warning: 'oasr use' is deprecated" in captured.err
-        assert "Use 'oasr clone' instead" in captured.err
-        assert "v0.5.0" in captured.err
-        mock_clone_run.assert_called_once_with(args)
+    assert exit_code in [0, 1]
+    assert "No skills matched" in stderr or "not found" in stderr.lower()
 
-    @patch("commands.clone.run")
-    def test_use_delegates_to_clone(self, mock_clone_run):
-        """Use command delegates to clone."""
-        mock_clone_run.return_value = 0
 
-        args = MagicMock()
-        args.names = ["test-skill"]
-        args.output_dir = Path("/tmp")
-        args.json = False
-        args.quiet = False
+def test_clone_json_output(cli_runner, sample_registry, tmp_output_dir):
+    """Clone JSON output includes copied skill info."""
+    exit_code, stdout, stderr = cli_runner(["clone", "git-commit", "-d", str(tmp_output_dir), "--json"])
 
-        result = use.run(args)
-
-        assert result == 0
-        mock_clone_run.assert_called_once_with(args)
-
-    @patch("commands.clone.run")
-    def test_use_returns_clone_exit_code(self, mock_clone_run):
-        """Use command returns clone's exit code."""
-        mock_clone_run.return_value = 1
-
-        args = MagicMock()
-        args.names = ["test-skill"]
-        args.output_dir = Path("/tmp")
-        args.json = False
-        args.quiet = False
-
-        result = use.run(args)
-
-        assert result == 1
-
-    @patch("commands.clone.run")
-    def test_use_quiet_suppresses_deprecation(self, mock_clone_run, capsys):
-        """Use command with --quiet suppresses deprecation warning."""
-        mock_clone_run.return_value = 0
-
-        args = MagicMock()
-        args.names = ["test-skill"]
-        args.output_dir = Path("/tmp")
-        args.json = False
-        args.quiet = True
-
-        result = use.run(args)
-
-        assert result == 0
-        captured = capsys.readouterr()
-        assert "deprecated" not in captured.err.lower()
-
-    @patch("commands.clone.run")
-    def test_use_json_suppresses_deprecation(self, mock_clone_run, capsys):
-        """Use command with --json suppresses deprecation warning."""
-        mock_clone_run.return_value = 0
-
-        args = MagicMock()
-        args.names = ["test-skill"]
-        args.output_dir = Path("/tmp")
-        args.json = True
-        args.quiet = False
-
-        result = use.run(args)
-
-        assert result == 0
-        captured = capsys.readouterr()
-        assert "deprecated" not in captured.err.lower()
+    assert exit_code == 0
+    payload = json.loads(stdout)
+    assert payload["copied"] == 1
+    assert payload["skills"][0]["name"] == "git-commit"

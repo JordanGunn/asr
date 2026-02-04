@@ -1,10 +1,10 @@
 # `oasr diff`
 
-Show the status of tracked skills (skills copied with `oasr use`).
+Show the status of tracked skills (skills copied with `oasr clone`).
 
 ## Overview
 
-When you copy a skill with `oasr use`, metadata tracking is automatically injected into the `SKILL.md` frontmatter under `metadata.oasr`. This allows ASR to detect drift between your local copy and the registry source.
+When you copy a skill with `oasr clone`, metadata tracking is automatically injected into the `SKILL.md` frontmatter under `metadata.oasr`. This allows ASR to detect drift between your local copy and the registry source.
 
 The `oasr diff` command scans for tracked skills and reports their status.
 
@@ -88,4 +88,4 @@ $ oasr diff --json
 ## See Also
 
 - [`oasr sync`](SYNC.md) - Refresh outdated tracked skills
-- [`oasr use`](USE.md) - Copy skills with tracking metadata
+- [`oasr clone`](CLONE.md) - Copy skills with tracking metadata

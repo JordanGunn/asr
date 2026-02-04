@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.2] - 2026-02-04
+
+### Breaking
+- **Removed deprecated commands** — `oasr use` and `oasr clean` have been removed. Use `oasr clone` and `oasr registry prune` instead.
+
+### Changed
+- **Update command** — `oasr update` now checks PyPI and upgrades via `uv`/`pip` instead of git pulls.
+
+### Fixed
+- **Zsh completions** — Removed erroneous execution in completion script that broke autoload.
+
+### Added
+- **Completion install shortcut** — `oasr completion <shell> --install` runs the install flow.
+
 ## [0.6.1] - 2026-02-04
 
 ### Fixed

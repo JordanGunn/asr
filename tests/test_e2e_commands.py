@@ -96,15 +96,15 @@ class TestValidateCommand:
         # Validation might pass or fail, but shouldn't crash
         assert exit_code in [0, 1, 2]
 
-    def test_clean_with_confirmation(self, cli_runner, sample_registry):
-        """Clean requires confirmation or -y flag."""
-        exit_code, stdout, stderr = cli_runner(["clean", "-y"])
-        # Clean might find nothing or something, but shouldn't crash
+    def test_registry_prune_with_confirmation(self, cli_runner, sample_registry):
+        """Registry prune requires confirmation or -y flag."""
+        exit_code, stdout, stderr = cli_runner(["registry", "prune", "-y"])
+        # Prune might find nothing or something, but shouldn't crash
         assert exit_code in [0, 1, 3]
 
-    def test_clean_dry_run(self, cli_runner, sample_registry):
-        """Clean with --dry-run."""
-        exit_code, stdout, stderr = cli_runner(["clean", "--dry-run"])
+    def test_registry_prune_dry_run(self, cli_runner, sample_registry):
+        """Registry prune with --dry-run."""
+        exit_code, stdout, stderr = cli_runner(["registry", "prune", "--dry-run"])
         assert exit_code in [0, 1, 3]
 
 

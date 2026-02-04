@@ -154,6 +154,7 @@ class MockArgs:
         self.shell = kwargs.get("shell")
         self.force = kwargs.get("force", False)
         self.dry_run = kwargs.get("dry_run", False)
+        self.install = kwargs.get("install", False)
 
 
 class TestRunOutput:
@@ -213,6 +214,21 @@ class TestRunInstall:
 
                 captured = capsys.readouterr()
                 assert "Would install" in captured.out
+
+
+class TestRun:
+    """Tests for run()."""
+
+    def test_shell_install_flag_runs_install(self, tmp_path):
+        """Test --install flag triggers install flow."""
+        args = MockArgs(shell="bash", install=True)
+        comp_file = tmp_path / "oasr"
+
+        with mock.patch("commands.completion.load_config", return_value={}):
+            with mock.patch("commands.completion.get_completion_path", return_value=comp_file):
+                with mock.patch("commands.completion.get_completion_script", return_value="# oasr completion"):
+                    result = completion.run(args)
+                    assert result == 0
 
 
 class TestRunUninstall:

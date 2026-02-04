@@ -4,7 +4,7 @@ Refresh outdated tracked skills from the registry.
 
 ## Overview
 
-The `oasr sync` command updates local copies of skills that have been modified in the registry. It only updates skills with tracking metadata (copied via `oasr use`).
+The `oasr sync` command updates local copies of skills that have been modified in the registry. It only updates skills with tracking metadata (copied via `oasr clone`).
 
 ## Usage
 
@@ -93,7 +93,7 @@ $ oasr sync --json
 ## See Also
 
 - [`oasr diff`](DIFF.md) - Show status of tracked skills without updating
-- [`oasr use`](USE.md) - Copy skills with tracking metadata
+- [`oasr clone`](CLONE.md) - Copy skills with tracking metadata
 - [`oasr registry sync`](REGISTRY.md#oasr-registry-sync) - Sync registry with remote sources
 
 ## Migration from v0.2.0

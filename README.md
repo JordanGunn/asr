@@ -115,6 +115,9 @@ OASR supports intelligent tab completion for Bash, Zsh, Fish, and PowerShell:
 # Install for your current shell
 oasr completion install
 
+# Install for a specific shell (shortcut)
+oasr completion zsh --install
+
 # Now try it:
 oasr <TAB>          # Complete commands
 oasr info <TAB>     # Complete skill names

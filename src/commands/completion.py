@@ -35,6 +35,12 @@ def register_parser(subparsers):
         help="Show what would be done without doing it",
     )
 
+    parser.add_argument(
+        "--install",
+        action="store_true",
+        help="Install completions for the specified shell",
+    )
+
     parser.set_defaults(func=run)
 
 
@@ -235,6 +241,9 @@ def run_install(args):
         int: Exit code
     """
     shell = args.shell if args.shell != "install" else detect_shell()
+    if not shell:
+        print("Error: No shell specified for install", file=sys.stderr)
+        return 1
 
     # Check config
     config = load_config()
@@ -294,6 +303,9 @@ def run_uninstall(args):
         int: Exit code
     """
     shell = args.shell if args.shell != "uninstall" else detect_shell()
+    if not shell:
+        print("Error: No shell specified for uninstall", file=sys.stderr)
+        return 1
 
     path = get_completion_path(shell)
     if not path or not path.exists():
@@ -331,12 +343,13 @@ def run(args):
         print("  oasr completion zsh           # Output zsh completion script")
         print("  oasr completion fish          # Output fish completion script")
         print("  oasr completion powershell    # Output PowerShell completion script")
+        print("  oasr completion zsh --install # Install completions for shell")
         print("  oasr completion install       # Auto-detect and install")
         print("  oasr completion uninstall     # Remove installed completions")
         return 0
 
     # Handle actions
-    if args.shell == "install":
+    if args.shell == "install" or (args.install and args.shell in {"bash", "zsh", "fish", "powershell"}):
         return run_install(args)
     elif args.shell == "uninstall":
         return run_uninstall(args)

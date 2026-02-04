@@ -152,4 +152,4 @@ The v0.3.0 CLI taxonomy reorganizes commands under the `registry` subcommand:
 | `oasr sync` (manifest validation) | `oasr registry` |
 | `oasr sync --update` (remote sync) | `oasr registry sync` |
 
-**v0.4.1 update:** `oasr clean` → `oasr registry prune`
+**v0.4.1 update:** `oasr clean` → `oasr registry prune` (removed in v0.6.2)

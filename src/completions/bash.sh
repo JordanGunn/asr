@@ -39,7 +39,7 @@ _oasr() {
 
     # Top-level commands
     if [ $COMP_CWORD -eq 1 ]; then
-        COMPREPLY=($(compgen -W "registry diff sync config profile clone exec use find validate clean adapter update info help completion" -- "$cur"))
+        COMPREPLY=($(compgen -W "registry diff sync config profile clone exec find validate adapter update info help completion" -- "$cur"))
         return 0
     fi
 
@@ -181,7 +181,7 @@ _oasr() {
             fi
             
             if [[ "$cur" == -* ]]; then
-                COMPREPLY=($(compgen -W "--force --dry-run" -- "$cur"))
+                COMPREPLY=($(compgen -W "--force --dry-run --install" -- "$cur"))
             fi
             ;;
 
@@ -199,7 +199,7 @@ _oasr() {
             fi
             ;;
 
-        find|validate|sync|diff|clean|update|help)
+        find|validate|sync|diff|update|help)
             # These commands have limited or no additional completion
             return 0
             ;;

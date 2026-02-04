@@ -1,33 +1,25 @@
 # `oasr update`
 
-Update `oasr` tool itself from GitHub.
+Update the `oasr` tool from PyPI.
 
 ```bash
-oasr update                      # Pull updates and reinstall
-oasr update --no-reinstall       # Pull only, skip reinstallation
-oasr update --changelog 5        # Show 5 changelog entries (default: 10)
+oasr update                      # Check and update from PyPI
+oasr update --check              # Check for updates only
+oasr update --yes                # Skip confirmation prompt
 oasr update --json               # Output in JSON format
 oasr update --quiet              # Suppress info messages
 ```
 
 **Requirements:**\
-
-- `oasr` must be retain it's cloned repository structure and git history
-- Working tree must be clean (no uncommitted changes)
-- Remote must be configured (typically GitHub)
-
-> **NOTE**
-> `oasr update` targets git installs. For PyPI installs, use:
-> `pip install --upgrade oasr`
+- `oasr` must be installed from PyPI
+- Network access to PyPI is required
 
 **Behavior:**
 
-- Finds `oasr` installation directory
-- Runs `git pull --ff-only` from remote
-- Displays truncated changelog with commit count
-- Reinstalls package with `uv pip install -e .` or falls back to `pip`
-- Suppresses verbose git output
-- If already up to date, checks PyPI and prints update hints to **stderr** when a newer version exists (to preserve stdout for piping)
+- Checks PyPI for latest version
+- Prompts before upgrading unless `--yes` is provided
+- Attempts update via `uv pip install --upgrade oasr`, falls back to `pip`
+- Returns JSON output suitable for scripting (use `--check` for non-destructive checks)
 
 **JSON Output:**
 
@@ -35,18 +27,11 @@ oasr update --quiet              # Suppress info messages
 {
   "success": true,
   "updated": true,
-  "repo_path": "/path/to/asr",
-  "remote_url": "https://github.com/user/asr.git",
-  "old_commit": "abc1234",
-  "new_commit": "def5678",
-  "commits": 3,
-  "files_changed": 5,
-  "insertions": 150,
-  "deletions": 42,
-  "changelog": [
-    "def5678 feat: add new feature",
-    "cba4321 fix: resolve bug"
-  ]
+  "installed_version": "0.6.1",
+  "latest_version": "0.6.2",
+  "update_available": true,
+  "runner": "pip",
+  "error": null
 }
 ```
 

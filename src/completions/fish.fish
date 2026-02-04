@@ -49,10 +49,8 @@ complete -c oasr -f -n __fish_use_subcommand -a config -d "Manage configuration"
 complete -c oasr -f -n __fish_use_subcommand -a profile -d "Select execution profile"
 complete -c oasr -f -n __fish_use_subcommand -a clone -d "Clone skills to directory"
 complete -c oasr -f -n __fish_use_subcommand -a exec -d "Execute a skill"
-complete -c oasr -f -n __fish_use_subcommand -a use -d "DEPRECATED - use clone"
 complete -c oasr -f -n __fish_use_subcommand -a find -d "Find skills recursively"
 complete -c oasr -f -n __fish_use_subcommand -a validate -d "Validate skills"
-complete -c oasr -f -n __fish_use_subcommand -a clean -d "Clean up corrupted skills"
 complete -c oasr -f -n __fish_use_subcommand -a adapter -d "Generate IDE files"
 complete -c oasr -f -n __fish_use_subcommand -a update -d "Update OASR tool"
 complete -c oasr -f -n __fish_use_subcommand -a info -d "Show skill information"
@@ -128,6 +126,7 @@ complete -c oasr -f -n "__fish_seen_subcommand_from completion; and not __fish_s
 # completion flags
 complete -c oasr -f -n "__fish_seen_subcommand_from completion" -l force -d "Force reinstall"
 complete -c oasr -f -n "__fish_seen_subcommand_from completion" -l dry-run -d "Preview without installing"
+complete -c oasr -f -n "__fish_seen_subcommand_from completion" -l install -d "Install completions for shell"
 
 # adapter subcommands
 complete -c oasr -f -n "__fish_seen_subcommand_from adapter; and not __fish_seen_subcommand_from list generate" -a "list" -d "List adapters"
