@@ -83,10 +83,13 @@ oasr exec my-skill --agent copilot -p "Generate code"
 
 ### Unsafe Mode
 
-If your agent refuses to run outside a trusted directory or Git repo, you can pass `--unsafe` to forward the agent's unsafe-mode flags.
+If your agent refuses to run outside a trusted directory or Git repo, you can pass `--unsafe` to forward the agent's unsafe-mode flags. Codex now skips the git repo check by default.
 
 ```bash
-# Codex: skip git repo trust check
+# Codex: skip git repo trust check (default)
+oasr exec my-skill -p "Run in this folder"
+
+# Codex: still accepts --unsafe (no extra effect)
 oasr exec my-skill --unsafe -p "Run in this folder"
 
 # Claude: bypass permission prompts
@@ -95,7 +98,7 @@ oasr exec my-skill --agent claude --unsafe -p "Analyze this project"
 
 **Agent behavior:**
 
-- **Codex**: adds `--skip-git-repo-check` (Codex CLI requires git repo by default; see Codex non-interactive docs)
+- **Codex**: adds `--skip-git-repo-check` by default (Codex CLI requires git repo by default; see Codex non-interactive docs)
 - **Claude**: adds `--dangerously-skip-permissions` (bypasses Claude permission prompts)
 - **Copilot / OpenCode**: `--unsafe` is not forwarded; configure permissions in their own configs
 

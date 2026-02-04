@@ -167,10 +167,10 @@ def run(args: argparse.Namespace) -> int:
 
     try:
         extra_args = []
-        if getattr(args, "unsafe", False):
-            if agent_name == "codex":
-                extra_args.append("--skip-git-repo-check")
-            elif agent_name == "claude":
+        if agent_name == "codex":
+            extra_args.append("--skip-git-repo-check")
+        elif getattr(args, "unsafe", False):
+            if agent_name == "claude":
                 extra_args.append("--dangerously-skip-permissions")
             else:
                 print(

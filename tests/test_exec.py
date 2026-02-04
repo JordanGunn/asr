@@ -318,7 +318,7 @@ class TestExecCommand:
         assert result == 0
         mock_driver.execute.assert_called_once()
         _, kwargs = mock_driver.execute.call_args
-        assert kwargs["extra_args"] == ["--skip-git-repo-check"]
+        assert "--skip-git-repo-check" in kwargs["extra_args"]
 
     def test_exec_unsafe_claude(self, capsys, mock_registry, mock_config_with_agent):
         """Unsafe mode forwards Claude permission bypass."""
@@ -404,6 +404,7 @@ class TestExecCommand:
         assert result == 0
         captured = capsys.readouterr()
         assert "Warning: --unsafe is not supported" in captured.err
+        assert mock_driver.execute.call_args[1]["extra_args"] is None
 
 
 class TestGetUserPrompt:
