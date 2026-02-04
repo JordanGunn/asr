@@ -25,7 +25,7 @@ _oasr_agents() {
 
 _oasr_profiles() {
     local profiles
-    profiles=(${(f)"$(oasr config list 2>/dev/null | grep '^profiles\.' | sed 's/^profiles\.\([^=]*\)=.*/\1/' | sort -u)"})
+    profiles=(${(f)"$(oasr config profiles --names 2>/dev/null)"})
     _describe 'profile' profiles
 }
 
@@ -34,9 +34,9 @@ _oasr_config_keys() {
     keys=(
         'agent:Default agent'
         'profile:Default policy profile'
-        'adapter.default:Default adapter target'
+        'adapter.default_targets:Default adapter targets'
         'validation.strict:Strict validation'
-        'validation.show_references:Show references'
+        'validation.reference_max_lines:Reference max lines'
         'oasr.completions:Enable completions'
     )
     _describe 'config key' keys
@@ -77,6 +77,13 @@ _oasr_config() {
         'set:Set a configuration value'
         'get:Get a configuration value'
         'list:List all configuration'
+        'agent:Show agent configuration'
+        'validation:Show validation settings'
+        'adapter:Show adapter settings'
+        'oasr:Show core settings'
+        'profiles:Show profiles'
+        'man:Show config reference'
+        'validate:Validate config file'
         'path:Show config file path'
     )
 
@@ -98,11 +105,17 @@ _oasr_config() {
                             agent)
                                 _oasr_agents
                                 ;;
-                            profile)
+                            profile|oasr.default_profile)
                                 _oasr_profiles
                                 ;;
                             validation.strict|oasr.completions)
                                 _values 'boolean' true false
+                                ;;
+                            validation.reference_max_lines)
+                                _message 'integer'
+                                ;;
+                            adapter.default_targets)
+                                _message 'comma-separated list'
                                 ;;
                         esac
                     fi
@@ -113,6 +126,11 @@ _oasr_config() {
             esac
             ;;
     esac
+}
+
+_oasr_profile() {
+    _arguments \
+        '1:profile:_oasr_profiles'
 }
 
 _oasr_registry() {
@@ -200,6 +218,7 @@ _oasr() {
         'diff:Show tracked skill status'
         'sync:Refresh tracked skills'
         'config:Manage configuration'
+        'profile:Select execution profile'
         'clone:Clone skills to directory'
         'exec:Execute a skill'
         'use:DEPRECATED - use clone instead'
@@ -231,6 +250,9 @@ _oasr() {
                 exec)
                     _oasr_exec
                     ;;
+                profile)
+                    _oasr_profile
+                    ;;
                 clone)
                     _oasr_clone
                     ;;
@@ -242,6 +264,9 @@ _oasr() {
                     ;;
                 config)
                     _oasr_config
+                    ;;
+                profile)
+                    _oasr_profile
                     ;;
                 registry)
                     _oasr_registry

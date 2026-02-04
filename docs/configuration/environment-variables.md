@@ -31,7 +31,7 @@ OASR supports environment variables for all configuration options. This is perfe
 
 **`OASR_PROFILE`**
 - **Type:** String
-- **Values:** Any profile name defined in config
+- **Values:** Any profile name defined in config or profile files
 - **Default:** `safe`
 - **Example:** `export OASR_PROFILE=dev`
 - **Config equivalent:** `[oasr] default_profile = "dev"`

@@ -2,6 +2,8 @@
 
 from typing import Any
 
+from profiles.validation import validate_profiles
+
 VALID_AGENTS = {"codex", "copilot", "claude", "opencode"}
 
 
@@ -80,32 +82,4 @@ def validate_config(config: dict[str, Any]) -> None:
                 raise ValueError("oasr.default_profile must be a string")
 
     if "profiles" in config:
-        if not isinstance(config["profiles"], dict):
-            raise ValueError("profiles must be a table (dictionary)")
-
-        # Validate each profile structure
-        for profile_name, profile_data in config["profiles"].items():
-            if not isinstance(profile_data, dict):
-                raise ValueError(f"Profile '{profile_name}' must be a table (dictionary)")
-
-            # Validate profile fields if present
-            if "fs_read_roots" in profile_data and not isinstance(profile_data["fs_read_roots"], list):
-                raise ValueError(f"Profile '{profile_name}': fs_read_roots must be a list")
-
-            if "fs_write_roots" in profile_data and not isinstance(profile_data["fs_write_roots"], list):
-                raise ValueError(f"Profile '{profile_name}': fs_write_roots must be a list")
-
-            if "deny_paths" in profile_data and not isinstance(profile_data["deny_paths"], list):
-                raise ValueError(f"Profile '{profile_name}': deny_paths must be a list")
-
-            if "allowed_commands" in profile_data and not isinstance(profile_data["allowed_commands"], list):
-                raise ValueError(f"Profile '{profile_name}': allowed_commands must be a list")
-
-            if "deny_shell" in profile_data and not isinstance(profile_data["deny_shell"], bool):
-                raise ValueError(f"Profile '{profile_name}': deny_shell must be a boolean")
-
-            if "network" in profile_data and not isinstance(profile_data["network"], bool):
-                raise ValueError(f"Profile '{profile_name}': network must be a boolean")
-
-            if "allow_env" in profile_data and not isinstance(profile_data["allow_env"], bool):
-                raise ValueError(f"Profile '{profile_name}': allow_env must be a boolean")
+        validate_profiles(config["profiles"])

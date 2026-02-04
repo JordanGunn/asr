@@ -2,6 +2,8 @@
 
 from typing import Any
 
+from profiles.builtins import BUILTIN_PROFILES
+
 DEFAULT_CONFIG: dict[str, Any] = {
     "validation": {
         "reference_max_lines": 500,
@@ -15,26 +17,7 @@ DEFAULT_CONFIG: dict[str, Any] = {
     },
     "oasr": {
         "default_profile": "safe",
+        "completions": True,
     },
-    "profiles": {
-        # Built-in safe profile (always available as fallback)
-        "safe": {
-            "fs_read_roots": ["./"],
-            "fs_write_roots": ["./out", "./.oasr"],
-            "deny_paths": [
-                "~/.ssh",
-                "~/.aws",
-                "~/.gnupg",
-                "~/.config",
-                ".env",
-                "~/.bashrc",
-                "~/.zshrc",
-                "~/.profile",
-            ],
-            "allowed_commands": ["rg", "fd", "jq", "cat"],
-            "deny_shell": True,
-            "network": False,
-            "allow_env": False,
-        },
-    },
+    "profiles": {name: values.copy() for name, values in BUILTIN_PROFILES.items()},
 }

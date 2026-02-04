@@ -20,13 +20,13 @@ _oasr_agents() {
 _oasr_profiles() {
     # Get profile names from config
     local profiles
-    profiles=$(oasr config list 2>/dev/null | grep "^profiles\." | sed 's/^profiles\.\([^=]*\)=.*/\1/' | sort -u)
+    profiles=$(oasr config profiles --names 2>/dev/null)
     COMPREPLY=($(compgen -W "$profiles" -- "${COMP_WORDS[COMP_CWORD]}"))
 }
 
 _oasr_config_keys() {
     # Common config keys
-    COMPREPLY=($(compgen -W "agent profile adapter.default validation.strict validation.show_references oasr.completions" -- "${COMP_WORDS[COMP_CWORD]}"))
+    COMPREPLY=($(compgen -W "agent profile oasr.default_profile adapter.default_targets validation.strict validation.reference_max_lines oasr.completions" -- "${COMP_WORDS[COMP_CWORD]}"))
 }
 
 _oasr_completion_shells() {
@@ -39,7 +39,7 @@ _oasr() {
 
     # Top-level commands
     if [ $COMP_CWORD -eq 1 ]; then
-        COMPREPLY=($(compgen -W "registry diff sync config clone exec use find validate clean adapter update info help completion" -- "$cur"))
+        COMPREPLY=($(compgen -W "registry diff sync config profile clone exec use find validate clean adapter update info help completion" -- "$cur"))
         return 0
     fi
 
@@ -111,7 +111,7 @@ _oasr() {
 
         config)
             if [ $COMP_CWORD -eq 2 ]; then
-                COMPREPLY=($(compgen -W "set get list path" -- "$cur"))
+                COMPREPLY=($(compgen -W "set get list agent validation adapter oasr profiles man validate path" -- "$cur"))
                 return 0
             fi
 
@@ -127,11 +127,17 @@ _oasr() {
                             agent)
                                 _oasr_agents
                                 ;;
-                            profile)
+                            profile|oasr.default_profile)
                                 _oasr_profiles
                                 ;;
                             validation.strict|oasr.completions)
                                 COMPREPLY=($(compgen -W "true false" -- "$cur"))
+                                ;;
+                            adapter.default_targets)
+                                return 0
+                                ;;
+                            validation.reference_max_lines)
+                                return 0
                                 ;;
                         esac
                     fi
@@ -182,6 +188,13 @@ _oasr() {
         adapter)
             if [ $COMP_CWORD -eq 2 ]; then
                 COMPREPLY=($(compgen -W "list generate" -- "$cur"))
+                return 0
+            fi
+            ;;
+
+        profile)
+            if [ $COMP_CWORD -eq 2 ]; then
+                _oasr_profiles
                 return 0
             fi
             ;;

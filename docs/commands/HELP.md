@@ -9,4 +9,5 @@ Show help for any command.
 oasr help
 oasr help list
 oasr help adapter
+oasr help profile
 ```

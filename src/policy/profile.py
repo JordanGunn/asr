@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from policy.defaults import SAFE
+from profiles import BUILTIN_PROFILES, merge_profile_data
 
 
 @dataclass
@@ -107,17 +107,15 @@ def load(config: dict[str, Any], profile_name: str, cwd: Path | None = None) -> 
 def _load_impl(config: dict[str, Any], profile_name: str) -> Profile:
     """Internal implementation of load()."""
     # Start with safe defaults
-    profile_data = SAFE.copy()
+    profile_data = BUILTIN_PROFILES["safe"].copy()
 
     # Try to load user-defined profile
     try:
         profiles = config.get("profiles", {})
         if profile_name in profiles:
-            user_profile = profiles[profile_name]
-            # Merge user overrides
-            for key in SAFE.keys():
-                if key in user_profile:
-                    profile_data[key] = user_profile[key]
+            profile_data = merge_profile_data(profile_data, profiles[profile_name])
+        elif profile_name in BUILTIN_PROFILES:
+            profile_data = merge_profile_data(profile_data, BUILTIN_PROFILES[profile_name])
         elif profile_name != "safe":
             # Warn if non-safe profile doesn't exist, but continue with safe defaults
             print(

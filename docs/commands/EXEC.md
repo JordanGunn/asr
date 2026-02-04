@@ -15,7 +15,7 @@ oasr exec <skill-name> [options]
 - `-p, --prompt TEXT` — Inline prompt/instructions for the agent
 - `-i, --instructions FILE` — Read prompt from a file
 - `-a, --agent AGENT` — Override the default agent (codex, copilot, claude, opencode)
-- `--profile PROFILE` — Use a specific execution policy profile (default: from config)
+- `--profile PROFILE` — Use a specific execution policy profile (default: from config; built-ins: safe, strict, dev, unsafe)
 - `-y, --yes` — Skip confirmation prompt for risky operations
 - `--confirm` — Force confirmation even for safe operations
 - `--unsafe` — Pass unsafe mode flags to the agent CLI (see [Unsafe Mode](#unsafe-mode))
@@ -104,6 +104,16 @@ oasr exec my-skill --agent claude --unsafe -p "Analyze this project"
 - **Codex**: You can avoid `--unsafe` by initializing a git repo (`git init`) or adding trusted directories via Codex config (`--add-dir`).
 - **Claude**: Use `--add-dir` or configure allowed tools/permissions in Claude settings.
 - **OpenCode**: Use `permission.external_directory` in `opencode.json` to allow external paths.
+
+### Profile Selection
+
+```bash
+# Set default profile
+oasr profile dev
+
+# Override per execution
+oasr exec my-skill --profile strict -p "prompt"
+```
 
 ### Skill Execution Flow
 

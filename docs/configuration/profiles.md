@@ -17,9 +17,16 @@ Policy profiles provide host-level security enforcement to mitigate risks from:
 
 ---
 
-## Default Profile
+## Default Profiles
 
-OASR includes a built-in `safe` profile with conservative defaults:
+OASR includes built-in profiles with conservative defaults:
+
+- `safe` (default)
+- `strict`
+- `dev`
+- `unsafe`
+
+The `safe` profile uses conservative defaults:
 
 ```toml
 [profiles.safe]
@@ -49,6 +56,7 @@ allow_env = false
 
 ```bash
 oasr config set oasr.default_profile safe
+oasr profile dev
 ```
 
 ### Via Environment Variable
@@ -111,6 +119,8 @@ default_profile = "safe"
 
 ## Creating Custom Profiles
 
+### Option 1: Config file
+
 Edit `~/.oasr/config.toml` to add custom profiles:
 
 ```toml
@@ -150,6 +160,22 @@ allow_env = true  # CI environment variables needed
 
 ---
 
+### Option 2: Profile files
+
+Place profile files under `~/.oasr/profile/<name>.toml`. Each file contains only the profile keys (no `[profiles.<name>]` table):
+
+```toml
+fs_read_roots = ["./", "~/projects"]
+fs_write_roots = ["./out"]
+deny_paths = ["~/.ssh"]
+allowed_commands = ["rg", "cat"]
+deny_shell = true
+network = false
+allow_env = false
+```
+
+Inline config profiles override profile files with the same name.
+
 ## Using Profiles
 
 ### Select Profile Per Execution
@@ -164,6 +190,12 @@ oasr exec my-skill -p "prompt" --profile dev
 # Use profile from environment variable
 export OASR_PROFILE=test
 oasr exec my-skill -p "prompt"
+```
+
+### Select Default Profile Interactively
+
+```bash
+oasr profile
 ```
 
 ### Precedence

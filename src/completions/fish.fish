@@ -18,15 +18,16 @@ function __oasr_agents
 end
 
 function __oasr_profiles
-    oasr config list 2>/dev/null | grep '^profiles\.' | sed 's/^profiles\.\([^=]*\)=.*/\1/' | sort -u
+    oasr config profiles --names 2>/dev/null
 end
 
 function __oasr_config_keys
     echo agent
     echo profile
-    echo adapter.default
+    echo oasr.default_profile
+    echo adapter.default_targets
     echo validation.strict
-    echo validation.show_references
+    echo validation.reference_max_lines
     echo oasr.completions
 end
 
@@ -45,6 +46,7 @@ complete -c oasr -f -n __fish_use_subcommand -a registry -d "Manage skill regist
 complete -c oasr -f -n __fish_use_subcommand -a diff -d "Show tracked skill status"
 complete -c oasr -f -n __fish_use_subcommand -a sync -d "Refresh tracked skills"
 complete -c oasr -f -n __fish_use_subcommand -a config -d "Manage configuration"
+complete -c oasr -f -n __fish_use_subcommand -a profile -d "Select execution profile"
 complete -c oasr -f -n __fish_use_subcommand -a clone -d "Clone skills to directory"
 complete -c oasr -f -n __fish_use_subcommand -a exec -d "Execute a skill"
 complete -c oasr -f -n __fish_use_subcommand -a use -d "DEPRECATED - use clone"
@@ -79,16 +81,27 @@ complete -c oasr -f -n "__fish_seen_subcommand_from info; and not __fish_seen_su
 complete -c oasr -f -n "__fish_seen_subcommand_from validate; and not __fish_seen_subcommand_from (__oasr_skills)" -a "(__oasr_skills)" -d "Skill"
 
 # config subcommands
-complete -c oasr -f -n "__fish_seen_subcommand_from config; and not __fish_seen_subcommand_from set get list path" -a "set" -d "Set configuration value"
-complete -c oasr -f -n "__fish_seen_subcommand_from config; and not __fish_seen_subcommand_from set get list path" -a "get" -d "Get configuration value"
-complete -c oasr -f -n "__fish_seen_subcommand_from config; and not __fish_seen_subcommand_from set get list path" -a "list" -d "List all configuration"
-complete -c oasr -f -n "__fish_seen_subcommand_from config; and not __fish_seen_subcommand_from set get list path" -a "path" -d "Show config file path"
+complete -c oasr -f -n "__fish_seen_subcommand_from config; and not __fish_seen_subcommand_from set get list agent validation adapter oasr profiles man validate path" -a "set" -d "Set configuration value"
+complete -c oasr -f -n "__fish_seen_subcommand_from config; and not __fish_seen_subcommand_from set get list agent validation adapter oasr profiles man validate path" -a "get" -d "Get configuration value"
+complete -c oasr -f -n "__fish_seen_subcommand_from config; and not __fish_seen_subcommand_from set get list agent validation adapter oasr profiles man validate path" -a "list" -d "List all configuration"
+complete -c oasr -f -n "__fish_seen_subcommand_from config; and not __fish_seen_subcommand_from set get list agent validation adapter oasr profiles man validate path" -a "agent" -d "Show agent configuration"
+complete -c oasr -f -n "__fish_seen_subcommand_from config; and not __fish_seen_subcommand_from set get list agent validation adapter oasr profiles man validate path" -a "validation" -d "Show validation settings"
+complete -c oasr -f -n "__fish_seen_subcommand_from config; and not __fish_seen_subcommand_from set get list agent validation adapter oasr profiles man validate path" -a "adapter" -d "Show adapter settings"
+complete -c oasr -f -n "__fish_seen_subcommand_from config; and not __fish_seen_subcommand_from set get list agent validation adapter oasr profiles man validate path" -a "oasr" -d "Show core settings"
+complete -c oasr -f -n "__fish_seen_subcommand_from config; and not __fish_seen_subcommand_from set get list agent validation adapter oasr profiles man validate path" -a "profiles" -d "Show profiles"
+complete -c oasr -f -n "__fish_seen_subcommand_from config; and not __fish_seen_subcommand_from set get list agent validation adapter oasr profiles man validate path" -a "man" -d "Show config reference"
+complete -c oasr -f -n "__fish_seen_subcommand_from config; and not __fish_seen_subcommand_from set get list agent validation adapter oasr profiles man validate path" -a "validate" -d "Validate config file"
+complete -c oasr -f -n "__fish_seen_subcommand_from config; and not __fish_seen_subcommand_from set get list agent validation adapter oasr profiles man validate path" -a "path" -d "Show config file path"
 
 # config set/get
 complete -c oasr -f -n "__fish_seen_subcommand_from config; and __fish_seen_subcommand_from set get" -a "(__oasr_config_keys)" -d "Config key"
 complete -c oasr -f -n "__fish_seen_subcommand_from config; and __fish_seen_subcommand_from set; and __fish_seen_subcommand_from agent" -a "(__oasr_agents)" -d "Agent"
 complete -c oasr -f -n "__fish_seen_subcommand_from config; and __fish_seen_subcommand_from set; and __fish_seen_subcommand_from profile" -a "(__oasr_profiles)" -d "Profile"
+complete -c oasr -f -n "__fish_seen_subcommand_from config; and __fish_seen_subcommand_from set; and __fish_seen_subcommand_from oasr.default_profile" -a "(__oasr_profiles)" -d "Profile"
 complete -c oasr -f -n "__fish_seen_subcommand_from config; and __fish_seen_subcommand_from set; and __fish_seen_subcommand_from validation.strict oasr.completions" -a "true false" -d "Boolean"
+
+# profile command
+complete -c oasr -f -n "__fish_seen_subcommand_from profile" -a "(__oasr_profiles)" -d "Profile"
 
 # registry subcommands
 complete -c oasr -f -n "__fish_seen_subcommand_from registry; and not __fish_seen_subcommand_from add rm sync list validate prune" -a "add" -d "Add skill to registry"

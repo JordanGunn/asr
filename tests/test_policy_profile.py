@@ -4,7 +4,7 @@ from pathlib import Path
 
 import policy
 from policy import Profile
-from policy.defaults import SAFE
+from profiles.builtins import SAFE
 
 
 class TestProfile:
