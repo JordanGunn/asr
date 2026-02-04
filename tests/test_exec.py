@@ -280,7 +280,6 @@ class TestExecCommand:
         captured = capsys.readouterr()
         assert "Executing skill 'test-skill' with copilot" in captured.err
 
-
     def test_exec_with_agent_flags(self, capsys, mock_registry, mock_config_with_agent):
         """Agent flags are forwarded to the driver."""
         registry, skill_file = mock_registry
@@ -325,6 +324,8 @@ class TestExecCommand:
         _, kwargs = mock_driver.execute.call_args
         assert "--allow-all-tools" in kwargs["extra_args"]
         assert "--allow-all-paths" in kwargs["extra_args"]
+        assert "--allow-all-urls" in kwargs["extra_args"]
+        assert "--yolo" in kwargs["extra_args"]
 
     def test_exec_unsafe_codex(self, capsys, mock_registry, mock_config_with_agent):
         """Unsafe mode forwards Codex skip-git check."""
@@ -369,6 +370,7 @@ class TestExecCommand:
         mock_driver.execute.assert_called_once()
         _, kwargs = mock_driver.execute.call_args
         assert "--skip-git-repo-check" in kwargs["extra_args"]
+        assert "--dangerously-bypass-approvals-and-sandbox" in kwargs["extra_args"]
 
     def test_exec_unsafe_claude(self, capsys, mock_registry, mock_config_with_agent):
         """Unsafe mode forwards Claude permission bypass."""
@@ -412,7 +414,7 @@ class TestExecCommand:
         assert result == 0
         mock_driver.execute.assert_called_once()
         _, kwargs = mock_driver.execute.call_args
-        assert kwargs["extra_args"] == ["--dangerously-skip-permissions"]
+        assert "--dangerously-skip-permissions" in kwargs["extra_args"]
 
     def test_exec_unsafe_unsupported_agent_warns(self, capsys, mock_registry, mock_config_with_agent):
         """Unsafe mode warns for unsupported agents."""
@@ -455,8 +457,9 @@ class TestExecCommand:
 
         assert result == 0
         captured = capsys.readouterr()
-        assert "Warning: --unsafe is not supported" in captured.err
-        assert mock_driver.execute.call_args[1]["extra_args"] is None
+        assert "Executing skill 'test-skill' with copilot" in captured.err
+        assert "--yolo" in mock_driver.execute.call_args[1]["extra_args"]
+        assert "--allow-all-paths" in mock_driver.execute.call_args[1]["extra_args"]
 
 
 class TestGetUserPrompt:

@@ -175,18 +175,20 @@ def run(args: argparse.Namespace) -> int:
             extra_args.extend(args.agent_flags.split())
         if agent_name == "codex":
             extra_args.append("--skip-git-repo-check")
+            extra_args.append("--dangerously-bypass-approvals-and-sandbox")
+        elif agent_name == "copilot":
+            extra_args.extend(["--yolo", "--allow-all-tools", "--allow-all-paths", "--allow-all-urls"])
+        elif agent_name == "claude":
+            extra_args.append("--dangerously-skip-permissions")
         elif getattr(args, "unsafe", False):
-            if agent_name == "claude":
-                extra_args.append("--dangerously-skip-permissions")
-            else:
-                print(
-                    f"Warning: --unsafe is not supported for agent '{agent_name}'.",
-                    file=sys.stderr,
-                )
-                print(
-                    "See agent docs for trusted directory or permission configuration.",
-                    file=sys.stderr,
-                )
+            print(
+                f"Warning: --unsafe is not supported for agent '{agent_name}'.",
+                file=sys.stderr,
+            )
+            print(
+                "See agent docs for trusted directory or permission configuration.",
+                file=sys.stderr,
+            )
         result = driver.execute(skill_content, user_prompt, extra_args=extra_args or None)
         # CompletedProcess has returncode attribute (0 = success)
         # Output was already streamed to stdout since capture_output=False
