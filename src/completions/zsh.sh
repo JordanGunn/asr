@@ -63,11 +63,19 @@ _oasr_clone() {
 _oasr_info() {
     _arguments \
         '--files[Show file list]' \
+        '--json[JSON output (v1|v2)]' \
         '1:skill:_oasr_skills'
 }
 
 _oasr_validate() {
     _arguments \
+        '--json[JSON output (v1|v2)]' \
+        '*:skill:_oasr_skills'
+}
+
+_oasr_status() {
+    _arguments \
+        '--json[JSON output (v1|v2)]' \
         '*:skill:_oasr_skills'
 }
 
@@ -218,6 +226,7 @@ _oasr() {
         'registry:Manage skill registry'
         'diff:Show tracked skill status'
         'sync:Refresh tracked skills'
+        'status:Show manifest status'
         'config:Manage configuration'
         'profile:Select execution profile'
         'clone:Clone skills to directory'
@@ -227,6 +236,7 @@ _oasr() {
         'adapter:Generate IDE-specific files'
         'update:Update OASR tool'
         'info:Show skill information'
+        'about:Show version and credits'
         'help:Show help'
         'completion:Manage shell completions'
     )
@@ -235,7 +245,7 @@ _oasr() {
         '(--help -h)'{--help,-h}'[Show help]' \
         '--version[Show version]' \
         '--config[Config file path]:file:_files' \
-        '--json[JSON output]' \
+        '--json[JSON output (v1|v2)]' \
         '--quiet[Suppress warnings]' \
         '1:command:->command' \
         '*::arg:->args'
@@ -260,6 +270,9 @@ _oasr() {
                     ;;
                 validate)
                     _oasr_validate
+                    ;;
+                status)
+                    _oasr_status
                     ;;
                 config)
                     _oasr_config

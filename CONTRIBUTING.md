@@ -32,9 +32,31 @@ hatch run dev:test
 - Prefer small, composable functions with clear names.
 - Keep `src/cli.py` focused on argparse wiring; command logic should live under `src/commands/`.
 
+## CLI conventions
+
+### Exit codes
+
+- `0` success
+- `1` operation failed
+- `2` invalid input / usage error
+- `3` unexpected error
+- `130` interrupted (Ctrl+C)
+
+### Output formatting
+
+- Use helpers in `src/output.py` for consistent symbols, colors, and summaries.
+- Provide actionable hints with `output.error(..., hint="...")` where possible.
+
+### Flag naming
+
+- Prefer `--json`, `--quiet`, `--yes`, and `--verbose` consistency across commands.
+
+### Error messages
+
+- State what happened and include a recovery hint.
+
 ## License / attribution
 
 By contributing, you agree that your contributions will be licensed under the
 project’s license (see `LICENSE`) and that redistributions should retain
 attribution notices (see `NOTICE`).
-

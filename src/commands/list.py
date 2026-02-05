@@ -3,17 +3,23 @@
 from __future__ import annotations
 
 import argparse
-import json
 import os
 import textwrap
 from shutil import get_terminal_size
 
+from output import header, json_enabled, json_output, json_v2, unicode_enabled
 from registry import load_registry
 
 
 def register(subparsers) -> None:
     p = subparsers.add_parser("list", help="List registered skills")
-    p.add_argument("--json", action="store_true", help="Output in JSON format")
+    p.add_argument(
+        "--json",
+        nargs="?",
+        const="v1",
+        choices=["v1", "v2"],
+        help="Output in JSON format",
+    )
     p.add_argument("--verbose", "-v", action="store_true", help="Show full paths")
     p.set_defaults(func=run)
 
@@ -62,23 +68,29 @@ def _wrap_description(desc: str, width: int, indent: int = 3) -> str:
 def run(args: argparse.Namespace) -> int:
     entries = load_registry()
 
+    if getattr(args, "no_unicode", False):
+        from output import configure as configure_output
+
+        configure_output(color=False, unicode=False, quiet=getattr(args, "quiet", False))
+
     if not entries:
-        if args.json:
-            print("[]")
+        if json_enabled(args.json):
+            json_output([], command="list", v2=json_v2(args.json))
         else:
-            print("No skills registered. Use 'asr add <path>' to register a skill.")
+            print("No skills registered. Use 'oasr add <path>' to register a skill.")
         return 0
 
-    if args.json:
+    if json_enabled(args.json):
         data = [{"name": e.name, "description": e.description, "path": e.path} for e in entries]
-        print(json.dumps(data, indent=2))
+        payload = data if not json_v2(args.json) else {"skills": data}
+        json_output(payload, command="list", v2=json_v2(args.json))
         return 0
 
     width = min(100, max(60, get_terminal_size((80, 20)).columns))
     verbose = getattr(args, "verbose", False)
 
     # Header
-    print(f"\n  REGISTERED SKILLS ({len(entries)})\n")
+    header(f"  REGISTERED SKILLS ({len(entries)})")
 
     # Calculate max name length for alignment
     max_name = max(len(e.name) for e in entries)
@@ -92,9 +104,12 @@ def run(args: argparse.Namespace) -> int:
         else:
             path_display = _shorten_path(e.path, max(20, path_width))
 
-        # Skill header with box drawing
-        print(f"  ┌─ {name}")
-        print(f"  │  {path_display}")
+        if unicode_enabled():
+            print(f"  ┌─ {name}")
+            print(f"  │  {path_display}")
+        else:
+            print(f"  * {name}")
+            print(f"    {path_display}")
 
         desc = (e.description or "").strip()
         if desc:
@@ -102,9 +117,15 @@ def run(args: argparse.Namespace) -> int:
             max_desc = width - 6
             if len(desc) > max_desc:
                 desc = desc[: max_desc - 3] + "..."
-            print(f"  └─ {desc}")
+            if unicode_enabled():
+                print(f"  └─ {desc}")
+            else:
+                print(f"    {desc}")
         else:
-            print("  └─ (no description)")
+            if unicode_enabled():
+                print("  └─ (no description)")
+            else:
+                print("    (no description)")
         print()
 
     return 0

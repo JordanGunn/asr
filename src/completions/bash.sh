@@ -39,7 +39,7 @@ _oasr() {
 
     # Top-level commands
     if [ $COMP_CWORD -eq 1 ]; then
-        COMPREPLY=($(compgen -W "registry diff sync config profile clone exec find validate adapter update info help completion" -- "$cur"))
+        COMPREPLY=($(compgen -W "registry diff sync config profile clone exec find validate adapter update info help completion about status" -- "$cur"))
         return 0
     fi
 
@@ -96,11 +96,14 @@ _oasr() {
             esac
             ;;
 
-        info|validate)
+        info|validate|status)
             if [[ "$cur" == -* ]]; then
                 case "$command" in
                     info)
-                        COMPREPLY=($(compgen -W "--files" -- "$cur"))
+                        COMPREPLY=($(compgen -W "--files --json" -- "$cur"))
+                        ;;
+                    validate|status)
+                        COMPREPLY=($(compgen -W "--json" -- "$cur"))
                         ;;
                 esac
             else

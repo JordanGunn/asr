@@ -17,6 +17,8 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
+from output import error, json_enabled, json_output, json_v2
+
 try:
     import yaml
 
@@ -364,7 +366,7 @@ def main(argv: list[str] | None = None) -> int:
     output_dir = args.output_dir.resolve()
 
     if not skills_root.is_dir():
-        print(f"Error: Not a directory: {skills_root}", file=sys.stderr)
+        error(f"Not a directory: {skills_root}", hint="Provide a valid skills directory")
         return 2
 
     exclude = set()
@@ -379,8 +381,8 @@ def main(argv: list[str] | None = None) -> int:
         cleanup=not args.no_cleanup,
     )
 
-    if args.json:
-        print(json.dumps(results, indent=2))
+    if json_enabled(args.json):
+        json_output(results, command="adapter", v2=json_v2(args.json))
     elif not args.quiet:
         for target, info in results.items():
             gen_count = len(info["generated"])

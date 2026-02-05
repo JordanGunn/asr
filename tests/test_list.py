@@ -49,7 +49,7 @@ class TestListCommand:
         """List with --json outputs valid JSON."""
         import json
 
-        exit_code, stdout, stderr = cli_runner(["registry", "list", "--json"])
+        exit_code, stdout, stderr = cli_runner(["registry", "list", "--json", "v1"])
 
         assert exit_code == 0
         data = json.loads(stdout)

@@ -9,6 +9,7 @@ from pathlib import Path
 import questionary
 
 from config import CONFIG_FILE, load_config, save_config
+from output import error, info
 from profiles import BUILTIN_PROFILES, format_profile_summary, sorted_profile_names
 
 
@@ -52,7 +53,7 @@ def _set_default_profile(config_path: Path, profile_name: str) -> int:
     config = load_config(config_path=config_path)
     profiles = config.get("profiles", {})
     if profile_name not in profiles:
-        print(f"Error: Profile '{profile_name}' not found.", file=sys.stderr)
+        error(f"Profile '{profile_name}' not found.", hint="Run 'oasr profile' to list available profiles")
         return 1
 
     config["oasr"]["default_profile"] = profile_name
@@ -72,13 +73,13 @@ def run(args: argparse.Namespace) -> int:
 
     if not sys.stdout.isatty() or not sys.stdin.isatty():
         _print_profiles(profiles, current)
-        print("\nTip: run `oasr profile <name>` to set the default profile.", file=sys.stderr)
+        info("\nTip: run `oasr profile <name>` to set the default profile.")
         return 0
 
     names = sorted_profile_names(profiles)
     choice = _select_profile(names, current)
     if not choice:
-        print("No profiles available.", file=sys.stderr)
+        error("No profiles available.")
         return 1
 
     return _set_default_profile(config_path, choice)

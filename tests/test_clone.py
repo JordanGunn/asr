@@ -24,7 +24,7 @@ def test_clone_no_match_warns(cli_runner, sample_registry, tmp_output_dir):
 
 def test_clone_json_output(cli_runner, sample_registry, tmp_output_dir):
     """Clone JSON output includes copied skill info."""
-    exit_code, stdout, stderr = cli_runner(["clone", "git-commit", "-d", str(tmp_output_dir), "--json"])
+    exit_code, stdout, stderr = cli_runner(["clone", "git-commit", "-d", str(tmp_output_dir), "--json", "v1"])
 
     assert exit_code == 0
     payload = json.loads(stdout)

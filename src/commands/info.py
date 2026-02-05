@@ -1,11 +1,10 @@
 """Info command - show detailed information about a skill."""
 
 import argparse
-import json
-import sys
 from datetime import datetime
 
 from manifest import check_manifest, load_manifest
+from output import Spinner, error, json_enabled, json_output, json_v2
 from registry import load_registry
 from skillcopy.remote import is_remote_source
 
@@ -30,21 +29,18 @@ def run(args: argparse.Namespace) -> int:
             break
 
     if not entry:
-        if not args.quiet:
-            print(f"Error: Skill '{skill_name}' not found", file=sys.stderr)
-            print("Try: oasr list", file=sys.stderr)
+        error(f"Skill '{skill_name}' not found", hint="Try: oasr list")
         return 1
 
     # Load manifest
     manifest = load_manifest(skill_name)
     if not manifest:
-        if not args.quiet:
-            print(f"No manifest found for: {skill_name}", file=sys.stderr)
+        error(f"No manifest found for: {skill_name}", hint="Run 'oasr registry' to rebuild manifests")
         return 1
 
     # Check if remote and show progress indicator
     is_remote = is_remote_source(manifest.source_path)
-    if is_remote and not args.quiet and not args.json:
+    if is_remote and not args.quiet and not json_enabled(args.json):
         platform = (
             "GitHub"
             if "github.com" in manifest.source_path
@@ -52,10 +48,10 @@ def run(args: argparse.Namespace) -> int:
             if "gitlab.com" in manifest.source_path
             else "remote"
         )
-        print(f"Checking remote skill status from {platform}...", file=sys.stderr, flush=True)
-
-    # Check status
-    status_result = check_manifest(manifest)
+        with Spinner(f"Checking remote skill status from {platform}..."):
+            status_result = check_manifest(manifest)
+    else:
+        status_result = check_manifest(manifest)
 
     # Determine type
     is_remote = is_remote_source(manifest.source_path)
@@ -92,8 +88,9 @@ def run(args: argparse.Namespace) -> int:
         info["files"] = [{"path": f.path, "hash": f.hash} for f in manifest.files]
 
     # Output
-    if args.json:
-        print(json.dumps(info, indent=2))
+    if json_enabled(args.json):
+        payload = info if not json_v2(args.json) else {"skill": info}
+        json_output(payload, command="info", v2=json_v2(args.json))
     else:
         # Human-readable format
         status_icon = {
@@ -141,6 +138,13 @@ def register(subparsers):
     parser.add_argument(
         "skill_name",
         help="Skill name to show information for",
+    )
+    parser.add_argument(
+        "--json",
+        nargs="?",
+        const="v1",
+        choices=["v1", "v2"],
+        help="Output in JSON format",
     )
 
     parser.add_argument(

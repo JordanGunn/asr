@@ -4,11 +4,10 @@ from __future__ import annotations
 
 import argparse
 import glob as globlib
-import json
-import sys
 from fnmatch import fnmatchcase
 from pathlib import Path
 
+from output import error, json_enabled, json_output, json_v2, summary, warn
 from registry import load_registry, remove_skill
 
 _GLOB_CHARS = set("*?[")
@@ -51,7 +50,13 @@ def register(subparsers) -> None:
     p = subparsers.add_parser("rm", help="Unregister a skill")
     p.add_argument("targets", nargs="+", help="Skill name(s), path(s), or glob pattern(s) to remove")
     p.add_argument("-r", "--recursive", action="store_true", help="Recursively remove all skills under path")
-    p.add_argument("--json", action="store_true", help="Output in JSON format")
+    p.add_argument(
+        "--json",
+        nargs="?",
+        const="v1",
+        choices=["v1", "v2"],
+        help="Output in JSON format",
+    )
     p.set_defaults(func=run)
 
 
@@ -77,18 +82,22 @@ def run(args: argparse.Namespace) -> int:
     seen = set()
     removed_names = [n for n in removed_names if not (n in seen or seen.add(n))]
 
-    if args.json:
-        print(json.dumps({"removed": len(removed_names), "skills": removed_names, "missing": missing}, indent=2))
+    if json_enabled(args.json):
+        json_output(
+            {"removed": len(removed_names), "skills": removed_names, "missing": missing},
+            command="rm",
+            v2=json_v2(args.json),
+        )
     else:
         for name in removed_names:
             print(f"Removed: {name}")
         for m in missing:
-            print(f"Not found: {m}", file=sys.stderr)
+            warn(f"Not found: {m}")
 
         if removed_names and not missing:
-            print(f"\n{len(removed_names)} skill(s) removed")
+            summary({"removed": len(removed_names)})
         elif removed_names and missing:
-            print(f"\n{len(removed_names)} skill(s) removed, {len(missing)} not found")
+            summary({"removed": len(removed_names), "not found": len(missing)})
 
     return 0 if removed_names and not missing else 1 if missing else 0
 
@@ -97,7 +106,7 @@ def _run_recursive(args: argparse.Namespace) -> int:
     roots = [p.resolve() for p in _expand_path_patterns(args.targets)]
     for root in roots:
         if not root.is_dir():
-            print(f"Error: Not a directory: {root}", file=sys.stderr)
+            error(f"Not a directory: {root}", hint="Provide a directory path for recursive removal")
             return 2
 
     entries = load_registry()
@@ -114,8 +123,8 @@ def _run_recursive(args: argparse.Namespace) -> int:
     seen = set()
     removed_names = [n for n in removed_names if not (n in seen or seen.add(n))]
 
-    if args.json:
-        print(json.dumps({"removed": len(removed_names), "skills": removed_names}, indent=2))
+    if json_enabled(args.json):
+        json_output({"removed": len(removed_names), "skills": removed_names}, command="rm", v2=json_v2(args.json))
     else:
         if not removed_names:
             for root in roots:
@@ -123,6 +132,6 @@ def _run_recursive(args: argparse.Namespace) -> int:
             return 0
         for name in removed_names:
             print(f"Removed: {name}")
-        print(f"\n{len(removed_names)} skill(s) removed")
+        summary({"removed": len(removed_names)})
 
     return 0

@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 from config import load_config
+from output import error, info, warn
 
 
 def register_parser(subparsers):
@@ -242,30 +243,30 @@ def run_install(args):
     """
     shell = args.shell if args.shell != "install" else detect_shell()
     if not shell:
-        print("Error: No shell specified for install", file=sys.stderr)
+        error("No shell specified for install", hint="Try: oasr completion bash --install")
         return 1
 
     # Check config
     config = load_config()
     if not config.get("oasr", {}).get("completions", True):
-        print("Completions are disabled in config (oasr.completions = false)")
+        warn("Completions are disabled in config (oasr.completions = false)")
         return 1
 
     # Check if already installed
     if is_already_installed(shell) and not args.force:
-        print(f"✓ Completions already installed for {shell}")
-        print("  Use --force to reinstall")
+        info(f"✓ Completions already installed for {shell}")
+        info("  Use --force to reinstall")
         return 0
 
     # Get paths
     path = get_completion_path(shell)
     if not path:
-        print(f"Error: Unsupported shell: {shell}", file=sys.stderr)
+        error(f"Unsupported shell: {shell}", hint="Supported: bash, zsh, fish, powershell")
         return 1
 
     # Dry run
     if args.dry_run:
-        print(f"Would install completion to: {path}")
+        info(f"Would install completion to: {path}", file=sys.stdout)
         print_activation_instructions(shell, path)
         return 0
 
@@ -281,7 +282,7 @@ def run_install(args):
 
         backup = path.parent / f"{path.name}.backup.{int(time.time())}"
         path.rename(backup)
-        print(f"Backed up existing file to: {backup}")
+        info(f"Backed up existing file to: {backup}")
 
     # Write script
     path.write_text(script)
@@ -304,22 +305,22 @@ def run_uninstall(args):
     """
     shell = args.shell if args.shell != "uninstall" else detect_shell()
     if not shell:
-        print("Error: No shell specified for uninstall", file=sys.stderr)
+        error("No shell specified for uninstall", hint="Try: oasr completion uninstall")
         return 1
 
     path = get_completion_path(shell)
     if not path or not path.exists():
-        print(f"No completions installed for {shell}")
+        info(f"No completions installed for {shell}")
         return 0
 
     # Dry run
     if args.dry_run:
-        print(f"Would remove: {path}")
+        info(f"Would remove: {path}", file=sys.stdout)
         return 0
 
     # Remove file
     path.unlink()
-    print(f"✓ Removed completions for {shell}")
+    info(f"✓ Removed completions for {shell}")
 
     return 0
 
@@ -337,15 +338,15 @@ def run(args):
     # No shell specified - show help
     if not args.shell:
         detected = detect_shell()
-        print(f"Detected shell: {detected}")
-        print("\nUsage:")
-        print("  oasr completion bash          # Output bash completion script")
-        print("  oasr completion zsh           # Output zsh completion script")
-        print("  oasr completion fish          # Output fish completion script")
-        print("  oasr completion powershell    # Output PowerShell completion script")
-        print("  oasr completion zsh --install # Install completions for shell")
-        print("  oasr completion install       # Auto-detect and install")
-        print("  oasr completion uninstall     # Remove installed completions")
+        info(f"Detected shell: {detected}")
+        info("\nUsage:")
+        info("  oasr completion bash          # Output bash completion script")
+        info("  oasr completion zsh           # Output zsh completion script")
+        info("  oasr completion fish          # Output fish completion script")
+        info("  oasr completion powershell    # Output PowerShell completion script")
+        info("  oasr completion zsh --install # Install completions for shell")
+        info("  oasr completion install       # Auto-detect and install")
+        info("  oasr completion uninstall     # Remove installed completions")
         return 0
 
     # Handle actions

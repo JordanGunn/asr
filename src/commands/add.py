@@ -4,13 +4,24 @@ from __future__ import annotations
 
 import argparse
 import glob as globlib
-import json
 import shutil
-import sys
 from pathlib import Path
 
 from config import load_config
 from discovery import discover_single, find_skills
+from output import (
+    Spinner,
+    error,
+    info,
+    json_enabled,
+    json_output,
+    json_v2,
+    progress_counter,
+    require_confirmation,
+    status_line,
+    summary,
+    warn,
+)
 from registry import SkillEntry, add_skill
 from remote import InvalidRemoteUrlError, derive_skill_name, fetch_remote_to_temp, validate_remote_url
 from skillcopy.remote import is_remote_source
@@ -53,9 +64,16 @@ def register(subparsers) -> None:
     )
     p.add_argument("-r", "--recursive", action="store_true", help="Recursively add all valid skills from path")
     p.add_argument("--strict", action="store_true", help="Fail if validation has warnings")
-    p.add_argument("--json", action="store_true", help="Output in JSON format")
+    p.add_argument(
+        "--json",
+        nargs="?",
+        const="v1",
+        choices=["v1", "v2"],
+        help="Output in JSON format",
+    )
     p.add_argument("--quiet", action="store_true", help="Suppress info/warnings")
     p.add_argument("--config", type=Path, help="Override config file path")
+    p.add_argument("-y", "--yes", action="store_true", help="Skip confirmation prompts")
     p.set_defaults(func=run)
 
 
@@ -80,16 +98,20 @@ def run(args: argparse.Namespace) -> int:
 
     # Check if we have anything to process
     if not expanded and not remote_urls:
-        if args.json:
-            print(json.dumps({"added": 0, "skipped": 0, "skills": [], "error": "no paths matched"}))
+        if json_enabled(args.json):
+            json_output(
+                {"added": 0, "skipped": 0, "skills": [], "error": "no paths matched"},
+                command="add",
+                v2=json_v2(args.json),
+            )
         else:
-            print("No paths matched.", file=sys.stderr)
+            error("No paths matched.", hint="Check the path or glob pattern")
         return 2
 
     # Handle recursive mode (local paths only)
     if args.recursive:
         if remote_urls:
-            print("Warning: --recursive flag ignored for remote URLs", file=sys.stderr)
+            warn("--recursive flag ignored for remote URLs")
         exit_code = 0
         for root in expanded:
             code = _run_recursive(args, root, max_lines)
@@ -110,8 +132,8 @@ def run(args: argparse.Namespace) -> int:
             skipped_count += 1
             results.append({"url": url, "added": False, "reason": f"Invalid URL: {error_msg}"})
             exit_code = 1
-            if not args.quiet and not args.json:
-                print(f"Invalid URL: {url} - {error_msg}", file=sys.stderr)
+            if not args.quiet and not json_enabled(args.json):
+                error(f"Invalid URL: {url} - {error_msg}")
             continue
 
         # Derive skill name
@@ -121,13 +143,13 @@ def run(args: argparse.Namespace) -> int:
             skipped_count += 1
             results.append({"url": url, "added": False, "reason": str(e)})
             exit_code = 1
-            if not args.quiet and not args.json:
-                print(f"Cannot derive name from URL: {url}", file=sys.stderr)
+            if not args.quiet and not json_enabled(args.json):
+                error(f"Cannot derive name from URL: {url}")
             continue
 
         # Fetch to temp dir for validation
         try:
-            if not args.quiet and not args.json:
+            if not args.quiet and not json_enabled(args.json):
                 # Determine platform for user feedback
                 if "github.com" in url:
                     platform = "GitHub"
@@ -135,25 +157,24 @@ def run(args: argparse.Namespace) -> int:
                     platform = "GitLab"
                 else:
                     platform = "remote source"
-                print(f"Registering from {platform}...", file=sys.stderr)
+                info(f"Registering from {platform}...")
 
-            temp_dir = fetch_remote_to_temp(url)
+            with Spinner("Fetching remote skill..."):
+                temp_dir = fetch_remote_to_temp(url)
 
             # Check for multiple skills in the repo
             skill_dirs = _find_skill_dirs(temp_dir)
 
             if len(skill_dirs) > 1:
                 # Multiple skills found
-                if not args.quiet and not args.json:
-                    print(f"✓ Found {len(skill_dirs)} skills in repository:", file=sys.stderr)
+                if not args.quiet and not json_enabled(args.json):
+                    status_line("success", "found", f"{len(skill_dirs)} skills in repository")
                     for skill_dir in skill_dirs:
                         rel_path = skill_dir.relative_to(temp_dir)
-                        print(f"    - {rel_path}", file=sys.stderr)
-                    print(file=sys.stderr)
+                        info(f"    - {rel_path}")
+                    info("")
 
-                    # Prompt user
-                    response = input("Add all skills? [Y/n]: ").strip().lower()
-                    if response and response not in ("y", "yes"):
+                    if not require_confirmation("Add all skills?", yes_flag=args.yes, default=True):
                         skipped_count += len(skill_dirs)
                         for skill_dir in skill_dirs:
                             rel_path = skill_dir.relative_to(temp_dir)
@@ -186,24 +207,24 @@ def run(args: argparse.Namespace) -> int:
             # Single skill handling (original logic)
             skill_dir = skill_dirs[0] if skill_dirs else temp_dir
 
-            if not args.quiet and not args.json:
+            if not args.quiet and not json_enabled(args.json):
                 # Count files validated
                 file_count = sum(1 for _ in skill_dir.rglob("*") if _.is_file())
-                print(f"✓ Validated {file_count} file(s)", file=sys.stderr)
+                status_line("success", "validated", f"{file_count} file(s)")
         except Exception as e:
             skipped_count += 1
             results.append({"url": url, "added": False, "reason": f"Fetch failed: {e}"})
             exit_code = 1
-            if not args.quiet and not args.json:
-                print(f"Failed to fetch {url}: {e}", file=sys.stderr)
+            if not args.quiet and not json_enabled(args.json):
+                error(f"Failed to fetch {url}: {e}")
             continue
 
         try:
             # Validate fetched content
             result = validate_skill(skill_dir, reference_max_lines=max_lines, skip_name_match=True)
-            if not args.quiet and not args.json:
+            if not args.quiet and not json_enabled(args.json):
                 _print_validation_result(result)
-                print()
+                info("")
 
             if not result.valid:
                 skipped_count += 1
@@ -222,7 +243,7 @@ def run(args: argparse.Namespace) -> int:
             if not discovered:
                 skipped_count += 1
                 results.append({"url": url, "added": False, "reason": "could not discover skill info"})
-                exit_code = 3
+                exit_code = 1
                 continue
 
             # Create entry with URL as source_path
@@ -236,9 +257,9 @@ def run(args: argparse.Namespace) -> int:
             added_count += 1
             results.append({"name": entry.name, "url": url, "added": True, "new": is_new})
 
-            if not args.quiet and not args.json:
+            if not args.quiet and not json_enabled(args.json):
                 action = "Added" if is_new else "Updated"
-                print(f"{action} remote skill: {entry.name} from {url}")
+                info(f"{action} remote skill: {entry.name} from {url}")
 
         finally:
             shutil.rmtree(temp_dir, ignore_errors=True)
@@ -249,14 +270,14 @@ def run(args: argparse.Namespace) -> int:
             skipped_count += 1
             results.append({"path": str(path), "added": False, "reason": "path missing"})
             exit_code = 1
-            if not args.quiet and not args.json:
-                print(f"Not found: {path}", file=sys.stderr)
+            if not args.quiet and not json_enabled(args.json):
+                error(f"Not found: {path}")
             continue
 
         result = validate_skill(path, reference_max_lines=max_lines)
-        if not args.quiet and not args.json:
+        if not args.quiet and not json_enabled(args.json):
             _print_validation_result(result)
-            print()
+            info("")
 
         if not result.valid:
             skipped_count += 1
@@ -274,7 +295,7 @@ def run(args: argparse.Namespace) -> int:
         if not discovered:
             skipped_count += 1
             results.append({"path": str(path), "added": False, "reason": "could not discover skill info"})
-            exit_code = 3
+            exit_code = 1
             continue
 
         entry = SkillEntry(
@@ -287,25 +308,29 @@ def run(args: argparse.Namespace) -> int:
         added_count += 1
         results.append({"name": entry.name, "path": entry.path, "added": True, "new": is_new})
 
-        if not args.quiet and not args.json:
+        if not args.quiet and not json_enabled(args.json):
             action = "Added" if is_new else "Updated"
-            print(f"{action} skill: {entry.name}")
+            info(f"{action} skill: {entry.name}")
 
-    if args.json:
-        print(json.dumps({"added": added_count, "skipped": skipped_count, "skills": results}, indent=2))
+    if json_enabled(args.json):
+        json_output(
+            {"added": added_count, "skipped": skipped_count, "skills": results},
+            command="add",
+            v2=json_v2(args.json),
+        )
 
     return exit_code
 
 
 def _run_recursive(args: argparse.Namespace, root: Path, max_lines: int) -> int:
     if not root.is_dir():
-        print(f"Error: Not a directory: {root}", file=sys.stderr)
+        error(f"Not a directory: {root}", hint="Provide a directory path, not a file")
         return 2
 
     skills = find_skills(root)
     if not skills:
-        if args.json:
-            print(json.dumps({"added": 0, "skipped": 0, "skills": []}))
+        if json_enabled(args.json):
+            json_output({"added": 0, "skipped": 0, "skills": []}, command="add", v2=json_v2(args.json))
         else:
             print(f"No skills found under {root}")
         return 0
@@ -314,20 +339,20 @@ def _run_recursive(args: argparse.Namespace, root: Path, max_lines: int) -> int:
     skipped_count = 0
     results = []
 
-    for s in skills:
+    for index, s in enumerate(skills, start=1):
         result = validate_skill(s.path, reference_max_lines=max_lines)
 
         if not result.valid:
             skipped_count += 1
-            if not args.quiet:
-                print(f"⚠ Skipping {s.name}: validation errors", file=sys.stderr)
+            if not args.quiet and not json_enabled(args.json):
+                status_line("warning", s.name, "validation errors")
             results.append({"name": s.name, "added": False, "reason": "validation errors"})
             continue
 
         if args.strict and result.warnings:
             skipped_count += 1
-            if not args.quiet:
-                print(f"⚠ Skipping {s.name}: validation warnings (strict)", file=sys.stderr)
+            if not args.quiet and not json_enabled(args.json):
+                status_line("warning", s.name, "validation warnings (strict)")
             results.append({"name": s.name, "added": False, "reason": "validation warnings"})
             continue
 
@@ -335,16 +360,18 @@ def _run_recursive(args: argparse.Namespace, root: Path, max_lines: int) -> int:
         is_new = add_skill(entry)
         added_count += 1
 
-        if not args.quiet and not args.json:
+        if not args.quiet and not json_enabled(args.json):
             action = "Added" if is_new else "Updated"
-            print(f"{action}: {s.name}")
+            progress_counter(index, len(skills), f"{action}: {s.name}")
 
         results.append({"name": s.name, "added": True, "new": is_new})
 
-    if args.json:
-        print(json.dumps({"added": added_count, "skipped": skipped_count, "skills": results}, indent=2))
+    if json_enabled(args.json):
+        json_output(
+            {"added": added_count, "skipped": skipped_count, "skills": results}, command="add", v2=json_v2(args.json)
+        )
     elif not args.quiet:
-        print(f"\n{added_count} skill(s) added, {skipped_count} skipped")
+        summary({"added": added_count, "skipped": skipped_count})
 
     return 0
 
@@ -397,15 +424,15 @@ def _add_single_remote_skill(
     if not result.valid:
         res = {"url": skill_url, "added": False, "reason": "validation errors"}
         results.append(res)
-        if not args.quiet and not args.json:
-            print(f"⚠ Skipping {skill_dir.name}: validation errors", file=sys.stderr)
+        if not args.quiet and not json_enabled(args.json):
+            status_line("warning", skill_dir.name, "validation errors")
         return res
 
     if args.strict and result.warnings:
         res = {"url": skill_url, "added": False, "reason": "validation warnings (strict mode)"}
         results.append(res)
-        if not args.quiet and not args.json:
-            print(f"⚠ Skipping {skill_dir.name}: validation warnings (strict)", file=sys.stderr)
+        if not args.quiet and not json_enabled(args.json):
+            status_line("warning", skill_dir.name, "validation warnings (strict)")
         return res
 
     # Discover skill info
@@ -413,8 +440,8 @@ def _add_single_remote_skill(
     if not discovered:
         res = {"url": skill_url, "added": False, "reason": "could not discover skill info"}
         results.append(res)
-        if not args.quiet and not args.json:
-            print(f"⚠ Skipping {skill_dir.name}: could not discover skill info", file=sys.stderr)
+        if not args.quiet and not json_enabled(args.json):
+            status_line("warning", skill_dir.name, "could not discover skill info")
         return res
 
     # Create entry with skill-specific URL
@@ -428,8 +455,8 @@ def _add_single_remote_skill(
     res = {"name": entry.name, "url": skill_url, "added": True, "new": is_new}
     results.append(res)
 
-    if not args.quiet and not args.json:
+    if not args.quiet and not json_enabled(args.json):
         action = "Added" if is_new else "Updated"
-        print(f"{action} skill: {entry.name}", file=sys.stderr)
+        info(f"{action} skill: {entry.name}")
 
     return res
