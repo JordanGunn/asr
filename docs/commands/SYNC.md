@@ -12,6 +12,7 @@ The `oasr sync` command updates local copies of skills that have been modified i
 oasr sync                    # Scan current directory, update outdated skills
 oasr sync /path/to/project   # Scan specific path
 oasr sync --force            # Overwrite modified skills (default: skip)
+oasr sync --prune            # Remove tracked skills not in registry
 oasr sync --json             # JSON output
 ```
 
@@ -22,6 +23,7 @@ oasr sync --json             # JSON output
 - **Updates outdated** - Re-copies skills where registry is newer
 - **Skips modified** - By default, leaves locally-modified skills alone
 - **Force overwrite** - Use `--force` to overwrite modified skills
+- **Prune unregistered** - Use `--prune` to remove skills not in the registry
 
 ## Example Output
 
@@ -59,6 +61,25 @@ Found 3 tracked skills:
 
 Updated: 2
 Skipped: 1
+```
+
+## Prune Unregistered
+
+Remove tracked skills that no longer exist in the registry:
+
+```bash
+$ oasr sync --prune
+
+Scanning /home/user/project for tracked skills...
+
+Found 3 tracked skills:
+  • old-skill (skipped - not in registry)
+
+Remove 1 tracked skill(s) not in registry? [y/N]: y
+
+Updated: 0
+Skipped: 1
+Pruned: 1
 ```
 
 ## JSON Output

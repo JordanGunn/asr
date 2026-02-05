@@ -82,6 +82,12 @@ complete -c oasr -f -n "__fish_seen_subcommand_from info; and not __fish_seen_su
 complete -c oasr -f -n "__fish_seen_subcommand_from validate" -l json -d "JSON output (v1|v2)" -a "v1 v2"
 complete -c oasr -f -n "__fish_seen_subcommand_from validate; and not __fish_seen_subcommand_from (__oasr_skills)" -a "(__oasr_skills)" -d "Skill"
 
+# sync command
+complete -c oasr -f -n "__fish_seen_subcommand_from sync" -l force -d "Overwrite modified skills"
+complete -c oasr -f -n "__fish_seen_subcommand_from sync" -l prune -d "Remove tracked skills not in registry"
+complete -c oasr -f -n "__fish_seen_subcommand_from sync" -s y -l yes -d "Skip confirmation prompt"
+complete -c oasr -f -n "__fish_seen_subcommand_from sync" -l json -d "JSON output (v1|v2)" -a "v1 v2"
+
 # status command
 complete -c oasr -f -n "__fish_seen_subcommand_from status" -l json -d "JSON output (v1|v2)" -a "v1 v2"
 complete -c oasr -f -n "__fish_seen_subcommand_from status; and not __fish_seen_subcommand_from (__oasr_skills)" -a "(__oasr_skills)" -d "Skill"

@@ -8,6 +8,7 @@ import json
 import os
 import re
 import shutil
+import subprocess
 import tempfile
 from pathlib import Path
 from urllib import error as urlerror
@@ -65,6 +66,8 @@ def parse_github_url(url: str) -> dict | None:
         return None
 
     owner, repo, ref, path = match.groups()
+    if repo.endswith(".git"):
+        repo = repo[: -len(".git")]
 
     return {
         "owner": owner,
@@ -88,6 +91,8 @@ def parse_gitlab_url(url: str) -> dict | None:
         return None
 
     owner, repo, ref, path = match.groups()
+    if repo.endswith(".git"):
+        repo = repo[: -len(".git")]
 
     return {
         "owner": owner,
@@ -380,6 +385,26 @@ def _fetch_gitlab_recursive(
             _fetch_gitlab_recursive(owner, repo, entry_path, ref, subdir, token)
 
 
+def _clone_with_git(url: str, dest_dir: Path) -> bool:
+    """Attempt shallow git clone to destination directory.
+
+    Returns True on success, False on failure.
+    """
+    try:
+        git_url = url
+        if git_url.endswith(".git"):
+            git_url = git_url[: -len(".git")]
+        result = subprocess.run(
+            ["git", "clone", "--depth", "1", git_url, str(dest_dir)],
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+        return result.returncode == 0
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        return False
+
+
 def fetch_remote_to_temp(url: str) -> Path:
     """Fetch a remote skill to a temporary directory.
 
@@ -417,6 +442,8 @@ def fetch_remote_to_temp(url: str) -> Path:
     temp_dir = Path(tempfile.mkdtemp(prefix="asr-remote-"))
 
     try:
+        if not path and _clone_with_git(url, temp_dir):
+            return temp_dir
         if platform == "github":
             _fetch_github_recursive(owner, repo, path, ref, temp_dir, token)
         elif platform == "gitlab":

@@ -136,6 +136,15 @@ _oasr_config() {
     esac
 }
 
+_oasr_sync() {
+    _arguments \
+        '--force[Overwrite modified skills]' \
+        '--prune[Remove tracked skills not in registry]' \
+        '(-y --yes)'{-y,--yes}'[Skip confirmation prompt]' \
+        '--json[JSON output (v1|v2)]' \
+        '1:path:_directories'
+}
+
 _oasr_profile() {
     _arguments \
         '1:profile:_oasr_profiles'
@@ -276,6 +285,9 @@ _oasr() {
                     ;;
                 config)
                     _oasr_config
+                    ;;
+                sync)
+                    _oasr_sync
                     ;;
                 profile)
                     _oasr_profile

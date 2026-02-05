@@ -22,6 +22,7 @@ COMMAND_HELP = {
         "examples": [
             ("Sync current directory", "oasr sync"),
             ("Force overwrite", "oasr sync --force"),
+            ("Prune unregistered skills", "oasr sync --prune"),
         ]
     },
     "exec": {
