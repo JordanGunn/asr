@@ -22,6 +22,20 @@ OASR supports environment variables for all configuration options. This is perfe
 
 ### Core Settings
 
+**`OASR_NO_COLOR`**
+- **Type:** Boolean
+- **Values:** `true`, `false`, `1`, `0`, `yes`, `no`, `on`, `off`
+- **Default:** `false`
+- **Example:** `export OASR_NO_COLOR=true`
+- **Effect:** Disables ANSI color output (alias for `NO_COLOR`)
+
+**`OASR_NO_UNICODE`**
+- **Type:** Boolean
+- **Values:** `true`, `false`, `1`, `0`, `yes`, `no`, `on`, `off`
+- **Default:** `false`
+- **Example:** `export OASR_NO_UNICODE=true`
+- **Effect:** Uses ASCII symbols instead of Unicode glyphs
+
 **`OASR_AGENT`**
 - **Type:** String
 - **Values:** `codex`, `copilot`, `claude`, `opencode`

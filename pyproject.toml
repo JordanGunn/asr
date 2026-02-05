@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "oasr"
-version = "0.6.2"
+version = "1.0.0"
 description = "CLI for managing agent skills across IDE integrations"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -27,7 +27,7 @@ classifiers = [
     "Topic :: Software Development :: Build Tools",
     "Topic :: Software Development :: Libraries :: Application Frameworks",
 ]
-urls = {Homepage = "https://github.com/jgodau/asr", Repository = "https://github.com/jgodau/asr", Changelog = "https://github.com/jgodau/asr/blob/main/CHANGELOG.md"}
+urls = {Homepage = "https://github.com/jgodau/oasr", Repository = "https://github.com/jgodau/oasr", Changelog = "https://github.com/jgodau/oasr/blob/main/CHANGELOG.md"}
 dependencies = [
     "tomli>=2.0.0;python_version<'3.11'",
     "tomli-w>=1.0.0",

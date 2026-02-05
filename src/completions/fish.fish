@@ -38,13 +38,14 @@ complete -c oasr -e
 complete -c oasr -l help -s h -d "Show help"
 complete -c oasr -l version -d "Show version"
 complete -c oasr -l config -d "Config file path" -r
-complete -c oasr -l json -d "JSON output"
+complete -c oasr -l json -d "JSON output (v1|v2)" -a "v1 v2"
 complete -c oasr -l quiet -d "Suppress warnings"
 
 # Main commands
 complete -c oasr -f -n __fish_use_subcommand -a registry -d "Manage skill registry"
 complete -c oasr -f -n __fish_use_subcommand -a diff -d "Show tracked skill status"
 complete -c oasr -f -n __fish_use_subcommand -a sync -d "Refresh tracked skills"
+complete -c oasr -f -n __fish_use_subcommand -a status -d "Show manifest status"
 complete -c oasr -f -n __fish_use_subcommand -a config -d "Manage configuration"
 complete -c oasr -f -n __fish_use_subcommand -a profile -d "Select execution profile"
 complete -c oasr -f -n __fish_use_subcommand -a clone -d "Clone skills to directory"
@@ -54,6 +55,7 @@ complete -c oasr -f -n __fish_use_subcommand -a validate -d "Validate skills"
 complete -c oasr -f -n __fish_use_subcommand -a adapter -d "Generate IDE files"
 complete -c oasr -f -n __fish_use_subcommand -a update -d "Update OASR tool"
 complete -c oasr -f -n __fish_use_subcommand -a info -d "Show skill information"
+complete -c oasr -f -n __fish_use_subcommand -a about -d "Show version and credits"
 complete -c oasr -f -n __fish_use_subcommand -a help -d "Show help"
 complete -c oasr -f -n __fish_use_subcommand -a completion -d "Manage shell completions"
 
@@ -73,10 +75,16 @@ complete -c oasr -f -n "__fish_seen_subcommand_from clone; and not __fish_seen_s
 
 # info command
 complete -c oasr -f -n "__fish_seen_subcommand_from info" -l files -d "Show file list"
+complete -c oasr -f -n "__fish_seen_subcommand_from info" -l json -d "JSON output (v1|v2)" -a "v1 v2"
 complete -c oasr -f -n "__fish_seen_subcommand_from info; and not __fish_seen_subcommand_from (__oasr_skills)" -a "(__oasr_skills)" -d "Skill"
 
 # validate command
+complete -c oasr -f -n "__fish_seen_subcommand_from validate" -l json -d "JSON output (v1|v2)" -a "v1 v2"
 complete -c oasr -f -n "__fish_seen_subcommand_from validate; and not __fish_seen_subcommand_from (__oasr_skills)" -a "(__oasr_skills)" -d "Skill"
+
+# status command
+complete -c oasr -f -n "__fish_seen_subcommand_from status" -l json -d "JSON output (v1|v2)" -a "v1 v2"
+complete -c oasr -f -n "__fish_seen_subcommand_from status; and not __fish_seen_subcommand_from (__oasr_skills)" -a "(__oasr_skills)" -d "Skill"
 
 # config subcommands
 complete -c oasr -f -n "__fish_seen_subcommand_from config; and not __fish_seen_subcommand_from set get list agent validation adapter oasr profiles man validate path" -a "set" -d "Set configuration value"

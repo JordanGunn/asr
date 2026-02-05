@@ -3,11 +3,10 @@
 from __future__ import annotations
 
 import argparse
-import json
-import sys
 from pathlib import Path
 
 from manifest import load_manifest
+from output import error, info, json_enabled, json_output, json_v2, status_line
 from tracking import extract_metadata
 
 
@@ -21,7 +20,13 @@ def register(subparsers) -> None:
         default=Path.cwd(),
         help="Path to scan for tracked skills (default: current directory)",
     )
-    p.add_argument("--json", action="store_true", help="Output in JSON format")
+    p.add_argument(
+        "--json",
+        nargs="?",
+        const="v1",
+        choices=["v1", "v2"],
+        help="Output in JSON format",
+    )
     p.add_argument("--quiet", action="store_true", help="Suppress info/warnings")
     p.set_defaults(func=run)
 
@@ -31,12 +36,12 @@ def run(args: argparse.Namespace) -> int:
     scan_path = args.path.resolve()
 
     if not scan_path.exists():
-        print(f"Error: Path does not exist: {scan_path}", file=sys.stderr)
+        error(f"Path does not exist: {scan_path}", hint="Check the path and try again")
         return 1
 
     # Find all SKILL.md files recursively
-    if not args.quiet and not args.json:
-        print(f"Scanning {scan_path} for tracked skills...", file=sys.stderr)
+    if not args.quiet and not json_enabled(args.json):
+        info(f"Scanning {scan_path} for tracked skills...")
 
     tracked_skills = []
     skill_md_files = list(scan_path.rglob("SKILL.md"))
@@ -49,8 +54,8 @@ def run(args: argparse.Namespace) -> int:
             tracked_skills.append((skill_dir, metadata))
 
     if not tracked_skills:
-        if args.json:
-            print(json.dumps({"tracked": 0, "skills": []}))
+        if json_enabled(args.json):
+            json_output({"tracked": 0, "skills": []}, command="diff", v2=json_v2(args.json))
         else:
             print("No tracked skills found.")
         return 0
@@ -78,8 +83,8 @@ def run(args: argparse.Namespace) -> int:
                     "message": "Corrupted metadata (missing hash or source)",
                 }
             )
-            if not args.quiet and not args.json:
-                print(f"  ✗ {skill_name}: corrupted metadata", file=sys.stderr)
+            if not args.quiet and not json_enabled(args.json):
+                status_line("error", skill_name, "corrupted metadata")
             continue
 
         # Check if in registry
@@ -88,8 +93,8 @@ def run(args: argparse.Namespace) -> int:
         try:
             entries = load_registry()
         except Exception as e:
-            if not args.quiet and not args.json:
-                print(f"Error loading registry: {e}", file=sys.stderr)
+            if not args.quiet and not json_enabled(args.json):
+                error(f"Error loading registry: {e}", hint="Run 'oasr registry' to check registry health")
             return 1
 
         entry = next((e for e in entries if e.name == skill_name), None)
@@ -102,8 +107,8 @@ def run(args: argparse.Namespace) -> int:
                 results.append(
                     {"name": skill_name, "path": str(skill_dir), "status": "error", "message": f"Manifest error: {e}"}
                 )
-                if not args.quiet and not args.json:
-                    print(f"  ✗ {skill_name}: manifest error", file=sys.stderr)
+                if not args.quiet and not json_enabled(args.json):
+                    status_line("error", skill_name, "manifest error")
                 continue
 
             if manifest:
@@ -138,19 +143,18 @@ def run(args: argparse.Namespace) -> int:
             }
         )
 
-    if args.json:
-        print(
-            json.dumps(
-                {
-                    "tracked": len(tracked_skills),
-                    "up_to_date": up_to_date,
-                    "outdated": outdated,
-                    "modified": modified,
-                    "untracked": untracked,
-                    "skills": results,
-                },
-                indent=2,
-            )
+    if json_enabled(args.json):
+        json_output(
+            {
+                "tracked": len(tracked_skills),
+                "up_to_date": up_to_date,
+                "outdated": outdated,
+                "modified": modified,
+                "untracked": untracked,
+                "skills": results,
+            },
+            command="diff",
+            v2=json_v2(args.json),
         )
     else:
         # Git-style output

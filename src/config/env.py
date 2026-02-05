@@ -153,7 +153,7 @@ def load_env_config() -> dict[str, dict[str, Any]]:
             import sys
 
             print(
-                f"⚠ Warning: Invalid value for {env_var}='{value}': {e}. Skipping.",
+                f"Warning: Invalid value for {env_var}='{value}': {e}. Skipping.",
                 file=sys.stderr,
             )
             continue

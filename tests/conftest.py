@@ -134,11 +134,15 @@ def cli_runner(monkeypatch, capsys):
 
     def mock_load_manifest(name):
         """Return a mock manifest with content hash for tracking."""
+        from datetime import datetime
+
         from manifest import SkillManifest
 
         return SkillManifest(
             name=name,
+            source_path="/fake/path",
             description=f"Description for {name}",
+            registered_at=datetime.now().isoformat(),
             content_hash=f"hash_{name}",  # Mock hash for tracking
         )
 
@@ -146,7 +150,9 @@ def cli_runner(monkeypatch, capsys):
 
     def run(argv):
         import cli
+        from output import configure as configure_output
 
+        configure_output(color=False, unicode=True, quiet=False)
         try:
             exit_code = cli.main(argv)
         except SystemExit as e:

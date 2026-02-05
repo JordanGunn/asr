@@ -47,8 +47,8 @@ $oasrCompletion = {
     # First argument - main commands
     if ($elementCount -eq 2) {
         $commands = @(
-            'registry', 'diff', 'sync', 'config', 'profile', 'clone', 'exec',
-            'find', 'validate', 'adapter', 'update', 'info',
+            'registry', 'diff', 'sync', 'status', 'config', 'profile', 'clone', 'exec',
+            'find', 'validate', 'adapter', 'update', 'info', 'about',
             'help', 'completion'
         )
         $commands | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
@@ -60,6 +60,45 @@ $oasrCompletion = {
     $subcommand = $elements[1].Value
 
     switch ($subcommand) {
+        'info' {
+            if ($wordToComplete -like '-*') {
+                @('--files', '--json') | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
+                    [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
+                }
+                return
+            }
+
+            Get-OasrSkills | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
+                [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', "Skill: $_")
+            }
+            return
+        }
+        'validate' {
+            if ($wordToComplete -like '-*') {
+                @('--json') | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
+                    [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
+                }
+                return
+            }
+
+            Get-OasrSkills | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
+                [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', "Skill: $_")
+            }
+            return
+        }
+        'status' {
+            if ($wordToComplete -like '-*') {
+                @('--json') | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
+                    [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
+                }
+                return
+            }
+
+            Get-OasrSkills | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
+                [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', "Skill: $_")
+            }
+            return
+        }
         'exec' {
             $prevWord = if ($elementCount -gt 2) { $elements[$elementCount - 2].Value } else { '' }
             

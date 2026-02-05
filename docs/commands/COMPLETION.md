@@ -104,7 +104,7 @@ oasr completion powershell > ~/.config/powershell/oasr_completion.ps1
 
 ```bash
 oasr <TAB>
-# Shows: add, adapter, clone, completion, config, diff, exec, find, help, info, list, registry, rm, status, sync, update, validate
+# Shows: add, about, adapter, clone, completion, config, diff, exec, find, help, info, list, registry, rm, status, sync, update, validate
 
 oasr registry <TAB>
 # Shows: add, list, prune, rm, sync, validate

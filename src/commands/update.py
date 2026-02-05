@@ -9,6 +9,8 @@ import sys
 import urllib.request
 from importlib import metadata
 
+from output import Spinner, error, json_enabled, json_output, json_v2, require_confirmation, success, warn
+
 
 def get_installed_version(package: str = "oasr") -> str | None:
     """Get installed package version."""
@@ -63,7 +65,9 @@ def register(subparsers) -> None:
     )
     p.add_argument(
         "--json",
-        action="store_true",
+        nargs="?",
+        const="v1",
+        choices=["v1", "v2"],
         help="Output in JSON format",
     )
     p.add_argument(
@@ -87,80 +91,81 @@ def register(subparsers) -> None:
 
 def run(args: argparse.Namespace) -> int:
     """Run the update command."""
-    latest_version = get_latest_pypi_version()
-    installed_version = get_installed_version()
+    json_on = json_enabled(args.json)
+    json_mode_v2 = json_v2(args.json)
+
+    with Spinner("Checking PyPI for updates..."):
+        latest_version = get_latest_pypi_version()
+        installed_version = get_installed_version()
     update_available = bool(latest_version and installed_version and latest_version != installed_version)
 
-    if args.json:
-        payload = {
-            "installed_version": installed_version,
-            "latest_version": latest_version,
-            "update_available": update_available,
-        }
-        if not installed_version:
+    payload = {
+        "installed_version": installed_version,
+        "latest_version": latest_version,
+        "update_available": update_available,
+    }
+
+    if not installed_version:
+        if json_on:
             payload.update({"success": False, "error": "oasr is not installed via PyPI"})
-            print(json.dumps(payload, indent=2))
-            return 1
-        if not latest_version:
+            json_output(payload, command="update", v2=json_mode_v2)
+        else:
+            error("oasr is not installed via PyPI", hint="Install with: pip install oasr")
+        return 1
+
+    if not latest_version:
+        if json_on:
             payload.update({"success": False, "error": "Unable to check PyPI for updates"})
-            print(json.dumps(payload, indent=2))
-            return 1
-        if args.check or not update_available:
+            json_output(payload, command="update", v2=json_mode_v2)
+        else:
+            error("Unable to check PyPI for updates")
+        return 1
+
+    if args.check or not update_available:
+        if json_on:
             payload.update({"success": True, "updated": False})
-            print(json.dumps(payload, indent=2))
-            return 0
-        if not args.yes:
-            payload.update({"success": False, "error": "Confirmation required. Re-run with --yes."})
-            print(json.dumps(payload, indent=2))
-            return 1
-    else:
-        if not installed_version:
-            print("✗ oasr is not installed via PyPI", file=sys.stderr)
-            print("  Install with: pip install oasr", file=sys.stderr)
-            return 1
-
-        if not latest_version:
-            print("✗ Unable to check PyPI for updates", file=sys.stderr)
-            return 1
-
-        if not update_available:
-            if not args.quiet:
-                print(f"✓ Already up to date (v{installed_version})")
-            return 0
-
-        if args.check:
-            if not args.quiet:
-                print(f"Update available: {installed_version} → {latest_version}")
-            return 0
-
-        if not args.yes:
-            try:
-                response = input(f"Update oasr {installed_version} → {latest_version}? [y/N] ").strip().lower()
-                if response not in ("y", "yes"):
-                    print("Aborted.")
-                    return 1
-            except (EOFError, KeyboardInterrupt):
-                print("\nAborted.")
-                return 1
-
-    success, runner, error = upgrade_from_pypi()
-
-    if args.json:
-        payload.update(
-            {
-                "success": success,
-                "updated": success,
-                "runner": runner if success else None,
-                "error": error if not success else None,
-            }
-        )
-        print(json.dumps(payload, indent=2))
-        return 0 if success else 1
-
-    if success:
-        if not args.quiet:
-            print(f"✓ Updated with {runner}")
+            json_output(payload, command="update", v2=json_mode_v2)
+        else:
+            if not update_available:
+                if not args.quiet:
+                    success(f"Already up to date (v{installed_version})")
+            else:
+                if not args.quiet:
+                    print(f"Update available: {installed_version} → {latest_version}")
         return 0
 
-    print(f"✗ Update failed: {error}", file=sys.stderr)
+    if json_on and not args.yes:
+        payload.update({"success": False, "error": "Confirmation required. Re-run with --yes."})
+        json_output(payload, command="update", v2=json_mode_v2)
+        return 1
+
+    if not require_confirmation(
+        f"Update oasr {installed_version} → {latest_version}?",
+        yes_flag=args.yes,
+        default=False,
+    ):
+        if not json_on:
+            warn("Aborted.")
+        return 1
+
+    success_flag, runner, error_msg = upgrade_from_pypi()
+
+    if json_on:
+        payload.update(
+            {
+                "success": success_flag,
+                "updated": success_flag,
+                "runner": runner if success_flag else None,
+                "error": error_msg if not success_flag else None,
+            }
+        )
+        json_output(payload, command="update", v2=json_mode_v2)
+        return 0 if success_flag else 1
+
+    if success_flag:
+        if not args.quiet:
+            success(f"Updated with {runner}")
+        return 0
+
+    error(f"Update failed: {error_msg}")
     return 1

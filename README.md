@@ -130,6 +130,20 @@ See [`oasr completion --help`](docs/commands/COMPLETION.md) for details.
 
 ---
 
+## JSON Output
+
+Use `--json` for legacy JSON output. Use `--json v2` for the structured envelope
+with `version`, `success`, `command`, and `error` fields.
+
+---
+
+## Accessibility
+
+- Disable ANSI colors: `NO_COLOR=1 oasr ...` or `OASR_NO_COLOR=1 oasr ...`
+- Use ASCII symbols: `OASR_NO_UNICODE=1 oasr ...`
+
+---
+
 ## Documentation
 
 - **[Quickstart](docs/QUICKSTART.md)** — Installation and first steps

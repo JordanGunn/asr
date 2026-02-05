@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import argparse
 import fnmatch
-import json
 import sys
 from pathlib import Path
 
+from output import json_enabled, json_output, json_v2, progress_counter, status_line, summary, warn
 from registry import load_registry
 from skillcopy import copy_skill
 
@@ -28,7 +28,13 @@ def register(subparsers) -> None:
         dest="output_dir",
         help="Target directory (default: current)",
     )
-    p.add_argument("--json", action="store_true", help="Output in JSON format")
+    p.add_argument(
+        "--json",
+        nargs="?",
+        const="v1",
+        choices=["v1", "v2"],
+        help="Output in JSON format",
+    )
     p.add_argument("--quiet", action="store_true", help="Suppress info/warnings")
     p.set_defaults(func=run)
 
@@ -86,7 +92,8 @@ def run(args: argparse.Namespace) -> int:
 
     # Handle remote skills with parallel fetching
     if remote_names:
-        print(f"Fetching {len(remote_names)} remote skill(s)...", file=sys.stderr)
+        if not args.quiet and not json_enabled(args.json):
+            print(f"Fetching {len(remote_names)} remote skill(s)...", file=sys.stderr)
         import threading
         from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -102,7 +109,7 @@ def run(args: argparse.Namespace) -> int:
                     platform = (
                         "GitHub" if "github.com" in entry.path else "GitLab" if "gitlab.com" in entry.path else "remote"
                     )
-                    print(f"  ↓ {name} (fetching from {platform}...)", file=sys.stderr, flush=True)
+                    progress_counter(1, 1, f"Fetching {name} from {platform}...")
 
                 # Get manifest hash for tracking
                 manifest = load_manifest(name)
@@ -119,12 +126,12 @@ def run(args: argparse.Namespace) -> int:
                 )
 
                 with print_lock:
-                    print(f"  ✓ {name} (downloaded)", file=sys.stderr)
+                    status_line("success", name, "downloaded")
 
                 return {"name": name, "src": entry.path, "dest": str(dest)}, None
             except Exception as e:
                 with print_lock:
-                    print(f"  ✗ {name} ({str(e)[:50]}...)", file=sys.stderr)
+                    status_line("error", name, f"{str(e)[:50]}...")
                 return None, f"Failed to clone {name}: {e}"
 
         # Copy remote skills in parallel
@@ -154,25 +161,24 @@ def run(args: argparse.Namespace) -> int:
         except Exception as e:
             warnings.append(f"Failed to clone {name}: {e}")
 
-    if not args.quiet:
+    if not args.quiet and not json_enabled(args.json):
         for w in warnings:
-            print(f"⚠ {w}", file=sys.stderr)
+            warn(w)
 
-    if args.json:
-        print(
-            json.dumps(
-                {
-                    "copied": len(copied),
-                    "warnings": len(warnings),
-                    "skills": copied,
-                },
-                indent=2,
-            )
+    if json_enabled(args.json):
+        json_output(
+            {
+                "copied": len(copied),
+                "warnings": len(warnings),
+                "skills": copied,
+            },
+            command="clone",
+            v2=json_v2(args.json),
         )
     else:
         for c in copied:
             print(f"Cloned: {c['name']} → {c['dest']}")
         if copied:
-            print(f"\n{len(copied)} skill(s) cloned to {output_dir}")
+            summary({"cloned": len(copied)})
 
     return 1 if warnings and not copied else 0

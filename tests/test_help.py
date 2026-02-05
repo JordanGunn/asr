@@ -20,6 +20,7 @@ class TestHelpCommand:
         assert "registry" in stdout.lower()
         # Should mention json flag which is common to registry
         assert "--json" in stdout or "registry" in stdout
+        assert "Examples:" in stdout
 
     def test_help_invalid_command_returns_error(self, cli_runner, tmp_skills_dir):
         """Running `asr help bogus` returns error and shows available commands."""
@@ -28,3 +29,13 @@ class TestHelpCommand:
         assert exit_code == 1
         assert "Unknown command" in stdout or "unknown" in stdout.lower()
         assert "Available commands" in stdout or "list" in stdout
+
+
+class TestAboutCommand:
+    """Tests for the about command."""
+
+    def test_about_outputs_version(self, cli_runner):
+        exit_code, stdout, stderr = cli_runner(["about"])
+
+        assert exit_code == 0
+        assert "oasr v" in stdout.lower()

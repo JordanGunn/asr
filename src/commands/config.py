@@ -13,6 +13,7 @@ else:
 from agents import detect_available_agents
 from config import CONFIG_FILE, get_default_config, load_config, save_config
 from config.schema import validate_agent, validate_profile_reference
+from output import error, warn
 from profiles.builtins import BUILTIN_PROFILES
 from profiles.loader import list_profile_files, load_profiles
 from profiles.summary import format_profile_summary, sorted_profile_names
@@ -180,7 +181,7 @@ def run_set(args: argparse.Namespace) -> int:
     try:
         section, field = _parse_key(key)
     except ValueError as exc:
-        print(f"Error: {exc}", file=sys.stderr)
+        error(str(exc), hint="Use format 'section.field' or 'agent'")
         return 1
 
     # Type coercion based on field
@@ -197,7 +198,7 @@ def run_set(args: argparse.Namespace) -> int:
         elif field == "default_profile":
             value = value.strip()
     except ValueError as exc:
-        print(f"Error: {exc}", file=sys.stderr)
+        error(str(exc), hint="Use a valid value (e.g., true/false for booleans)")
         return 1
 
     # Load config
@@ -212,17 +213,17 @@ def run_set(args: argparse.Namespace) -> int:
         if section == "agent" and field == "default":
             is_valid, error_msg = validate_agent(value)
             if not is_valid:
-                print(f"Error: {error_msg}", file=sys.stderr)
-                print("\nTo set anyway, use: oasr config set --force agent <name>", file=sys.stderr)
+                error(error_msg, hint="To set anyway, use: oasr config set --force agent <name>")
                 return 1
 
         # Validate profile reference
         if section == "oasr" and field == "default_profile":
             is_valid, error_msg = validate_profile_reference(value, config)
             if not is_valid:
-                print(f"Error: {error_msg}", file=sys.stderr)
-                print("\nCreate the profile in ~/.oasr/config.toml or ~/.oasr/profile/, or use:", file=sys.stderr)
-                print(f"  oasr config set --force oasr.default_profile {value}", file=sys.stderr)
+                error(
+                    error_msg,
+                    hint=f"Create the profile or use: oasr config set --force oasr.default_profile {value}",
+                )
                 return 1
 
     # Set the value
@@ -242,7 +243,7 @@ def run_set(args: argparse.Namespace) -> int:
                 print(f"✓ Default agent set to: {value}")
             else:
                 print(f"✓ Default agent set to: {value}")
-                print(f"  Warning: '{value}' binary not found in PATH. Install it to use this agent.", file=sys.stderr)
+                warn(f"'{value}' binary not found in PATH. Install it to use this agent.")
         elif section == "oasr" and field == "default_profile":
             print(f"✓ Default profile set to: {value}")
         else:
@@ -250,7 +251,7 @@ def run_set(args: argparse.Namespace) -> int:
 
         return 0
     except ValueError as e:
-        print(f"Error: {e}", file=sys.stderr)
+        error(str(e), hint="Check config file syntax")
         return 1
 
 
@@ -263,12 +264,12 @@ def run_get(args: argparse.Namespace) -> int:
     try:
         section, field = _parse_key(key)
     except ValueError as exc:
-        print(f"Error: {exc}", file=sys.stderr)
+        error(str(exc), hint="Use format 'section.field' or 'agent'")
         return 1
 
     value = config.get(section, {}).get(field)
     if value is None:
-        print(f"Config value not set: {section}.{field}", file=sys.stderr)
+        error(f"Config value not set: {section}.{field}", hint="Use 'oasr config list' to see values")
         return 1
 
     print(_format_value(value))
@@ -433,7 +434,7 @@ def run_validate(args: argparse.Namespace) -> int:
             save_config(defaults, config_path=config_path)
             print(f"✓ Created default config at {config_path}")
         except ValueError as exc:
-            print(f"Error: {exc}", file=sys.stderr)
+            error(str(exc), hint="Check config file permissions")
             return 1
 
     try:
@@ -448,7 +449,7 @@ def run_validate(args: argparse.Namespace) -> int:
             print("✓ Profile files loaded")
         return 0
     except ValueError as exc:
-        print(f"Error: {exc}", file=sys.stderr)
+        error(str(exc), hint="Check config file syntax")
         return 1
 
 

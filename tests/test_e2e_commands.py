@@ -25,6 +25,14 @@ class TestRegistryCommands:
         # Sync might not have anything to do, but shouldn't crash
         assert exit_code in [0, 1, 3]  # Various valid states
 
+    def test_registry_list_json_v2(self, cli_runner, sample_registry):
+        exit_code, stdout, stderr = cli_runner(["registry", "list", "--json", "v2"])
+        assert exit_code == 0
+        payload = json.loads(stdout)
+        assert payload["version"] == 2
+        assert payload["command"] == "list"
+        assert "data" in payload
+
 
 class TestDiffCommand:
     """E2E tests for diff command."""
@@ -80,6 +88,14 @@ class TestInfoCommand:
         exit_code, stdout, stderr = cli_runner(["info", "test-skill", "--files"])
         assert exit_code in [0, 1, 3]  # Allow various exit codes
 
+    def test_info_json_v2(self, cli_runner, sample_registry):
+        exit_code, stdout, stderr = cli_runner(["info", "git-commit", "--json", "v2"])
+        assert exit_code == 0
+        payload = json.loads(stdout)
+        assert payload["version"] == 2
+        assert payload["command"] == "info"
+        assert "data" in payload
+
     def test_info_nonexistent_fails(self, cli_runner, tmp_skills_dir):
         """Info on non-existent skill fails gracefully."""
         exit_code, stdout, stderr = cli_runner(["info", "nonexistent"])
@@ -95,6 +111,13 @@ class TestValidateCommand:
         exit_code, stdout, stderr = cli_runner(["validate", "--all"])
         # Validation might pass or fail, but shouldn't crash
         assert exit_code in [0, 1, 2]
+
+    def test_validate_json_v2(self, cli_runner, sample_registry):
+        exit_code, stdout, stderr = cli_runner(["validate", "--all", "--json", "v2"])
+        assert exit_code in [0, 1]
+        payload = json.loads(stdout)
+        assert payload["version"] == 2
+        assert payload["command"] == "validate"
 
     def test_registry_prune_with_confirmation(self, cli_runner, sample_registry):
         """Registry prune requires confirmation or -y flag."""
@@ -142,3 +165,22 @@ class TestHelpCommand:
         exit_code, stdout, stderr = cli_runner(["help", "exec"])
         assert exit_code in [0, 1, 3]  # Allow various exit codes
         assert "exec" in stdout.lower()
+
+
+class TestAccessibilityFlags:
+    def test_no_unicode_flag(self, cli_runner, sample_registry):
+        exit_code, stdout, stderr = cli_runner(["registry", "list", "--no-unicode"])
+        assert exit_code == 0
+        assert "┌─" not in stdout
+
+    def test_no_color_env_var(self, cli_runner, sample_registry, monkeypatch):
+        monkeypatch.setenv("NO_COLOR", "1")
+        exit_code, stdout, stderr = cli_runner(["registry", "list"])
+        assert exit_code == 0
+        assert "\033[" not in stdout and "\033[" not in stderr
+
+    def test_no_unicode_env_var(self, cli_runner, sample_registry, monkeypatch):
+        monkeypatch.setenv("OASR_NO_UNICODE", "1")
+        exit_code, stdout, stderr = cli_runner(["registry", "list"])
+        assert exit_code == 0
+        assert "┌─" not in stdout

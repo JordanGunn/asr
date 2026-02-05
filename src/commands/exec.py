@@ -7,6 +7,7 @@ from pathlib import Path
 import policy
 from agents.registry import detect_available_agents, get_driver
 from config import load_config
+from output import error, info, warn
 from registry import load_registry
 
 
@@ -78,15 +79,17 @@ def run(args: argparse.Namespace) -> int:
     skill_name = args.skill_name
 
     if skill_name not in entry_map:
-        print(f"Error: Skill '{skill_name}' not found in registry", file=sys.stderr)
-        print("\nUse 'oasr registry list' to see available skills.", file=sys.stderr)
+        error(f"Skill '{skill_name}' not found in registry", hint="Use 'oasr registry list' to see available skills")
         return 1
 
     skill_entry = entry_map[skill_name]
     skill_source = skill_entry.path
 
     if not skill_source:
-        print(f"Error: Skill '{skill_name}' has no source configured", file=sys.stderr)
+        error(
+            f"Skill '{skill_name}' has no source configured",
+            hint=f"Run 'oasr info {skill_name}' to inspect skill config",
+        )
         return 1
 
     # Get the skill content - look for SKILL.md in the skill directory
@@ -94,14 +97,13 @@ def run(args: argparse.Namespace) -> int:
     skill_path = skill_dir / "SKILL.md"
 
     if not skill_path.exists():
-        print(f"Error: Skill file not found: {skill_path}", file=sys.stderr)
-        print("\nTry running 'oasr sync' to update your skills.", file=sys.stderr)
+        error(f"Skill file not found: {skill_path}", hint="Try running 'oasr sync' to update your skills")
         return 1
 
     try:
         skill_content = skill_path.read_text(encoding="utf-8")
     except Exception as e:
-        print(f"Error reading skill file: {e}", file=sys.stderr)
+        error(f"Error reading skill file: {e}", hint="Check file permissions and encoding")
         return 1
 
     # Get the user prompt from various sources
@@ -128,11 +130,10 @@ def run(args: argparse.Namespace) -> int:
 
     # Validate agent is set
     if not agent_name:
-        print(
-            "Error: No agent configured. Set OASR_AGENT, use --agent flag, or run:",
-            file=sys.stderr,
+        error(
+            "No agent configured. Set OASR_AGENT, use --agent flag, or run:",
+            hint="oasr config set agent <name>",
         )
-        print("  oasr config set agent <name>", file=sys.stderr)
         return 1
 
     # Load the policy profile
@@ -162,12 +163,12 @@ def run(args: argparse.Namespace) -> int:
     try:
         driver = get_driver(agent_name)
     except ValueError as e:
-        print(f"Error: {e}", file=sys.stderr)
+        error(str(e), hint="Check your agent configuration with 'oasr config agent'")
         return 1
 
     # Execute the skill
-    print(f"Executing skill '{skill_name}' with {agent_name}...", file=sys.stderr)
-    print("━" * 60, file=sys.stderr)
+    info(f"Executing skill '{skill_name}' with {agent_name}...")
+    info("━" * 60)
 
     try:
         extra_args = []
@@ -181,20 +182,14 @@ def run(args: argparse.Namespace) -> int:
         elif agent_name == "claude":
             extra_args.append("--dangerously-skip-permissions")
         elif getattr(args, "unsafe", False):
-            print(
-                f"Warning: --unsafe is not supported for agent '{agent_name}'.",
-                file=sys.stderr,
-            )
-            print(
-                "See agent docs for trusted directory or permission configuration.",
-                file=sys.stderr,
-            )
+            warn(f"--unsafe is not supported for agent '{agent_name}'.")
+            info("See agent docs for trusted directory or permission configuration.")
         result = driver.execute(skill_content, user_prompt, extra_args=extra_args or None)
         # CompletedProcess has returncode attribute (0 = success)
         # Output was already streamed to stdout since capture_output=False
         return result.returncode
     except Exception as e:
-        print(f"\nUnexpected error: {e}", file=sys.stderr)
+        error(f"Unexpected error: {e}")
         return 1
 
 
@@ -205,10 +200,7 @@ def _get_user_prompt(args: argparse.Namespace) -> str | None:
     """
     # Check for conflicting options
     if args.prompt and args.instructions:
-        print(
-            "Error: Cannot use both --prompt and --instructions at the same time",
-            file=sys.stderr,
-        )
+        error("Cannot use both --prompt and --instructions at the same time")
         return None
 
     # Option 1: Inline prompt via -p/--prompt
@@ -219,13 +211,13 @@ def _get_user_prompt(args: argparse.Namespace) -> str | None:
     if args.instructions:
         instructions_path = Path(args.instructions)
         if not instructions_path.exists():
-            print(f"Error: Instructions file not found: {args.instructions}", file=sys.stderr)
+            error(f"Instructions file not found: {args.instructions}", hint="Check the file path exists")
             return None
 
         try:
             return instructions_path.read_text(encoding="utf-8")
         except Exception as e:
-            print(f"Error reading instructions file: {e}", file=sys.stderr)
+            error(f"Error reading instructions file: {e}", hint="Check file permissions and encoding")
             return None
 
     # Option 3: Read from stdin
@@ -233,15 +225,15 @@ def _get_user_prompt(args: argparse.Namespace) -> str | None:
         try:
             return sys.stdin.read()
         except Exception as e:
-            print(f"Error reading from stdin: {e}", file=sys.stderr)
+            error(f"Error reading from stdin: {e}", hint="Ensure input is piped correctly")
             return None
 
     # No prompt provided
-    print("Error: No prompt provided", file=sys.stderr)
-    print("\nProvide a prompt using one of:", file=sys.stderr)
-    print("  -p/--prompt 'Your prompt here'", file=sys.stderr)
-    print("  -i/--instructions path/to/file.txt", file=sys.stderr)
-    print("  echo 'Your prompt' | oasr exec <skill>", file=sys.stderr)
+    error("No prompt provided")
+    info("Provide a prompt using one of:")
+    info("  -p/--prompt 'Your prompt here'")
+    info("  -i/--instructions path/to/file.txt")
+    info("  echo 'Your prompt' | oasr exec <skill>")
     return None
 
 
@@ -256,11 +248,11 @@ def _get_agent_name(args: argparse.Namespace) -> str | None:
         # Validate it's a known and available agent
         available = detect_available_agents()
         if agent_name not in available or not available[agent_name]:
-            print(f"Error: Agent '{agent_name}' is not available", file=sys.stderr)
-            print("\nAvailable agents:", file=sys.stderr)
+            error(f"Agent '{agent_name}' is not available")
+            info("Available agents:")
             for name in sorted(available.keys()):
                 status = "✓" if available[name] else "✗"
-                print(f"  {status} {name}", file=sys.stderr)
+                info(f"  {status} {name}")
             return None
         return agent_name
 
@@ -272,14 +264,14 @@ def _get_agent_name(args: argparse.Namespace) -> str | None:
         return default_agent
 
     # No agent configured
-    print("Error: No agent configured", file=sys.stderr)
-    print("\nConfigure a default agent with:", file=sys.stderr)
-    print("  oasr config set agent <agent-name>", file=sys.stderr)
-    print("\nOr specify an agent for this command:", file=sys.stderr)
-    print("  oasr exec --agent <agent-name> <skill>", file=sys.stderr)
-    print("\nAvailable agents:", file=sys.stderr)
+    error("No agent configured")
+    info("Configure a default agent with:")
+    info("  oasr config set agent <agent-name>")
+    info("Or specify an agent for this command:")
+    info("  oasr exec --agent <agent-name> <skill>")
+    info("Available agents:")
     available = detect_available_agents()
     for name in sorted(available.keys()):
         status = "✓" if available[name] else "✗"
-        print(f"  {status} {name}", file=sys.stderr)
+        info(f"  {status} {name}")
     return None

@@ -18,6 +18,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **Completion install shortcut** — `oasr completion <shell> --install` runs the install flow.
 
+## [1.0.0] - 2026-02-05
+
+### Added
+- **Centralized output module** — Consistent symbols, colors, summaries, progress, and confirmation helpers.
+- **JSON v2 output** — `--json v2` provides envelope metadata (`version`, `success`, `command`, `error`).
+- **About command** — `oasr about` shows version and credits.
+- **Grouped help + examples** — `oasr --help` now groups commands and `oasr help <cmd>` shows examples.
+
+### Changed
+- **Accessibility flags** — Added `--no-color` / `--no-unicode` with env var support.
+- **Warnings and errors** — Standardized formatting and added actionable hints.
+- **Completion updates** — Added `about` and JSON v2 hints across shells.
+- **Exit codes documented** — Standard codes documented in docs.
+
+### Tests
+- **Output helpers** — Added tests for summary, spinner non-TTY, confirmations.
+- **E2E JSON v2** — New JSON v2 coverage for list/info/validate.
+
+### Documentation
+- Updated README with JSON v2 and accessibility guidance.
+- Added `docs/commands/ABOUT.md` and updated command index.
 ## [0.6.1] - 2026-02-04
 
 ### Fixed
