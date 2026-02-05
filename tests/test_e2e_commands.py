@@ -73,6 +73,32 @@ class TestSyncCommand:
         exit_code, stdout, stderr = cli_runner(["sync"])
         assert exit_code in [0, 1, 3]  # Allow various exit codes
 
+    def test_sync_prune_removes_unregistered(self, cli_runner, sample_registry, tmp_path):
+        """Sync --prune removes tracked skills not in registry."""
+        target = tmp_path / "target"
+        target.mkdir()
+        cli_runner(["clone", "test-skill", "-t", str(target)])
+
+        extra = target / "extra-skill"
+        extra.mkdir()
+        (extra / "SKILL.md").write_text(
+            """---
+name: extra-skill
+description: Extra
+metadata:
+  oasr:
+    hash: hash_extra
+    source: /fake/path
+---
+
+# Extra
+"""
+        )
+
+        exit_code, stdout, stderr = cli_runner(["sync", "--prune", "-y", str(target)])
+        assert exit_code in [0, 1, 3]
+        assert not extra.exists()
+
 
 class TestInfoCommand:
     """E2E tests for info command."""

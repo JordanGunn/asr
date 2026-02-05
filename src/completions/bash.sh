@@ -202,7 +202,20 @@ _oasr() {
             fi
             ;;
 
-        find|validate|sync|diff|update|help)
+        sync)
+            case "$prev" in
+                --json)
+                    COMPREPLY=($(compgen -W "v1 v2" -- "$cur"))
+                    ;;
+                *)
+                    if [[ "$cur" == -* ]]; then
+                        COMPREPLY=($(compgen -W "--force --prune -y --yes --json" -- "$cur"))
+                    fi
+                    ;;
+            esac
+            return 0
+            ;;
+        find|validate|diff|update|help)
             # These commands have limited or no additional completion
             return 0
             ;;

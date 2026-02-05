@@ -99,6 +99,15 @@ $oasrCompletion = {
             }
             return
         }
+        'sync' {
+            if ($wordToComplete -like '-*') {
+                @('--force', '--prune', '-y', '--yes', '--json') | Where-Object { $_ -like "$wordToComplete*" } |
+                    ForEach-Object {
+                    [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
+                }
+                return
+            }
+        }
         'exec' {
             $prevWord = if ($elementCount -gt 2) { $elements[$elementCount - 2].Value } else { '' }
             

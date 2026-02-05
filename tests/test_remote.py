@@ -56,6 +56,22 @@ class TestURLParsing:
         assert result["ref"] == "main"
         assert result["path"] == "skills/cool-skill"
 
+    def test_parse_github_url_strips_git_suffix(self):
+        """Test parsing GitHub URL with .git suffix."""
+        url = "https://github.com/user/repo.git"
+        result = parse_github_url(url)
+
+        assert result is not None
+        assert result["repo"] == "repo"
+
+    def test_parse_gitlab_url_strips_git_suffix(self):
+        """Test parsing GitLab URL with .git suffix."""
+        url = "https://gitlab.com/org/project.git"
+        result = parse_gitlab_url(url)
+
+        assert result is not None
+        assert result["repo"] == "project"
+
     def test_parse_gitlab_url_with_dash_tree(self):
         """Test parsing GitLab URL with /-/tree/ pattern."""
         url = "https://gitlab.com/org/project/-/tree/dev/path"
