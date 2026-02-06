@@ -4,6 +4,8 @@
 
 ---
 
+> For a non-exhaustive list of highlighted features, see [FEATURES.md](docs/FEATURES.md).
+
 ## The Problem
 
 You've built useful skills for your AI coding assistant. They work great in Cursor. Now you want them in Windsurf. And Claude. And Copilot.
@@ -49,7 +51,7 @@ No copying. No drift. One source of truth.
 
 ## Quick Example
 
-![oasr list screenshot](docs/.images/list.png)
+![oasr registry list screenshot](docs/.images/registry-list.png)
 *List all registered skills with metadata*
 
 ```bash
@@ -77,7 +79,7 @@ oasr adapter --output-dir ~/projects/my-app
 
 ## Remote Skills
 
-![oasr add remote screenshot](docs/.images/add-remote.png)
+![oasr registry add remote screenshot](docs/.images/registry-add-remote.png)
 *Register skills directly from GitHub or GitLab*
 
 ASR supports registering skills directly from GitHub and GitLab repositories:
@@ -174,12 +176,21 @@ See [LICENSE](LICENSE).
 
 | Command | Screenshot |
 |---------|-----------|
-| **oasr registry list** | ![list](docs/.images/list.png) |
-| **oasr registry add** (local) | ![add](docs/.images/add.png) |
-| **oasr registry add** (remote) | ![add-remote](docs/.images/add-remote.png) |
-| **oasr registry sync** | ![sync](docs/.images/sync.png) |
-| **oasr registry -v** | ![status](docs/.images/status.png) |
+| **oasr registry list** | ![registry-list](docs/.images/registry-list.png) |
+| **oasr registry add** (local) | ![registry-add](docs/.images/registry-add.png) |
+| **oasr registry add** (remote) | ![registry-add-remote](docs/.images/registry-add-remote.png) |
+| **oasr registry sync** | ![registry-sync](docs/.images/registry-sync.png) |
+| **oasr registry prune** | ![registry-prune](docs/.images/registry-prune.png) |
+| **oasr registry** (validate) | ![registry](docs/.images/registry.png) |
 | **oasr find** | ![find](docs/.images/find.png) |
 | **oasr adapter** | ![adapter](docs/.images/adapter.png) |
+| **oasr clone** | ![clone-help](docs/.images/clone-help.png) |
+| **oasr diff** | ![diff](docs/.images/diff-sm.png) |
+| **oasr sync** | ![sync](docs/.images/sync-sm.png) |
+| **oasr exec** | ![exec](docs/.images/exec.png) |
+| **oasr profile** | ![profile](docs/.images/profile-list.png) |
+| **oasr completion** | ![completion](docs/.images/completion-help.png) |
+| **oasr config** | ![config](docs/.images/config-list.png) |
+| **oasr validate** | ![validate](docs/.images/validate-help.png) |
 
 See [docs/.images/](docs/.images/) for all screenshots.

@@ -118,6 +118,8 @@ oasr config profiles --names
 
 Show a concise configuration reference:
 
+![oasr config man](../.images/config-man.png)
+
 ```bash
 oasr config man
 ```
@@ -141,6 +143,8 @@ oasr config path
 ### `config list`
 
 Display all configuration with formatted output:
+
+![oasr config list](../.images/config-list.png)
 
 ```bash
 oasr config list

@@ -61,6 +61,8 @@ This enables:
 
 ## Examples
 
+![oasr clone help](../.images/clone-help.png)
+
 ### Basic Clone
 ```bash
 # Clone to current directory
@@ -70,7 +72,11 @@ oasr clone csv-analyzer
 oasr clone csv-analyzer -d ~/projects/data-pipeline
 ```
 
+![oasr clone dest](../.images/clone-d.png)
+
 ### Bulk Clone
+
+![oasr clone glob](../.images/clone-glob.png)
 ```bash
 # Clone multiple skills
 oasr clone python-test-generator python-docstring-writer

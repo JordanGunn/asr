@@ -25,6 +25,8 @@ oasr profile wizard               # Create profile via prompts
 
 ## Examples
 
+![oasr profile help](../.images/profile-help.png)
+
 ```bash
 # List interactively
 oasr profile
@@ -56,6 +58,12 @@ oasr profile rm my-project
 # Delete without confirmation
 oasr profile rm my-project -y
 ```
+
+![oasr profile list](../.images/profile-list.png)
+
+![oasr profile wizard](../.images/profile-wizard.png)
+
+![oasr profile select](../.images/profile-select.png)
 
 ## Related
 

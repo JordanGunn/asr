@@ -12,3 +12,5 @@ See [VALIDATION.md](VALIDATION.md) for validation error and warning codes.
 
 > **note**  
 > Validation is performed automatically when syncing manifests or adding skills to the `oasr` registry.
+
+![oasr validate help](../.images/validate-help.png)

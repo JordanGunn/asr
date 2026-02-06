@@ -77,6 +77,7 @@ def register(subparsers) -> None:
     )
     add_p.add_argument("--quiet", action="store_true", help="Suppress info/warnings")
     add_p.add_argument("--config", type=Path, help="Override config file path")
+    add_p.add_argument("-y", "--yes", action="store_true", help="Skip confirmation prompts")
     add_p.set_defaults(func=run_add)
 
     # registry rm

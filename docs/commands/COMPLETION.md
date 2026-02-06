@@ -6,6 +6,8 @@ Enable shell tab completion for OASR commands, subcommands, and dynamic resource
 
 ## Overview
 
+![oasr completion help](../.images/completion-help.png)
+
 The `oasr completion` command provides intelligent tab completion across all major shells:
 
 - **Bash** — Traditional completion with dynamic skill/agent/profile suggestions
@@ -49,6 +51,8 @@ oasr completion install --dry-run
 ## Installation
 
 ### Automatic (Recommended)
+
+![oasr completion install](../.images/completion-zsh-install.png)
 
 ```bash
 # Auto-detect shell and install
@@ -323,6 +327,8 @@ $ oasr completion install --dry-run
 ```
 
 ### Force Overwrite
+
+![oasr completion force](../.images/completion-force-install.png)
 
 ```bash
 $ oasr completion install --force
