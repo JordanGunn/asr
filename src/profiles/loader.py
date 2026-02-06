@@ -11,6 +11,8 @@ if sys.version_info >= (3, 11):
 else:
     import tomli as tomllib
 
+import tomli_w
+
 from profiles.builtins import BUILTIN_PROFILES
 from profiles.paths import get_profile_dir
 
@@ -72,3 +74,28 @@ def load_profiles(
     inline_profiles = inline_profiles or {}
     file_profiles = load_profile_files(profile_dir)
     return merge_profiles(BUILTIN_PROFILES, file_profiles, inline_profiles)
+
+
+def get_profile_path(name: str, profile_dir: Path | None = None) -> Path:
+    """Return the profile path for a given name."""
+    directory = profile_dir or get_profile_dir()
+    return directory / f"{name}.toml"
+
+
+def save_profile(name: str, data: dict[str, Any], profile_dir: Path | None = None) -> Path:
+    """Save a profile file with TOML data and return the path."""
+    directory = profile_dir or get_profile_dir()
+    directory.mkdir(parents=True, exist_ok=True)
+    path = get_profile_path(name, directory)
+    with open(path, "wb") as f:
+        tomli_w.dump(data, f)
+    return path
+
+
+def delete_profile(name: str, profile_dir: Path | None = None) -> bool:
+    """Delete a profile file if it exists."""
+    path = get_profile_path(name, profile_dir)
+    if not path.exists():
+        return False
+    path.unlink()
+    return True

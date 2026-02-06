@@ -354,6 +354,17 @@ oasr profile dev
 
 This determines which profile is used unless overridden with `--profile`.
 
+### Default Editor
+
+Set the default editor for profile editing:
+
+```bash
+oasr config set oasr.editor "code --wait"
+oasr config set oasr.editor vim
+```
+
+Priority: `oasr.editor` > `$EDITOR` > `$VISUAL` > system default (vi/notepad).
+
 ### Defining Custom Profiles
 
 Add custom profiles to `~/.oasr/config.toml`:
@@ -389,10 +400,10 @@ allow_env = true
 |---------|------|-------------|
 | `fs_read_roots` | list[string] | Allowed filesystem read locations |
 | `fs_write_roots` | list[string] | Allowed filesystem write locations |
-| `deny_paths` | list[string] | Explicitly denied paths |
+| `deny_paths` | list[string] | Explicitly denied paths (glob patterns supported) |
 | `allowed_commands` | list[string] | Permitted shell commands |
 | `deny_shell` | bool | Deny all shell execution |
-| `network` | bool | Allow network access |
+| `network` | bool | Allow network access (enabled/disabled) |
 | `allow_env` | bool | Allow environment variable access |
 
 See [`oasr exec` documentation](EXEC.md#security-model) for detailed security model explanation.

@@ -109,6 +109,15 @@ oasr <TAB>
 oasr registry <TAB>
 # Shows: add, list, prune, rm, sync, validate
 
+oasr profile <TAB>
+# Shows: list, show, edit, rm, new, wizard
+
+oasr profile rm <TAB>
+# Shows: safe, dev, custom-profile, ...
+
+oasr profile edit <TAB>
+# Shows: -s, --select, safe, dev, custom-profile, ...
+
 oasr config <TAB>
 # Shows: get, list, set, unset, validate
 ```

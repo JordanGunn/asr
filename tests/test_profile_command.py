@@ -34,8 +34,10 @@ def test_profile_sets_default(tmp_path, monkeypatch, capsys):
     }
     save_config(config, config_path)
     monkeypatch.setattr(profile_cmd, "CONFIG_FILE", config_path)
+    monkeypatch.setattr(profile_cmd.sys.stdout, "isatty", lambda: True)
+    monkeypatch.setattr(profile_cmd.sys.stdin, "isatty", lambda: True)
 
-    args = MockArgs(name="dev")
+    args = MockArgs(args=["dev"])
     result = profile_cmd.run(args)
 
     assert result == 0
@@ -70,7 +72,7 @@ def test_profile_non_interactive_lists_profiles(tmp_path, monkeypatch, capsys):
 
     monkeypatch.setattr(profile_cmd.sys.stdout, "isatty", lambda: False)
     monkeypatch.setattr(profile_cmd.sys.stdin, "isatty", lambda: False)
-    args = MockArgs(name=None)
+    args = MockArgs(args=[])
     result = profile_cmd.run(args)
 
     assert result == 0

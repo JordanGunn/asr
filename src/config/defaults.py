@@ -18,6 +18,7 @@ DEFAULT_CONFIG: dict[str, Any] = {
     "oasr": {
         "default_profile": "safe",
         "completions": True,
+        "editor": None,
     },
     "profiles": {name: values.copy() for name, values in BUILTIN_PROFILES.items()},
 }

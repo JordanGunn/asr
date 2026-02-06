@@ -59,6 +59,16 @@ oasr config set oasr.default_profile safe
 oasr profile dev
 ```
 
+### Managing Profiles (CLI)
+
+```bash
+oasr profile list
+oasr profile show dev
+oasr profile new my-project
+oasr profile edit dev
+oasr profile rm my-project
+```
+
 ### Via Environment Variable
 
 ```bash
@@ -82,14 +92,17 @@ default_profile = "safe"
 - Directories where agents can READ files
 - Paths can be relative (`./`) or absolute (`~/projects`)
 - Relative paths are workspace-relative (relative to cwd)
+- Roots are recursive by default
 
 **`fs_write_roots`** (list of strings)
 - Directories where agents can WRITE files
 - Same path rules as `fs_read_roots`
+- Roots are recursive by default
 
 **`deny_paths`** (list of strings)
 - Paths that are ALWAYS denied (takes precedence over read/write roots)
 - Use to protect sensitive files even if they're in allowed roots
+- Glob patterns supported (e.g. `**/.env`, `**/secrets/**`)
 - Examples: `~/.ssh`, `~/.aws`, `.env`
 
 ### Command Execution
@@ -108,6 +121,8 @@ default_profile = "safe"
 
 **`network`** (boolean)
 - Allow agents to make network requests
+- **Disabled:** no outbound HTTP/HTTPS requests allowed
+- **Enabled:** outbound requests permitted (curl, wget, API calls)
 - Conservative default: `false`
 
 **`allow_env`** (boolean)

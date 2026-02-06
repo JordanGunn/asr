@@ -61,3 +61,15 @@ BUILTIN_PROFILES: dict[str, dict[str, Any]] = {
 }
 
 BUILTIN_PROFILE_ORDER = ("safe", "strict", "dev", "unsafe")
+
+BUILTIN_DESCRIPTIONS: dict[str, str] = {
+    "safe": "Conservative defaults for most workflows.",
+    "strict": "Minimal access, no network, no shell.",
+    "dev": "Permissive for local development.",
+    "unsafe": "Full access to system and commands.",
+}
+
+
+def is_builtin_profile(name: str) -> bool:
+    """Return True if name is a built-in profile."""
+    return name in BUILTIN_PROFILES

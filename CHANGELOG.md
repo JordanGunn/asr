@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-02-06
+
+### Added
+- **Profile management suite** — `profile list/show/edit/new/rm/wizard` with templates and name normalization.
+- **Profile selector descriptions** — built-in descriptions surfaced in interactive selector.
+- **Editor configuration** — `oasr.editor` config option to control profile editing.
+- **Security guide** — new `docs/configuration/SECURITY.md`.
+- **Features showcase** — new `docs/FEATURES.md` with usage examples.
+
+### Changed
+- **Wizard defaults** — readable directories default to current working directory (absolute).
+- **Completions** — expanded profile command completions across shells.
+- **Docs** — updated PROFILE/CONFIG/COMPLETION docs and indexes.
+
+### Tests
+- Added helper and command coverage for profile features.
+
 ## [1.0.2] - 2026-02-05
 
 ### Fixed

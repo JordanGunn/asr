@@ -219,10 +219,56 @@ $oasrCompletion = {
 
         'profile' {
             if ($elementCount -eq 3) {
-                Get-OasrProfiles | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
-                    [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', "Profile: $_")
+                @('list', 'show', 'edit', 'rm', 'new', 'wizard') | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
+                    [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
                 }
                 return
+            }
+            if ($elementCount -eq 4) {
+                if ($commandElements[2] -in @('show', 'rm')) {
+                    if ($commandElements[2] -eq 'rm' -and $wordToComplete -like '-*') {
+                        @('-y', '--yes') | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
+                            [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
+                        }
+                        return
+                    }
+                    Get-OasrProfiles | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
+                        [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', "Profile: $_")
+                    }
+                    return
+                }
+                if ($commandElements[2] -eq 'edit') {
+                    if ($wordToComplete -like '-*') {
+                        @('-s', '--select') | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
+                            [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
+                        }
+                        return
+                    }
+                    Get-OasrProfiles | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
+                        [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', "Profile: $_")
+                    }
+                    return
+                }
+                if ($commandElements[2] -eq 'new') {
+                    @('-c', '--copy-from') | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
+                        [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
+                    }
+                    return
+                }
+            }
+            if ($elementCount -eq 5) {
+                if ($commandElements[2] -eq 'edit' -and $commandElements[3] -in @('-s', '--select')) {
+                    Get-OasrProfiles | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
+                        [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', "Profile: $_")
+                    }
+                    return
+                }
+                if ($commandElements[2] -eq 'new' -and $commandElements[3] -in @('-c', '--copy-from')) {
+                    Get-OasrProfiles | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
+                        [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', "Profile: $_")
+                    }
+                    return
+                }
             }
         }
     }

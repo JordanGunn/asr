@@ -197,8 +197,50 @@ _oasr() {
 
         profile)
             if [ $COMP_CWORD -eq 2 ]; then
-                _oasr_profiles
+                COMPREPLY=($(compgen -W "list show edit rm new wizard" -- "$cur"))
                 return 0
+            fi
+            if [ $COMP_CWORD -eq 3 ]; then
+                case "${COMP_WORDS[2]}" in
+                    show)
+                        _oasr_profiles
+                        return 0
+                        ;;
+                    rm)
+                        if [[ "$cur" == -* ]]; then
+                            COMPREPLY=($(compgen -W "-y --yes" -- "$cur"))
+                        else
+                            _oasr_profiles
+                        fi
+                        return 0
+                        ;;
+                    edit)
+                        if [[ "$cur" == -* ]]; then
+                            COMPREPLY=($(compgen -W "-s --select" -- "$cur"))
+                        else
+                            _oasr_profiles
+                        fi
+                        return 0
+                        ;;
+                    new)
+                        if [[ "$cur" == -* ]]; then
+                            COMPREPLY=($(compgen -W "-c --copy-from" -- "$cur"))
+                        fi
+                        return 0
+                        ;;
+                esac
+            fi
+            if [ $COMP_CWORD -eq 4 ]; then
+                case "${COMP_WORDS[2]} ${COMP_WORDS[3]}" in
+                    "edit -s"|"edit --select")
+                        _oasr_profiles
+                        return 0
+                        ;;
+                    "new -c"|"new --copy-from")
+                        _oasr_profiles
+                        return 0
+                        ;;
+                esac
             fi
             ;;
 
