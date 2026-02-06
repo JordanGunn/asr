@@ -50,7 +50,10 @@ oasr clone my-analyzer
 oasr clone grep find code-reviewer
 
 # Clone to a specific directory
-oasr clone my-analyzer --target ./skills/
+oasr clone my-analyzer -d ./skills/
+
+# Supports glob patterns
+oasr clone python-* -d .agent/skills/
 ```
 
 **Benefits:**
@@ -70,12 +73,9 @@ Create skill integrations for popular AI coding assistants.
 - Tools with custom command support get thin invocation layers
 
 ```bash
-# Generate adapters for default targets
-oasr adapter generate
-
 # Generate for specific tools
-oasr adapter generate --target cursor
-oasr adapter generate --target windsurf
+oasr adapter cursor
+oasr adapter windsurf
 
 # List available adapter targets
 oasr adapter list
@@ -287,6 +287,9 @@ oasr exec my-skill "do the thing"
 
 # Keep it synced
 oasr sync
+
+# Update oasr anytime with built in command:
+oasr update
 ```
 
 ---
