@@ -113,7 +113,18 @@ complete -c oasr -f -n "__fish_seen_subcommand_from config; and __fish_seen_subc
 complete -c oasr -f -n "__fish_seen_subcommand_from config; and __fish_seen_subcommand_from set; and __fish_seen_subcommand_from validation.strict oasr.completions" -a "true false" -d "Boolean"
 
 # profile command
-complete -c oasr -f -n "__fish_seen_subcommand_from profile" -a "(__oasr_profiles)" -d "Profile"
+complete -c oasr -f -n "__fish_seen_subcommand_from profile; and not __fish_seen_subcommand_from list show edit rm new wizard" -a "list" -d "List profiles"
+complete -c oasr -f -n "__fish_seen_subcommand_from profile; and not __fish_seen_subcommand_from list show edit rm new wizard" -a "show" -d "Show profile"
+complete -c oasr -f -n "__fish_seen_subcommand_from profile; and not __fish_seen_subcommand_from list show edit rm new wizard" -a "edit" -d "Edit profile"
+complete -c oasr -f -n "__fish_seen_subcommand_from profile; and not __fish_seen_subcommand_from list show edit rm new wizard" -a "rm" -d "Remove profile"
+complete -c oasr -f -n "__fish_seen_subcommand_from profile; and not __fish_seen_subcommand_from list show edit rm new wizard" -a "new" -d "Create profile"
+complete -c oasr -f -n "__fish_seen_subcommand_from profile; and not __fish_seen_subcommand_from list show edit rm new wizard" -a "wizard" -d "Profile wizard"
+complete -c oasr -f -n "__fish_seen_subcommand_from profile; and __fish_seen_subcommand_from show rm" -a "(__oasr_profiles)" -d "Profile"
+complete -c oasr -f -n "__fish_seen_subcommand_from profile; and __fish_seen_subcommand_from rm" -l yes -s y -d "Skip confirmation"
+complete -c oasr -f -n "__fish_seen_subcommand_from profile; and __fish_seen_subcommand_from edit" -l select -s s -d "Select profile"
+complete -c oasr -f -n "__fish_seen_subcommand_from profile; and __fish_seen_subcommand_from edit; and __fish_seen_subcommand_from select" -a "(__oasr_profiles)" -d "Profile"
+complete -c oasr -f -n "__fish_seen_subcommand_from profile; and __fish_seen_subcommand_from new" -l copy-from -s c -d "Copy from profile"
+complete -c oasr -f -n "__fish_seen_subcommand_from profile; and __fish_seen_subcommand_from new; and __fish_seen_subcommand_from copy-from" -a "(__oasr_profiles)" -d "Profile"
 
 # registry subcommands
 complete -c oasr -f -n "__fish_seen_subcommand_from registry; and not __fish_seen_subcommand_from add rm sync list validate prune" -a "add" -d "Add skill to registry"

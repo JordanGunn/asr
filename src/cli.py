@@ -25,7 +25,7 @@ from output import (
     configure as configure_output,
 )
 
-__version__ = "1.0.2"
+__version__ = "1.1.0"
 
 COMMAND_GROUPS = {
     "Registry Management": ["registry", "add", "rm", "list", "validate", "status"],

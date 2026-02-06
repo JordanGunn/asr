@@ -147,7 +147,47 @@ _oasr_sync() {
 
 _oasr_profile() {
     _arguments \
-        '1:profile:_oasr_profiles'
+        '1:profile subcommand:(list show edit rm new wizard)' \
+        '2:profile:->profile' \
+        '*::arg:->args'
+
+    case $state in
+        profile)
+            case ${words[2]} in
+                show)
+                    _oasr_profiles
+                    ;;
+                rm)
+                    _arguments '1:profile:_oasr_profiles' \
+                               '(-y --yes)'{-y,--yes}'[Skip confirmation prompt]'
+                    ;;
+                edit)
+                    _arguments '1:select flag:(-s --select)' \
+                               '2:profile:_oasr_profiles' \
+                               '3:profile:_oasr_profiles'
+                    ;;
+                new)
+                    _arguments '1:copy flag:(-c --copy-from)'
+                    ;;
+            esac
+            ;;
+        args)
+            case ${words[2]} in
+                edit)
+                    if [[ ${words[3]} == "-s" || ${words[3]} == "--select" ]]; then
+                        _oasr_profiles
+                    elif [[ -n ${words[3]} ]]; then
+                        _oasr_profiles
+                    fi
+                    ;;
+                new)
+                    if [[ ${words[3]} == "-c" || ${words[3]} == "--copy-from" ]]; then
+                        _oasr_profiles
+                    fi
+                    ;;
+            esac
+            ;;
+    esac
 }
 
 _oasr_registry() {

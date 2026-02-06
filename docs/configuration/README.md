@@ -136,6 +136,7 @@ oasr profile production
 - **[profiles.*]** - Execution policy profiles → [Details](profiles.md)
   - Built-in profiles: `safe`, `strict`, `dev`, `unsafe`
   - Profile files: `~/.oasr/profile/<name>.toml` (body keys only)
+- **Security guide** → [Details](SECURITY.md)
 
 ### ⚙️ Advanced
 

@@ -39,8 +39,10 @@ COMMAND_HELP = {
     },
     "profile": {
         "examples": [
-            ("List profiles", "oasr profile"),
+            ("List profiles", "oasr profile list"),
             ("Set default profile", "oasr profile dev"),
+            ("Create a new profile", "oasr profile new my-profile"),
+            ("Edit active profile", "oasr profile edit"),
         ]
     },
     "clone": {
