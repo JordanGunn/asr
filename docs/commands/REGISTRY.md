@@ -4,6 +4,8 @@ Manage the skill registry - add, remove, list, and sync skills.
 
 ## Default Behavior (Validation)
 
+![oasr registry](../.images/registry.png)
+
 By default, `oasr registry` validates all registered skills:
 
 ```bash
@@ -24,6 +26,8 @@ oasr registry --json       # JSON output
 
 ### `oasr registry list`
 
+![oasr registry list](../.images/registry-list.png)
+
 List all registered skills:
 
 ```bash
@@ -43,6 +47,8 @@ Total: 3 skills
 
 ### `oasr registry add`
 
+![oasr registry add](../.images/registry-add.png)
+
 Register skills in the registry:
 
 ```bash
@@ -51,9 +57,12 @@ oasr registry add https://github.com/user/repo/tree/main/skills/my-skill  # Remo
 oasr registry add /path/to/skills/*          # Glob paths
 oasr registry add /path/to/skill --strict    # Fail on validation warnings
 oasr registry add -r /path/to/root           # Recursive discovery
+oasr registry add https://github.com/user/repo/tree/main/skills/my-skill -y  # Skip confirmation prompts
 ```
 
 **Remote Skills:**
+
+![oasr registry add remote](../.images/registry-add-remote.png)
 
 - Supports GitHub and GitLab URLs
 - Formats: `https://github.com/{user}/{repo}/tree/{branch}/{path}`
@@ -86,6 +95,8 @@ $ oasr registry rm my-skill
 
 ### `oasr registry sync`
 
+![oasr registry sync](../.images/registry-sync.png)
+
 Sync registry with remote sources (update remote skills):
 
 ```bash
@@ -106,6 +117,8 @@ Synced: 2 skills
 ```
 
 ### `oasr registry prune`
+
+![oasr registry prune](../.images/registry-prune.png)
 
 Clean up corrupted/missing skills and orphaned artifacts:
 

@@ -8,6 +8,8 @@ OASR (Open Agent Skill Registry) is a CLI tool for managing agent skills across 
 
 Keep your skills organized in a single registry while preserving your source implementations.
 
+![oasr registry](.images/registry.png)
+
 **How it works:**
 - Skills are registered from their source path (local directory or remote repo)
 - Content hashing detects when source skills have changed
@@ -37,6 +39,8 @@ oasr registry sync
 
 Create registry-tracked copies of your skills in any directory.
 
+![oasr clone](.images/clone-help.png)
+
 **How it works:**
 - Clone registered skills to your current working directory
 - Clones are automatically tracked by OASR
@@ -63,6 +67,8 @@ oasr clone my-analyzer --target ./skills/
 ## 3. Generate Adapters for Agentic Tools
 
 Create skill integrations for popular AI coding assistants.
+
+![oasr adapter](.images/adapter.png)
 
 **How it works:**
 - Generate OASR clones formatted for specific tools
@@ -98,6 +104,8 @@ oasr adapter list
 
 Detect and resolve drift between your working directory and registry.
 
+![oasr diff](.images/diff-sm.png)
+
 **How it works:**
 - OASR auto-detects skills tracked in your current project
 - Compare local copies against your registry state
@@ -132,6 +140,8 @@ oasr sync --prune
 ## 5. Local and Remote Skill Registration
 
 Register skills from local paths or remote repositories with consistent validation.
+
+![oasr registry add](.images/registry-add.png)
 
 **Local skills:**
 ```bash
@@ -169,6 +179,8 @@ oasr registry validate
 ## 6. Execute Skills Like CLI Commands
 
 Run any registered skill from anywhere on your system.
+
+![oasr exec](.images/exec.png)
 
 **Basic execution:**
 ```bash
@@ -211,6 +223,8 @@ oasr config set oasr.default_profile safe
 ## 7. Configurable Security Profiles
 
 Customize your runtime environment with flexible security policies.
+
+![oasr profile wizard](.images/profile-wizard.png)
 
 **Built-in profiles:**
 

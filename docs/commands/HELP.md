@@ -1,7 +1,7 @@
 # `oasr help`
 
 *Showing help*
-![oasr help](images/oasr-help.png)
+![oasr help](../.images/help.png)
 
 Show help for any command.
 

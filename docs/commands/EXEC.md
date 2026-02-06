@@ -6,11 +6,15 @@ Execute skills as CLI tools from anywhere on your system. Run skills with agent-
 
 ## Usage
 
+![oasr exec](../.images/exec.png)
+
 ```bash
 oasr exec <skill-name> [options]
 ```
 
 ## Options
+
+![oasr exec help](../.images/exec-help.png)
 
 - `-p, --prompt TEXT` — Inline prompt/instructions for the agent
 - `-i, --instructions FILE` — Read prompt from a file

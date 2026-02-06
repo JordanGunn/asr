@@ -27,6 +27,8 @@ oasr sync --json             # JSON output
 
 ## Example Output
 
+![oasr sync](../.images/sync-sm.png)
+
 ```bash
 $ oasr sync
 
@@ -43,6 +45,8 @@ Skipped: 2
 ```
 
 ## Force Overwrite
+
+![oasr sync warnings](../.images/sync-warnings.png)
 
 To overwrite locally-modified skills:
 

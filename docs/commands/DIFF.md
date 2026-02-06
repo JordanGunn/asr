@@ -25,6 +25,8 @@ oasr diff --json             # JSON output
 
 ## Example Output
 
+![oasr diff](../.images/diff-sm.png)
+
 ```bash
 $ oasr diff
 
